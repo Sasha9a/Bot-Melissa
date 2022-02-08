@@ -19,7 +19,8 @@
     "moment-timezone": "^0.5.34",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.0.0",
-    "tslib": "^2.0.0"
+    "tslib": "^2.0.0",
+    "vk-io": "^4.4.0"
   },
   "devDependencies": {
     "@nestjs/mongoose": "^9.0.2",
