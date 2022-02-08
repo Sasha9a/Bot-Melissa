@@ -1,0 +1,31 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+    "noImplicitAny": false,
+    "strictFunctionTypes": false,
+    "strictNullChecks": false,
+    "noPropertyAccessFromIndexSignature": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "importHelpers": true,
+    "noUnusedParameters": false,
+    "target": "esnext",
+    "module": "esnext",
+    "lib": ["es2019", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@bot/api/*": ["apps/api/src/app/*"],
+      "@bot/shared/*": ["libs/shared/src/*"]
+    }
+  },
+  "include": ["./libs/*/src/**/*", "./apps/*/src/**/*"],
+  "exclude": ["node_modules", "tmp"]
+}
