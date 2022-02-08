@@ -21,16 +21,21 @@ async function bootstrap() {
     api,
     upload
   });
-  const users = await api.users.get({
-    user_ids: 'aleksandr_dovgiy'
+  // const users = await api.messages.getConversations({
+  //   filter: 'unread',
+  //   extended: 1
+  // });
+  const chat = await api.messages.getConversationsById({
+    peer_ids: 2000000002
   });
+  console.log(chat);
   const messages = await api.messages.send({
-    user_id: 283215047,
+    peer_id: 2000000002,
     random_id: Math.random() * 2000000,
-    message: 'Проверка'
+    message: ''
   });
   console.log(messages);
-  console.log(users);
+  // console.trace(users.items.map((item) => item.conversation));
   updates.on('message_new', (context) => {
     console.log(context);
   });
