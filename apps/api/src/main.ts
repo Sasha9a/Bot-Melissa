@@ -8,7 +8,7 @@ import { NestFactory } from '@nestjs/core';
 import { API, Updates, Upload } from "vk-io";
 
 import { AppModule } from './app/app.module';
-import { environment } from "./environments/environment";
+import { environment } from './environments/environment.prod';
 
 async function bootstrap() {
   const api = new API({
