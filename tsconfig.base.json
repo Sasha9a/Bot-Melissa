@@ -7,25 +7,16 @@
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
-    "noImplicitAny": false,
-    "strictFunctionTypes": false,
-    "strictNullChecks": false,
-    "noPropertyAccessFromIndexSignature": false,
-    "suppressImplicitAnyIndexErrors": true,
     "importHelpers": true,
-    "noUnusedParameters": false,
-    "target": "esnext",
+    "target": "es2015",
     "module": "esnext",
-    "lib": ["es2019", "dom"],
+    "lib": ["es2017", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@bot/api/*": ["apps/api/src/app/*"],
-      "@bot/shared/*": ["libs/shared/src/*"]
+      "@web/api-interfaces": ["libs/api-interfaces/src/index.ts"]
     }
   },
-  "include": ["./libs/*/src/**/*", "./apps/*/src/**/*"],
   "exclude": ["node_modules", "tmp"]
 }
