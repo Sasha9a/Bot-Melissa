@@ -1,11 +1,19 @@
+import { UserModule } from "@bot-sadvers/api/modules/user/user.module";
 import { Module } from '@nestjs/common';
-
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { MongooseModule } from "@nestjs/mongoose";
+import { environment } from "../environments/environment";
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    MongooseModule.forRoot(environment.db, {
+      connectionFactory: (connection) => {
+        connection.plugin(require('mongoose-autopopulate'));
+        return connection;
+      }
+    }),
+    UserModule
+  ],
+  controllers: [],
+  providers: []
 })
 export class AppModule {}

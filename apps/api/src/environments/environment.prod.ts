@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  token: process.env.TOKEN || '2d14ef0cc56bc63513b58d171b7d2f6252fe2eaa9a4a335124a3927d62c82cd9f3489f07531663d9fbb85'
+  token: process.env.TOKEN || '3499b624dc715347e2b88d24eaa14afe936ea273fad9709cd720c6d2770e499abe6f926125619d2b14aed',
+  groupId: process.env.GROUPID || 193700439,
+  db: process.env.DB || 'mongodb://localhost:27017/bot'
 };
