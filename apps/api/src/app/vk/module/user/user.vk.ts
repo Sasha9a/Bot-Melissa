@@ -14,7 +14,7 @@ export async function updateAll(req: RequestMessageVkModel) {
       for (const member of members.items) {
         let user: User = await UserModule.findOne({ peerId: member.member_id, chatId: req.msgObject.peerId });
         if (!user) {
-          user = await createUser(req);
+          user = await createUser(member.member_id, req);
         }
         if (member.is_owner) {
           user.status = 10;
@@ -36,7 +36,7 @@ export async function setNick(req: RequestMessageVkModel) {
     }
     let user: User = await UserModule.findOne({ peerId: req.msgObject.senderId, chatId: req.msgObject.peerId });
     if (!user) {
-      user = await createUser(req);
+      user = await createUser(req.msgObject.senderId, req);
     }
     user.nick = req.fullText;
     await user.save();
@@ -51,7 +51,7 @@ export async function setIcon(req: RequestMessageVkModel) {
     }
     let user: User = await UserModule.findOne({ peerId: req.msgObject.senderId, chatId: req.msgObject.peerId });
     if (!user) {
-      user = await createUser(req);
+      user = await createUser(req.msgObject.senderId, req);
     }
     user.icon = req.fullText;
     await user.save();
@@ -63,7 +63,7 @@ export async function getUser(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     let user: User = await UserModule.findOne({ peerId: req.msgObject.senderId, chatId: req.msgObject.peerId });
     if (!user) {
-      user = await createUser(req);
+      user = await createUser(req.msgObject.senderId, req);
     }
     let result = `Участник ${await stringifyMention(req.msgObject.senderId)}:`;
     if (user?.joinDate) {
@@ -89,6 +89,9 @@ export async function setStatus(req: RequestMessageVkModel) {
     }
     if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 0 || Number(req.text[1]) > 10) {
       return errorSend(req.msgObject, 'Второй аргумент не верный');
+    }
+    if (await isOwnerMember(user.peerId, req.msgObject.peerId)) {
+      return errorSend(req.msgObject, 'Нельзя менять статус создателю беседы');
     }
     user.status = Number(req.text[1]);
     await user.save();

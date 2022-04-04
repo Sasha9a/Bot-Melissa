@@ -2,9 +2,9 @@ import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.m
 import { vk } from "@bot-sadvers/api/vk/vk";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 
-export async function createUser(req: RequestMessageVkModel): Promise<User> {
+export async function createUser(peerId: number, req: RequestMessageVkModel): Promise<User> {
   const user: User = new UserModule({
-    peerId: req.msgObject.senderId,
+    peerId: peerId,
     chatId: req.msgObject.peerId,
     status: 0
   });
