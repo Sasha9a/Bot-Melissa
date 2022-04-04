@@ -11,6 +11,12 @@ export class User extends Document {
   public peerId: number;
 
   @Prop()
+  public joinDate: Date;
+
+  @Prop({ required: true })
+  public status: number;
+
+  @Prop()
   public nick: string;
 
   @Prop()

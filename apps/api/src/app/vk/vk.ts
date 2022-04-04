@@ -3,7 +3,7 @@ import { VK } from "vk-io";
 import { environment } from "../../environments/environment.prod";
 import { connect } from "mongoose";
 
-const vk = new VK({
+export const vk = new VK({
   token: environment.token,
   apiVersion: '5.131',
   pollingGroupId: environment.groupId as number
