@@ -1,4 +1,4 @@
-import { CommandVkEnum } from "@bot-sadvers/shared/command.vk.enum";
+import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { ContextDefaultState, MessageContext } from "vk-io";
 
 export class RequestMessageVkModel {
