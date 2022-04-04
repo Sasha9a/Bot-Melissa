@@ -83,6 +83,10 @@ export async function setStatus(req: RequestMessageVkModel) {
     if (req.text.length !== 2) {
       return errorSend(req.msgObject, 'Не все параметры введены\nСтатус [пользователь] [номер статуса]');
     }
+    let currentUser: User = await UserModule.findOne({ peerId: req.msgObject.senderId, chatId: req.msgObject.peerId });
+    if (!currentUser) {
+      currentUser = await createUser(req.msgObject.senderId, req);
+    }
     const user: User = await UserModule.findOne({ peerId: parseMention(req.text[0])?.id, chatId: req.msgObject.peerId });
     if (!user) {
       return errorSend(req.msgObject, 'Нет такого пользователя');
@@ -92,6 +96,10 @@ export async function setStatus(req: RequestMessageVkModel) {
     }
     if (await isOwnerMember(user.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нельзя менять статус создателю беседы');
+    }
+    if ((currentUser.status <= Number(req.text[1]) && !await isOwnerMember(currentUser.peerId, req.msgObject.peerId))
+      || (currentUser.status <= user.status && !await isOwnerMember(currentUser.peerId, req.msgObject.peerId))) {
+      return errorSend(req.msgObject, 'Нет прав для выдачи такого статуса');
     }
     user.status = Number(req.text[1]);
     await user.save();
