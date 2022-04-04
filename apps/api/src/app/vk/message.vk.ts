@@ -1,5 +1,5 @@
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
-import { getUser, setIcon, setNick, updateAll } from "@bot-sadvers/api/vk/module/user/user.vk";
+import { getUser, setIcon, setNick, setStatus, updateAll } from "@bot-sadvers/api/vk/module/user/user.vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { ContextDefaultState, MessageContext } from "vk-io";
 
@@ -7,7 +7,8 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.updateAll, func: updateAll },
   { command: CommandVkEnum.getUser, func: getUser },
   { command: CommandVkEnum.setNick, func: setNick },
-  { command: CommandVkEnum.setIcon, func: setIcon }
+  { command: CommandVkEnum.setIcon, func: setIcon },
+  { command: CommandVkEnum.setStatus, func: setStatus }
 ];
 
 export function parseMessage(message: MessageContext<ContextDefaultState>) {

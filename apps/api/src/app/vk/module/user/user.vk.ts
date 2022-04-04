@@ -1,8 +1,10 @@
 import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
+import { errorSend } from "@bot-sadvers/api/vk/core/utils/error.utils.vk";
 import { vk } from "@bot-sadvers/api/vk/vk";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 import * as moment from "moment-timezone";
+import { createUser, isOwnerMember, parseMention, stringifyMention } from "./user.utils.vk";
 
 export async function updateAll(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
@@ -30,7 +32,7 @@ export async function updateAll(req: RequestMessageVkModel) {
 export async function setNick(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (!req.text.length) {
-      return req.msgObject.send(`${await formMention(req.msgObject.senderId)}: Вы не ввели ник`).catch(console.error);
+      return errorSend(req.msgObject, 'Вы не ввели ник');
     }
     let user: User = await UserModule.findOne({ peerId: req.msgObject.senderId, chatId: req.msgObject.peerId });
     if (!user) {
@@ -38,14 +40,14 @@ export async function setNick(req: RequestMessageVkModel) {
     }
     user.nick = req.fullText;
     await user.save();
-    req.msgObject.send(`Установлен ник для ${await formMention(req.msgObject.senderId)}: "${req.fullText}"`).catch(console.error);
+    req.msgObject.send(`Установлен ник для ${await stringifyMention(req.msgObject.senderId)}: "${req.fullText}"`).catch(console.error);
   }
 }
 
 export async function setIcon(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (!req.text.length) {
-      return req.msgObject.send(`${await formMention(req.msgObject.senderId)}: Вы не ввели значок`).catch(console.error);
+      return errorSend(req.msgObject, 'Вы не ввели значок');
     }
     let user: User = await UserModule.findOne({ peerId: req.msgObject.senderId, chatId: req.msgObject.peerId });
     if (!user) {
@@ -53,7 +55,7 @@ export async function setIcon(req: RequestMessageVkModel) {
     }
     user.icon = req.fullText;
     await user.save();
-    req.msgObject.send(`Установлен значок для ${await formMention(req.msgObject.senderId)}: "${req.fullText}"`).catch(console.error);
+    req.msgObject.send(`Установлен значок для ${await stringifyMention(req.msgObject.senderId)}: "${req.fullText}"`).catch(console.error);
   }
 }
 
@@ -63,7 +65,7 @@ export async function getUser(req: RequestMessageVkModel) {
     if (!user) {
       user = await createUser(req);
     }
-    let result = `Участник ${await formMention(req.msgObject.senderId)}:`;
+    let result = `Участник ${await stringifyMention(req.msgObject.senderId)}:`;
     if (user?.joinDate) {
       result = result.concat(`\nВ беседе c ${moment(user.joinDate).format('DD.MM.YYYY HH:mm ')} (${moment().diff(user.joinDate, 'days')} дн.)`);
     } else {
@@ -76,22 +78,20 @@ export async function getUser(req: RequestMessageVkModel) {
   }
 }
 
-export async function createUser(req: RequestMessageVkModel): Promise<User> {
-  const user: User = new UserModule({
-    peerId: req.msgObject.senderId,
-    chatId: req.msgObject.peerId,
-    status: 0
-  });
-  return await user.save();
-}
-
-export async function formMention(userId: number): Promise<string> {
-  const dataUser = await vk.api.users.get({ user_ids: [userId] });
-  return `[id${dataUser[0].id}|${dataUser[0].first_name + ' ' + dataUser[0].last_name}]`;
-}
-
-export async function isOwnerMember(peerId: number, chatId: number): Promise<boolean> {
-  const members = await vk.api.messages.getConversationMembers({ peer_id: chatId });
-  const user = members.items.find((member) => member.member_id === peerId);
-  return user.is_owner as boolean;
+export async function setStatus(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 2) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nСтатус [пользователь] [номер статуса]');
+    }
+    const user: User = await UserModule.findOne({ peerId: parseMention(req.text[0])?.id, chatId: req.msgObject.peerId });
+    if (!user) {
+      return errorSend(req.msgObject, 'Нет такого пользователя');
+    }
+    if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 0 || Number(req.text[1]) > 10) {
+      return errorSend(req.msgObject, 'Второй аргумент не верный');
+    }
+    user.status = Number(req.text[1]);
+    await user.save();
+    req.msgObject.send(`Установлен статус ${req.text[1]} для ${await stringifyMention(user.peerId)}`).catch(console.error);
+  }
 }

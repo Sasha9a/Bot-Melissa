@@ -2,5 +2,6 @@ export enum CommandVkEnum {
   updateAll = 'обновить',
   getUser = 'кто я',
   setNick = 'мне ник',
-  setIcon = 'мне значок'
+  setIcon = 'мне значок',
+  setStatus = 'статус'
 }
