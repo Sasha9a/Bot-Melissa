@@ -1,4 +1,4 @@
-import { parseMessage } from "@bot-sadvers/api/core/message.vk";
+import { parseMessage } from "@bot-sadvers/api/vk/message.vk";
 import { VK } from "vk-io";
 import { environment } from "../../environments/environment.prod";
 import { connect } from "mongoose";

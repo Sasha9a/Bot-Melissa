@@ -3,7 +3,7 @@
  * This is only a minimal backend to get started.
  */
 
-import { vk_initialize } from "@bot-sadvers/api/core/vk";
+import { vk_initialize } from "@bot-sadvers/api/vk/vk";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app/app.module";
 
