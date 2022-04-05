@@ -15,7 +15,11 @@ export async function createUser(peerId: number, req: RequestMessageVkModel): Pr
 
 export async function stringifyMention(userId: number): Promise<string> {
   const dataUser = await vk.api.users.get({ user_ids: [userId] });
-  return `[id${dataUser[0].id}|${dataUser[0].first_name + ' ' + dataUser[0].last_name}]`;
+  if (dataUser[0]) {
+    return `[id${dataUser[0].id}|${dataUser[0].first_name + ' ' + dataUser[0].last_name}]`;
+  } else {
+    return '';
+  }
 }
 
 export function parseMention(mention: string): { id: number, name: string } {

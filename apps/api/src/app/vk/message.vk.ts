@@ -18,6 +18,7 @@ import {
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import { ContextDefaultState, MessageContext } from "vk-io";
+import { environment } from "../../environments/environment";
 
 const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => Promise<any> }[] = [
   { command: CommandVkEnum.updateAll, func: updateAll },
@@ -57,15 +58,19 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
 }
 
 export async function inviteUser(message: MessageContext<ContextDefaultState>) {
-  const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
-  if (!chat) {
-    await createChat(message.peerId);
-  }
-  if (chat.greetings) {
-    let result = `${await stringifyMention(message.eventMemberId)}, ${chat.greetings}`;
-    if (chat.rules) {
-      result = result.concat(`\n\n${chat.rules}`);
+  if (message.eventMemberId === -environment.groupId) {
+    await message.send('Добрый день всем! Я бот администратор :)\nЧтобы я заработал, выдайте мне админку и Владелец беседы введи команду: "Обновить"').catch(console.error);
+  } else {
+    const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
+    if (!chat) {
+      await createChat(message.peerId);
     }
-    await message.send(result).catch(console.error);
+    if (chat.greetings) {
+      let result = `${await stringifyMention(message.eventMemberId)}, ${chat.greetings}`;
+      if (chat.rules) {
+        result = result.concat(`\n\n${chat.rules}`);
+      }
+      await message.send(result).catch(console.error);
+    }
   }
 }
