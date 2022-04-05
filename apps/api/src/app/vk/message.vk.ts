@@ -1,6 +1,6 @@
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
 import { errorSend } from "@bot-sadvers/api/vk/core/utils/error.utils.vk";
-import { getGreetings, getRules, setGreetings, setRules } from "@bot-sadvers/api/vk/module/chat/chat.vk";
+import { getGreetings, getRules, setGreetings, setRules, updateAll } from "@bot-sadvers/api/vk/module/chat/chat.vk";
 import { accessCheck } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { getCommandsStatus, setCommandStatus, setNameStatus } from "@bot-sadvers/api/vk/module/status/status.vk";
 import {
@@ -11,8 +11,7 @@ import {
   setIconMe,
   setNick,
   setNickMe,
-  setStatus,
-  updateAll
+  setStatus
 } from "@bot-sadvers/api/vk/module/user/user.vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { ContextDefaultState, MessageContext } from "vk-io";
