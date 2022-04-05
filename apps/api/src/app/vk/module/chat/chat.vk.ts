@@ -3,7 +3,7 @@ import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.m
 import { errorSend } from "@bot-sadvers/api/vk/core/utils/error.utils.vk";
 import { createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
 import { createCommand } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
-import { createUser, isOwnerMember } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
+import { createUser, isOwnerMember, stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
 import { vk } from "@bot-sadvers/api/vk/vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
@@ -98,6 +98,24 @@ export async function getGreetings(req: RequestMessageVkModel) {
       req.msgObject.send(`Текст приветствия: ${chat.greetings}`).catch(console.error);
     } else {
       req.msgObject.send(`Нет приветствия`).catch(console.error);
+    }
+  }
+}
+
+export async function autoKickList(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
+    if (!chat) {
+      chat = await createChat(req.msgObject.peerId);
+    }
+    if (chat.autoKickList?.length) {
+      let result = 'Список пользователей в автокике:';
+      for (const peerId of chat.autoKickList) {
+        result = result.concat(`\n${await stringifyMention(peerId)}`);
+      }
+      req.msgObject.send(result).catch(console.error);
+    } else {
+      req.msgObject.send(`Список автокика пустой`).catch(console.error);
     }
   }
 }
