@@ -5,10 +5,8 @@ import { createCommand } from "@bot-sadvers/api/vk/module/status/status.utils.vk
 import { vk } from "@bot-sadvers/api/vk/vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { Command, CommandModule } from "@bot-sadvers/shared/schemas/command.schema";
-import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
-import * as moment from "moment-timezone";
-import { createUser, isOwnerMember, parseMention, stringifyMention } from "./user.utils.vk";
+import { createUser, isOwnerMember, parseMention, stringifyMention, templateGetUser } from "./user.utils.vk";
 
 export async function updateAll(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
@@ -70,27 +68,26 @@ export async function setIcon(req: RequestMessageVkModel) {
   }
 }
 
-export async function getUser(req: RequestMessageVkModel) {
+export async function getUserMe(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     let user: User = await UserModule.findOne({ peerId: req.msgObject.senderId, chatId: req.msgObject.peerId });
     if (!user) {
       user = await createUser(req.msgObject.senderId, req);
     }
-    const status: Status = await StatusModule.findOne({ chatId: req.msgObject.peerId, status: user?.status });
-    let result = `Участник ${await stringifyMention(req.msgObject.senderId)}:`;
-    if (user?.joinDate) {
-      result = result.concat(`\nВ беседе c ${moment(user.joinDate).format('DD.MM.YYYY HH:mm ')} (${moment().diff(user.joinDate, 'days')} дн.)`);
-    } else {
-      result = result.concat(`\nВ беседе c -`);
+    req.msgObject.send(await templateGetUser(user)).catch(console.error);
+  }
+}
+
+export async function getUser(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nКто [пользователь]');
     }
-    result = result.concat(`\nНик: ${user?.nick || '-'}`);
-    result = result.concat(`\nЗначок: ${user?.icon || '-'}`);
-    if (status?.name?.length) {
-      result = result.concat(`\nСтатус: ${status.name} (${user?.status || 0})`);
-    } else {
-      result = result.concat(`\nСтатус: ${user?.status || 0}`);
+    const user: User = await UserModule.findOne({ peerId: parseMention(req.text[0])?.id, chatId: req.msgObject.peerId });
+    if (!user) {
+      return errorSend(req.msgObject, 'Нет такого пользователя');
     }
-    req.msgObject.send(result).catch(console.error);
+    req.msgObject.send(await templateGetUser(user)).catch(console.error);
   }
 }
 

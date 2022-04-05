@@ -2,12 +2,13 @@ import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.m
 import { errorSend } from "@bot-sadvers/api/vk/core/utils/error.utils.vk";
 import { accessCheck } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { getCommandsStatus, setCommandStatus, setNameStatus } from "@bot-sadvers/api/vk/module/status/status.vk";
-import { getUser, setIcon, setNick, setStatus, updateAll } from "@bot-sadvers/api/vk/module/user/user.vk";
+import { getUser, getUserMe, setIcon, setNick, setStatus, updateAll } from "@bot-sadvers/api/vk/module/user/user.vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { ContextDefaultState, MessageContext } from "vk-io";
 
 const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => Promise<any> }[] = [
   { command: CommandVkEnum.updateAll, func: updateAll },
+  { command: CommandVkEnum.getUserMe, func: getUserMe },
   { command: CommandVkEnum.getUser, func: getUser },
   { command: CommandVkEnum.setNick, func: setNick },
   { command: CommandVkEnum.setIcon, func: setIcon },
