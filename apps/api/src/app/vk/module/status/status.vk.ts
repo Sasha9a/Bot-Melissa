@@ -46,3 +46,15 @@ export async function setCommandStatus(req: RequestMessageVkModel) {
     req.msgObject.send(`Установлен доступ к команде "${command.command}" от статуса ${Number(req.text[0])}`).catch(console.error);
   }
 }
+
+export async function getCommandsStatus(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    let result = 'Доступы команд:';
+    const commandArray = Object.values(CommandVkEnum);
+    for (const _comm of commandArray) {
+      const command: Command = await CommandModule.findOne({ chatId: req.msgObject.peerId, command: _comm });
+      result = result.concat(`\n${_comm} - (${command?.status || 0})`);
+    }
+    req.msgObject.send(result).catch(console.error);
+  }
+}

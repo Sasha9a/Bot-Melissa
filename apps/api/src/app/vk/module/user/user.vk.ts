@@ -28,9 +28,12 @@ export async function updateAll(req: RequestMessageVkModel) {
         }
         await user.save();
       }
-      const command: Command = await CommandModule.findOne({ chatId: req.msgObject.peerId, command: CommandVkEnum.setCommandStatus });
-      if (!command) {
-        await createCommand(CommandVkEnum.setCommandStatus, 10, req.msgObject.peerId);
+      const commandArray = [CommandVkEnum.setCommandStatus, CommandVkEnum.updateAll];
+      for (const comm of commandArray) {
+        const command: Command = await CommandModule.findOne({ chatId: req.msgObject.peerId, command: comm });
+        if (!command) {
+          await createCommand(comm, 10, req.msgObject.peerId);
+        }
       }
       req.msgObject.send(`Данные беседы обновлены`).catch(console.error);
     }
