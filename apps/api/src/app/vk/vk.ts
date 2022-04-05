@@ -1,3 +1,4 @@
+import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
 import { parseMessage } from "@bot-sadvers/api/vk/message.vk";
 import { VK } from "vk-io";
 import { environment } from "../../environments/environment.prod";
@@ -12,8 +13,8 @@ export const vk = new VK({
 export function vk_initialize() {
   vk.updates.on('message_new', (message) => {
     console.log(message);
-    if (!message.isOutbox) {
-      parseMessage(message);
+    if (!message.isOutbox && message.peerType == PeerTypeVkEnum.CHAT) {
+      parseMessage(message).catch(console.error);
     }
   });
 

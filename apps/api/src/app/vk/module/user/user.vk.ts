@@ -1,7 +1,10 @@
 import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
 import { errorSend } from "@bot-sadvers/api/vk/core/utils/error.utils.vk";
+import { createCommand } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { vk } from "@bot-sadvers/api/vk/vk";
+import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
+import { Command, CommandModule } from "@bot-sadvers/shared/schemas/command.schema";
 import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 import * as moment from "moment-timezone";
@@ -24,6 +27,10 @@ export async function updateAll(req: RequestMessageVkModel) {
           user.joinDate = new Date(member.join_date * 1000);
         }
         await user.save();
+      }
+      const command: Command = await CommandModule.findOne({ chatId: req.msgObject.peerId, command: CommandVkEnum.setCommandStatus });
+      if (!command) {
+        await createCommand(CommandVkEnum.setCommandStatus, 10, req.msgObject.peerId);
       }
       req.msgObject.send(`Данные беседы обновлены`).catch(console.error);
     }
