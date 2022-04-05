@@ -1,5 +1,6 @@
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
 import { errorSend } from "@bot-sadvers/api/vk/core/utils/error.utils.vk";
+import { getGreetings, getRules, setGreetings, setRules } from "@bot-sadvers/api/vk/module/chat/chat.vk";
 import { accessCheck } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { getCommandsStatus, setCommandStatus, setNameStatus } from "@bot-sadvers/api/vk/module/status/status.vk";
 import {
@@ -28,7 +29,11 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.getStatuses, func: getStatuses },
   { command: CommandVkEnum.setNameStatus, func: setNameStatus },
   { command: CommandVkEnum.setCommandStatus, func: setCommandStatus },
-  { command: CommandVkEnum.getCommandsStatus, func: getCommandsStatus }
+  { command: CommandVkEnum.getCommandsStatus, func: getCommandsStatus },
+  { command: CommandVkEnum.setRules, func: setRules },
+  { command: CommandVkEnum.getRules, func: getRules },
+  { command: CommandVkEnum.setGreetings, func: setGreetings },
+  { command: CommandVkEnum.getGreetings, func: getGreetings }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {

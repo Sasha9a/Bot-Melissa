@@ -10,5 +10,9 @@ export enum CommandVkEnum {
   getStatuses = 'статусы',
   setNameStatus = 'название статуса',
   setCommandStatus = 'доступ',
-  getCommandsStatus = 'доступы'
+  getCommandsStatus = 'доступы',
+  setRules = 'новые правила',
+  getRules = 'правила',
+  setGreetings = 'новое приветствие',
+  getGreetings = 'приветствие'
 }
