@@ -2,6 +2,7 @@ import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
 import { errorSend } from "@bot-sadvers/api/vk/core/utils/error.utils.vk";
 import { vk } from "@bot-sadvers/api/vk/vk";
+import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 import * as moment from "moment-timezone";
 import { createUser, isOwnerMember, parseMention, stringifyMention } from "./user.utils.vk";
@@ -65,6 +66,7 @@ export async function getUser(req: RequestMessageVkModel) {
     if (!user) {
       user = await createUser(req.msgObject.senderId, req);
     }
+    const status: Status = await StatusModule.findOne({ chatId: req.msgObject.peerId, status: user?.status });
     let result = `Участник ${await stringifyMention(req.msgObject.senderId)}:`;
     if (user?.joinDate) {
       result = result.concat(`\nВ беседе c ${moment(user.joinDate).format('DD.MM.YYYY HH:mm ')} (${moment().diff(user.joinDate, 'days')} дн.)`);
@@ -73,7 +75,11 @@ export async function getUser(req: RequestMessageVkModel) {
     }
     result = result.concat(`\nНик: ${user?.nick || '-'}`);
     result = result.concat(`\nЗначок: ${user?.icon || '-'}`);
-    result = result.concat(`\nСтатус: ${user?.status || 0}`);
+    if (status?.name?.length) {
+      result = result.concat(`\nСтатус: ${status.name} (${user?.status || 0})`);
+    } else {
+      result = result.concat(`\nСтатус: ${user?.status || 0}`);
+    }
     req.msgObject.send(result).catch(console.error);
   }
 }
