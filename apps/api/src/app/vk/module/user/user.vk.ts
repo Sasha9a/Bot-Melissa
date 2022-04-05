@@ -38,7 +38,7 @@ export async function updateAll(req: RequestMessageVkModel) {
   }
 }
 
-export async function setNick(req: RequestMessageVkModel) {
+export async function setNickMe(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (!req.text.length) {
       return errorSend(req.msgObject, 'Вы не ввели ник');
@@ -53,7 +53,22 @@ export async function setNick(req: RequestMessageVkModel) {
   }
 }
 
-export async function setIcon(req: RequestMessageVkModel) {
+export async function setNick(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length < 2) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nНик [пользователь] [ник]');
+    }
+    const user: User = await UserModule.findOne({ peerId: parseMention(req.text[0])?.id, chatId: req.msgObject.peerId });
+    if (!user) {
+      return errorSend(req.msgObject, 'Нет такого пользователя');
+    }
+    user.nick = req.fullText.substring(req.fullText.indexOf(req.text[1]));
+    await user.save();
+    req.msgObject.send(`Установлен ник для ${await stringifyMention(parseMention(req.text[0])?.id)}: "${user.nick}"`).catch(console.error);
+  }
+}
+
+export async function setIconMe(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (!req.text.length) {
       return errorSend(req.msgObject, 'Вы не ввели значок');
@@ -65,6 +80,21 @@ export async function setIcon(req: RequestMessageVkModel) {
     user.icon = req.fullText;
     await user.save();
     req.msgObject.send(`Установлен значок для ${await stringifyMention(req.msgObject.senderId)}: "${req.fullText}"`).catch(console.error);
+  }
+}
+
+export async function setIcon(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length < 2) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nЗначок [пользователь] [значок]');
+    }
+    const user: User = await UserModule.findOne({ peerId: parseMention(req.text[0])?.id, chatId: req.msgObject.peerId });
+    if (!user) {
+      return errorSend(req.msgObject, 'Нет такого пользователя');
+    }
+    user.icon = req.fullText.substring(req.fullText.indexOf(req.text[1]));
+    await user.save();
+    req.msgObject.send(`Установлен значок для ${await stringifyMention(parseMention(req.text[0])?.id)}: "${user.icon}"`).catch(console.error);
   }
 }
 
