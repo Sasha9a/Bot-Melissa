@@ -1,5 +1,5 @@
 import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
-import { parseMessage } from "@bot-sadvers/api/vk/message.vk";
+import { inviteUser, parseMessage } from "@bot-sadvers/api/vk/message.vk";
 import { VK } from "vk-io";
 import { environment } from "../../environments/environment.prod";
 import { connect } from "mongoose";
@@ -11,6 +11,13 @@ export const vk = new VK({
 });
 
 export function vk_initialize() {
+  vk.updates.on('chat_invite_user', (message) => {
+    console.log(message);
+    if (!message.isOutbox && message.peerType == PeerTypeVkEnum.CHAT) {
+      inviteUser(message).catch(console.error);
+    }
+  });
+
   vk.updates.on('message_new', (message) => {
     console.log(message);
     if (!message.isOutbox && message.peerType == PeerTypeVkEnum.CHAT) {

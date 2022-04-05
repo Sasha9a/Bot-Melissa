@@ -1,8 +1,10 @@
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
 import { errorSend } from "@bot-sadvers/api/vk/core/utils/error.utils.vk";
+import { createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
 import { getGreetings, getRules, setGreetings, setRules, updateAll } from "@bot-sadvers/api/vk/module/chat/chat.vk";
 import { accessCheck } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { getCommandsStatus, setCommandStatus, setNameStatus } from "@bot-sadvers/api/vk/module/status/status.vk";
+import { stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
 import {
   getStatuses,
   getUser,
@@ -14,6 +16,7 @@ import {
   setStatus
 } from "@bot-sadvers/api/vk/module/user/user.vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
+import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import { ContextDefaultState, MessageContext } from "vk-io";
 
 const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => Promise<any> }[] = [
@@ -50,5 +53,19 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
       }
       break;
     }
+  }
+}
+
+export async function inviteUser(message: MessageContext<ContextDefaultState>) {
+  const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
+  if (!chat) {
+    await createChat(message.peerId);
+  }
+  if (chat.greetings) {
+    let result = `${await stringifyMention(message.eventMemberId)}, ${chat.greetings}`;
+    if (chat.rules) {
+      result = result.concat(`\n\n${chat.rules}`);
+    }
+    await message.send(result).catch(console.error);
   }
 }
