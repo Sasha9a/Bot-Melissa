@@ -1,9 +1,12 @@
 import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
 import { errorSend } from "@bot-sadvers/api/vk/core/utils/error.utils.vk";
+import { createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
 import { vk } from "@bot-sadvers/api/vk/vk";
+import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
+import { resolveResource } from "vk-io";
 import { createUser, isOwnerMember, parseMention, stringifyMention, templateGetUser } from "./user.utils.vk";
 
 export async function setNickMe(req: RequestMessageVkModel) {
@@ -161,5 +164,71 @@ export async function kick(req: RequestMessageVkModel) {
     }
     await vk.api.messages.removeChatUser({ chat_id: req.msgObject.peerId - 2000000000, member_id: user.peerId });
     req.msgObject.send(`${await stringifyMention(user.peerId)} исключен из беседы`).catch(console.error);
+  }
+}
+
+export async function autoKick(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nАвтокик [пользователь]');
+    }
+    let currentUser: User = await UserModule.findOne({ peerId: req.msgObject.senderId, chatId: req.msgObject.peerId });
+    if (!currentUser) {
+      currentUser = await createUser(req.msgObject.senderId, req);
+    }
+    const resource = await resolveResource({
+      api: vk.api,
+      resource: req.text[0]
+    }).catch(console.error);
+    if (!resource || !['user', 'group'].includes(resource.type)) {
+      return errorSend(req.msgObject, 'Первый параметр неверный');
+    }
+    const user: User = await UserModule.findOne({ peerId: resource.id, chatId: req.msgObject.peerId });
+    if (await isOwnerMember(resource.id, req.msgObject.peerId)) {
+      return errorSend(req.msgObject, 'Нельзя кикнуть создателя беседы');
+    }
+    if (user && currentUser.status <= user.status && !await isOwnerMember(currentUser.peerId, req.msgObject.peerId)) {
+      return errorSend(req.msgObject, 'Нет прав для автокика');
+    }
+    await vk.api.messages.removeChatUser({ chat_id: req.msgObject.peerId - 2000000000, member_id: resource.id, user_id: resource.id });
+    let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
+    if (!chat) {
+      chat = await createChat(req.msgObject.peerId);
+    }
+    if (!chat.autoKickList) {
+      chat.autoKickList = [];
+    }
+    chat.autoKickList.push(resource.id);
+    await chat.save();
+    req.msgObject.send(`${await stringifyMention(resource.id)} добавлен в автокик`).catch(console.error);
+  }
+}
+
+export async function autoKickMinus(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nАвтокик- [пользователь]');
+    }
+    const resource = await resolveResource({
+      api: vk.api,
+      resource: req.text[0]
+    }).catch(console.error);
+    if (!resource || !['user', 'group'].includes(resource.type)) {
+      return errorSend(req.msgObject, 'Первый параметр неверный');
+    }
+    let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
+    if (!chat) {
+      chat = await createChat(req.msgObject.peerId);
+    }
+    if (!chat.autoKickList) {
+      chat.autoKickList = [];
+    }
+    if (chat.autoKickList.findIndex((id) => id === resource.id) !== -1) {
+      chat.autoKickList = chat.autoKickList.filter((id) => id !== resource.id);
+      await chat.save();
+      req.msgObject.send(`${await stringifyMention(resource.id)} удален из автокика`).catch(console.error);
+    } else {
+      await errorSend(req.msgObject, `Пользователь ${await stringifyMention(resource.id)} не находится в списке автокика`);
+    }
   }
 }

@@ -5,7 +5,19 @@ import { getGreetings, getRules, setGreetings, setRules, updateAll } from "@bot-
 import { accessCheck } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { getCommandsStatus, setCommandStatus, setNameStatus } from "@bot-sadvers/api/vk/module/status/status.vk";
 import { stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
-import { getStatuses, getUser, getUserMe, kick, setIcon, setIconMe, setNick, setNickMe, setStatus } from "@bot-sadvers/api/vk/module/user/user.vk";
+import {
+  autoKick, autoKickMinus,
+  getStatuses,
+  getUser,
+  getUserMe,
+  kick,
+  setIcon,
+  setIconMe,
+  setNick,
+  setNickMe,
+  setStatus
+} from "@bot-sadvers/api/vk/module/user/user.vk";
+import { vk } from "@bot-sadvers/api/vk/vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import { ContextDefaultState, MessageContext } from "vk-io";
@@ -28,7 +40,9 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.getRules, func: getRules },
   { command: CommandVkEnum.setGreetings, func: setGreetings },
   { command: CommandVkEnum.getGreetings, func: getGreetings },
-  { command: CommandVkEnum.kick, func: kick }
+  { command: CommandVkEnum.kick, func: kick },
+  { command: CommandVkEnum.autoKick, func: autoKick },
+  { command: CommandVkEnum.autoKickMinus, func: autoKickMinus }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {
@@ -56,6 +70,11 @@ export async function inviteUser(message: MessageContext<ContextDefaultState>) {
     const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
     if (!chat) {
       await createChat(message.peerId);
+    }
+    if (chat.autoKickList.findIndex((id) => id === message.eventMemberId) !== -1) {
+      await vk.api.messages.removeChatUser({ chat_id: message.peerId - 2000000000, member_id: message.eventMemberId, user_id: message.eventMemberId });
+      await message.send(`Пользователь ${await stringifyMention(message.eventMemberId)} находится в списке автокика`).catch(console.error);
+      return;
     }
     if (chat.greetings) {
       let result = `${await stringifyMention(message.eventMemberId)}, ${chat.greetings}`;

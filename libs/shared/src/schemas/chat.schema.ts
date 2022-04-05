@@ -13,6 +13,9 @@ export class Chat extends Document {
   @Prop()
   public greetings: string;
 
+  @Prop()
+  public autoKickList: number[];
+
 }
 
 export const ChatSchema = SchemaFactory.createForClass(Chat);
