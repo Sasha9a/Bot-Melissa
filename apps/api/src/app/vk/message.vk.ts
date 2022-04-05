@@ -5,16 +5,7 @@ import { getGreetings, getRules, setGreetings, setRules, updateAll } from "@bot-
 import { accessCheck } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { getCommandsStatus, setCommandStatus, setNameStatus } from "@bot-sadvers/api/vk/module/status/status.vk";
 import { stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
-import {
-  getStatuses,
-  getUser,
-  getUserMe,
-  setIcon,
-  setIconMe,
-  setNick,
-  setNickMe,
-  setStatus
-} from "@bot-sadvers/api/vk/module/user/user.vk";
+import { getStatuses, getUser, getUserMe, kick, setIcon, setIconMe, setNick, setNickMe, setStatus } from "@bot-sadvers/api/vk/module/user/user.vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import { ContextDefaultState, MessageContext } from "vk-io";
@@ -36,7 +27,8 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.setRules, func: setRules },
   { command: CommandVkEnum.getRules, func: getRules },
   { command: CommandVkEnum.setGreetings, func: setGreetings },
-  { command: CommandVkEnum.getGreetings, func: getGreetings }
+  { command: CommandVkEnum.getGreetings, func: getGreetings },
+  { command: CommandVkEnum.kick, func: kick }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {

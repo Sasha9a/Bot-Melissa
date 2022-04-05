@@ -14,5 +14,6 @@ export enum CommandVkEnum {
   setRules = 'новые правила',
   getRules = 'правила',
   setGreetings = 'новое приветствие',
-  getGreetings = 'приветствие'
+  getGreetings = 'приветствие',
+  kick = 'кик'
 }

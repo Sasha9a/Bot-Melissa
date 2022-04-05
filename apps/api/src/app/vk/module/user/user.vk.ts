@@ -1,6 +1,7 @@
 import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
 import { errorSend } from "@bot-sadvers/api/vk/core/utils/error.utils.vk";
+import { vk } from "@bot-sadvers/api/vk/vk";
 import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 import { createUser, isOwnerMember, parseMention, stringifyMention, templateGetUser } from "./user.utils.vk";
@@ -136,5 +137,29 @@ export async function getStatuses(req: RequestMessageVkModel) {
       }
     }
     req.msgObject.send(result).catch(console.error);
+  }
+}
+
+export async function kick(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nКик [пользователь]');
+    }
+    let currentUser: User = await UserModule.findOne({ peerId: req.msgObject.senderId, chatId: req.msgObject.peerId });
+    if (!currentUser) {
+      currentUser = await createUser(req.msgObject.senderId, req);
+    }
+    const user: User = await UserModule.findOne({ peerId: parseMention(req.text[0])?.id, chatId: req.msgObject.peerId });
+    if (!user) {
+      return errorSend(req.msgObject, 'Нет такого пользователя');
+    }
+    if (await isOwnerMember(user.peerId, req.msgObject.peerId)) {
+      return errorSend(req.msgObject, 'Нельзя кикнуть создателя беседы');
+    }
+    if (currentUser.status <= user.status && !await isOwnerMember(currentUser.peerId, req.msgObject.peerId)) {
+      return errorSend(req.msgObject, 'Нет прав для кика');
+    }
+    await vk.api.messages.removeChatUser({ chat_id: req.msgObject.peerId - 2000000000, member_id: user.peerId });
+    req.msgObject.send(`${await stringifyMention(user.peerId)} исключен из беседы`).catch(console.error);
   }
 }
