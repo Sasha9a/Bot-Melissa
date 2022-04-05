@@ -5,6 +5,7 @@ import { createCommand } from "@bot-sadvers/api/vk/module/status/status.utils.vk
 import { vk } from "@bot-sadvers/api/vk/vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { Command, CommandModule } from "@bot-sadvers/shared/schemas/command.schema";
+import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 import { createUser, isOwnerMember, parseMention, stringifyMention, templateGetUser } from "./user.utils.vk";
 
@@ -147,5 +148,27 @@ export async function setStatus(req: RequestMessageVkModel) {
     user.status = Number(req.text[1]);
     await user.save();
     req.msgObject.send(`Установлен статус ${req.text[1]} для ${await stringifyMention(user.peerId)}`).catch(console.error);
+  }
+}
+
+export async function getStatuses(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    let result = 'Статус пользователей:';
+    const users: User[] = await UserModule.find({ status: { $ne: 0 }, chatId: req.msgObject.peerId });
+    for (let i = 10; i != 0; i--) {
+      const usersStatus = users.filter((u) => u.status === i);
+      if (usersStatus.length) {
+        const status: Status = await StatusModule.findOne({ status: i, chatId: req.msgObject.peerId });
+        if (status) {
+          result = result.concat(`\n\n"${status?.name}" (${i}):`);
+        } else {
+          result = result.concat(`\n\nСтатус ${i}:`);
+        }
+        for (const u of usersStatus) {
+          result = result.concat(`\n${await stringifyMention(u.peerId)}`);
+        }
+      }
+    }
+    req.msgObject.send(result).catch(console.error);
   }
 }
