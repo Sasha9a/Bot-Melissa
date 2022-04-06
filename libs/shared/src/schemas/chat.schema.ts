@@ -20,6 +20,9 @@ export class Chat extends Document {
   @Prop({ type: [mongoose.Schema.Types.Mixed] })
   public banList: { id: number, endDate: Date }[];
 
+  @Prop({ type: [mongoose.Schema.Types.Mixed] })
+  public muteList: { id: number, endDate: Date }[];
+
   @Prop()
   public maxWarn: number;
 

@@ -18,3 +18,13 @@ export async function checkBanList(chat: Chat): Promise<void> {
     }
   }
 }
+
+export async function checkMuteList(chat: Chat): Promise<void> {
+  for (const obj of chat.muteList) {
+    if (moment().diff(moment(obj.endDate), 'minutes') > 0) {
+      chat.muteList = chat.muteList.filter((u) => u.id !== obj.id);
+      chat.markModified('muteList');
+      await chat.save();
+    }
+  }
+}

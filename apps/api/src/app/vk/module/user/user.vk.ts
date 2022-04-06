@@ -399,3 +399,73 @@ export async function clearWarnList(req: RequestMessageVkModel) {
     req.msgObject.send(`Список пользователей с предом очищен`).catch(console.error);
   }
 }
+
+export async function mute(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 2) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nМут [пользователь] [кол-во часов]');
+    }
+    let currentUser: User = await UserModule.findOne({ peerId: req.msgObject.senderId, chatId: req.msgObject.peerId });
+    if (!currentUser) {
+      currentUser = await createUser(req.msgObject.senderId, req);
+    }
+    const resource = await getResolveResource(req.text[0]);
+    if (!resource || !['user', 'group'].includes(resource.type)) {
+      return errorSend(req.msgObject, 'Первый параметр неверный');
+    }
+    if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 1 || Number(req.text[1]) > 96) {
+      return errorSend(req.msgObject, 'Второй аргумент не верный (1-96 часов)');
+    }
+    const user: User = await UserModule.findOne({ peerId: resource.id, chatId: req.msgObject.peerId });
+    if (await isOwnerMember(resource.id, req.msgObject.peerId)) {
+      return errorSend(req.msgObject, 'Нельзя выдать мут создателю беседы');
+    }
+    if (user && currentUser.status <= user.status && !await isOwnerMember(currentUser.peerId, req.msgObject.peerId)) {
+      return errorSend(req.msgObject, 'Нет прав для мута');
+    }
+    let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
+    if (!chat) {
+      chat = await createChat(req.msgObject.peerId);
+    }
+    if (!chat.muteList) {
+      chat.muteList = [];
+    }
+    if (chat.muteList.findIndex((u) => u.id === resource.id) !== -1) {
+      return errorSend(req.msgObject, `Пользователь ${await stringifyMention(resource.id)} уже в муте`);
+    }
+    chat.muteList.push({
+      id: resource.id,
+      endDate: moment().add(Number(req.text[1]), 'hours').toDate()
+    });
+    chat.markModified('muteList');
+    await chat.save();
+    req.msgObject.send(`Пользователь ${await stringifyMention(resource.id)} получает мут на ${Number(req.text[1])} ч.`).catch(console.error);
+  }
+}
+
+export async function muteMinus(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nМут- [пользователь]');
+    }
+    const resource = await getResolveResource(req.text[0]);
+    if (!resource || !['user', 'group'].includes(resource.type)) {
+      return errorSend(req.msgObject, 'Первый параметр неверный');
+    }
+    let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
+    if (!chat) {
+      chat = await createChat(req.msgObject.peerId);
+    }
+    if (!chat.muteList) {
+      chat.muteList = [];
+    }
+    if (chat.muteList.findIndex((u) => u.id === resource.id) !== -1) {
+      chat.muteList = chat.muteList.filter((u) => u.id !== resource.id);
+      chat.markModified('muteList');
+      await chat.save();
+      req.msgObject.send(`Пользователю ${await stringifyMention(resource.id)} сняли мут`).catch(console.error);
+    } else {
+      await errorSend(req.msgObject, `У пользователя ${await stringifyMention(resource.id)} нет мута`);
+    }
+  }
+}

@@ -1,12 +1,12 @@
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
 import { errorSend } from "@bot-sadvers/api/vk/core/utils/error.utils.vk";
-import { checkBanList, createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
+import { checkBanList, checkMuteList, createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
 import {
   autoKickList,
   banList,
-  clearBanList,
+  clearBanList, clearMuteList,
   getGreetings,
-  getRules,
+  getRules, muteList,
   setGreetings, setMaxWarn,
   setRules,
   updateAll
@@ -22,7 +22,7 @@ import {
   getStatuses,
   getUser,
   getUserMe,
-  kick,
+  kick, mute, muteMinus,
   setIcon,
   setIconMe,
   setNick,
@@ -64,10 +64,20 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.warn, func: warn },
   { command: CommandVkEnum.warnMinus, func: warnMinus },
   { command: CommandVkEnum.warnList, func: warnList },
-  { command: CommandVkEnum.clearWarnList, func: clearWarnList }
+  { command: CommandVkEnum.clearWarnList, func: clearWarnList },
+  { command: CommandVkEnum.mute, func: mute },
+  { command: CommandVkEnum.muteMinus, func: muteMinus },
+  { command: CommandVkEnum.muteList, func: muteList },
+  { command: CommandVkEnum.clearMuteList, func: clearMuteList }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {
+  const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
+  await checkMuteList(chat);
+  if (chat.muteList.findIndex((u) => u.id === message.senderId) !== -1) {
+    await vk.api.messages.delete({ cmids: message.conversationMessageId, delete_for_all: true, peer_id: message.peerId }).catch(console.error);
+    return;
+  }
   const request: RequestMessageVkModel = new RequestMessageVkModel();
   for (const command of commands) {
     if (message.text?.toLowerCase().startsWith(command.command) && (!message.text[command.command.length] || message.text[command.command.length] === ' ')) {

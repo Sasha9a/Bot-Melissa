@@ -27,5 +27,9 @@ export enum CommandVkEnum {
   warn = 'пред',
   warnMinus = 'снять пред',
   warnList = 'преды',
-  clearWarnList = 'очистить преды'
+  clearWarnList = 'очистить преды',
+  mute = 'мут',
+  muteMinus = 'мут-',
+  muteList = 'муты',
+  clearMuteList = 'очистить муты'
 }

@@ -41,7 +41,10 @@ export async function updateAll(req: RequestMessageVkModel) {
         CommandVkEnum.setMaxWarn,
         CommandVkEnum.warn,
         CommandVkEnum.warnMinus,
-        CommandVkEnum.clearWarnList
+        CommandVkEnum.clearWarnList,
+        CommandVkEnum.mute,
+        CommandVkEnum.muteMinus,
+        CommandVkEnum.clearMuteList
       ];
       for (const comm of commandArray) {
         const command: Command = await CommandModule.findOne({ chatId: req.msgObject.peerId, command: comm });
@@ -180,5 +183,35 @@ export async function setMaxWarn(req: RequestMessageVkModel) {
     chat.maxWarn = Number(req.text[0]);
     await chat.save();
     req.msgObject.send(`Установлено максимальное количество предов: ${chat.maxWarn}`).catch(console.error);
+  }
+}
+
+export async function muteList(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
+    if (!chat) {
+      chat = await createChat(req.msgObject.peerId);
+    }
+    if (chat.muteList?.length) {
+      let result = 'Список пользователей в муте:';
+      for (const obj of chat.muteList) {
+        result = result.concat(`\n${await stringifyMention(obj.id)} (до ${moment(obj.endDate).format('DD.MM.YYYY HH:mm')})`);
+      }
+      req.msgObject.send(result).catch(console.error);
+    } else {
+      req.msgObject.send(`Список мута пустой`).catch(console.error);
+    }
+  }
+}
+
+export async function clearMuteList(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
+    if (!chat) {
+      chat = await createChat(req.msgObject.peerId);
+    }
+    chat.muteList = [];
+    await chat.save();
+    req.msgObject.send(`Муты очищены`).catch(console.error);
   }
 }
