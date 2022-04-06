@@ -7,13 +7,13 @@ import {
   clearBanList,
   getGreetings,
   getRules,
-  setGreetings,
+  setGreetings, setMaxWarn,
   setRules,
   updateAll
 } from "@bot-sadvers/api/vk/module/chat/chat.vk";
 import { accessCheck } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { getCommandsStatus, setCommandStatus, setNameStatus } from "@bot-sadvers/api/vk/module/status/status.vk";
-import { stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
+import { isOwnerMember, stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
 import {
   autoKick,
   autoKickMinus,
@@ -59,7 +59,8 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.ban, func: ban },
   { command: CommandVkEnum.banMinus, func: banMinus },
   { command: CommandVkEnum.banList, func: banList },
-  { command: CommandVkEnum.clearBanList, func: clearBanList }
+  { command: CommandVkEnum.clearBanList, func: clearBanList },
+  { command: CommandVkEnum.setMaxWarn, func: setMaxWarn }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {
@@ -106,5 +107,11 @@ export async function inviteUser(message: MessageContext<ContextDefaultState>) {
       }
       await message.send(result).catch(console.error);
     }
+  }
+}
+
+export async function kickUser(message: MessageContext<ContextDefaultState>) {
+  if (!await isOwnerMember(message.eventMemberId, message.peerId)) {
+    await vk.api.messages.removeChatUser({ chat_id: message.peerId - 2000000000, member_id: message.eventMemberId, user_id: message.eventMemberId }).catch(console.error);
   }
 }

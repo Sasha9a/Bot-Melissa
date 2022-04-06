@@ -160,3 +160,21 @@ export async function clearBanList(req: RequestMessageVkModel) {
     req.msgObject.send(`Банлист очищен`).catch(console.error);
   }
 }
+
+export async function setMaxWarn(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nУстановить пред [количество]');
+    }
+    if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 1 || Number(req.text[0]) > 10) {
+      return errorSend(req.msgObject, 'Первый аргумент не верный (1-10)');
+    }
+    let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
+    if (!chat) {
+      chat = await createChat(req.msgObject.peerId);
+    }
+    chat.maxWarn = Number(req.text[0]);
+    await chat.save();
+    req.msgObject.send(`Установлено максимальное количество предов: ${chat.maxWarn}`).catch(console.error);
+  }
+}

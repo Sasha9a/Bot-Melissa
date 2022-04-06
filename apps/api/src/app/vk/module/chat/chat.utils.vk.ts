@@ -3,7 +3,8 @@ import * as moment from "moment-timezone";
 
 export async function createChat(chatId: number): Promise<Chat> {
   const chat: Chat = new ChatModule(<Partial<Chat>>{
-    chatId: chatId
+    chatId: chatId,
+    maxWarn: 3
   });
   return await chat.save();
 }

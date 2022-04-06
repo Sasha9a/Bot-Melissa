@@ -22,6 +22,9 @@ export class User extends Document {
   @Prop()
   public icon: string;
 
+  @Prop({ default: 0 })
+  public warn: number;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
