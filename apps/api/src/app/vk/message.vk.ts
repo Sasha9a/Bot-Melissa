@@ -1,12 +1,24 @@
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
 import { errorSend } from "@bot-sadvers/api/vk/core/utils/error.utils.vk";
-import { createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
-import { autoKickList, getGreetings, getRules, setGreetings, setRules, updateAll } from "@bot-sadvers/api/vk/module/chat/chat.vk";
+import { checkBanList, createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
+import {
+  autoKickList,
+  banList,
+  clearBanList,
+  getGreetings,
+  getRules,
+  setGreetings,
+  setRules,
+  updateAll
+} from "@bot-sadvers/api/vk/module/chat/chat.vk";
 import { accessCheck } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { getCommandsStatus, setCommandStatus, setNameStatus } from "@bot-sadvers/api/vk/module/status/status.vk";
 import { stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
 import {
-  autoKick, autoKickMinus,
+  autoKick,
+  autoKickMinus,
+  ban,
+  banMinus,
   getStatuses,
   getUser,
   getUserMe,
@@ -43,7 +55,11 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.kick, func: kick },
   { command: CommandVkEnum.autoKick, func: autoKick },
   { command: CommandVkEnum.autoKickMinus, func: autoKickMinus },
-  { command: CommandVkEnum.autoKickList, func: autoKickList }
+  { command: CommandVkEnum.autoKickList, func: autoKickList },
+  { command: CommandVkEnum.ban, func: ban },
+  { command: CommandVkEnum.banMinus, func: banMinus },
+  { command: CommandVkEnum.banList, func: banList },
+  { command: CommandVkEnum.clearBanList, func: clearBanList }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {
@@ -72,9 +88,15 @@ export async function inviteUser(message: MessageContext<ContextDefaultState>) {
     if (!chat) {
       await createChat(message.peerId);
     }
-    if (chat.autoKickList.findIndex((id) => id === message.eventMemberId) !== -1) {
-      await vk.api.messages.removeChatUser({ chat_id: message.peerId - 2000000000, member_id: message.eventMemberId, user_id: message.eventMemberId });
+    await checkBanList(chat);
+    if (chat.autoKickList && chat.autoKickList.findIndex((id) => id === message.eventMemberId) !== -1) {
+      await vk.api.messages.removeChatUser({ chat_id: message.peerId - 2000000000, member_id: message.eventMemberId, user_id: message.eventMemberId }).catch(console.error);
       await message.send(`Пользователь ${await stringifyMention(message.eventMemberId)} находится в списке автокика`).catch(console.error);
+      return;
+    }
+    if (chat.banList && chat.banList.findIndex((u) => u.id === message.eventMemberId) !== -1) {
+      await vk.api.messages.removeChatUser({ chat_id: message.peerId - 2000000000, member_id: message.eventMemberId, user_id: message.eventMemberId }).catch(console.error);
+      await message.send(`Пользователь ${await stringifyMention(message.eventMemberId)} находится в списке банлиста`).catch(console.error);
       return;
     }
     if (chat.greetings) {

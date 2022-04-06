@@ -6,8 +6,8 @@ import { vk } from "@bot-sadvers/api/vk/vk";
 import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
-import { resolveResource } from "vk-io";
-import { createUser, isOwnerMember, parseMention, stringifyMention, templateGetUser } from "./user.utils.vk";
+import { createUser, getResolveResource, isOwnerMember, parseMention, stringifyMention, templateGetUser } from "./user.utils.vk";
+import * as moment from "moment-timezone";
 
 export async function setNickMe(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
@@ -162,7 +162,7 @@ export async function kick(req: RequestMessageVkModel) {
     if (currentUser.status <= user.status && !await isOwnerMember(currentUser.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нет прав для кика');
     }
-    await vk.api.messages.removeChatUser({ chat_id: req.msgObject.peerId - 2000000000, member_id: user.peerId });
+    await vk.api.messages.removeChatUser({ chat_id: req.msgObject.peerId - 2000000000, member_id: user.peerId }).catch(console.error);
     req.msgObject.send(`${await stringifyMention(user.peerId)} исключен из беседы`).catch(console.error);
   }
 }
@@ -176,10 +176,7 @@ export async function autoKick(req: RequestMessageVkModel) {
     if (!currentUser) {
       currentUser = await createUser(req.msgObject.senderId, req);
     }
-    const resource = await resolveResource({
-      api: vk.api,
-      resource: req.text[0]
-    }).catch(console.error);
+    const resource = await getResolveResource(req.text[0]);
     if (!resource || !['user', 'group'].includes(resource.type)) {
       return errorSend(req.msgObject, 'Первый параметр неверный');
     }
@@ -190,7 +187,7 @@ export async function autoKick(req: RequestMessageVkModel) {
     if (user && currentUser.status <= user.status && !await isOwnerMember(currentUser.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нет прав для автокика');
     }
-    await vk.api.messages.removeChatUser({ chat_id: req.msgObject.peerId - 2000000000, member_id: resource.id, user_id: resource.id });
+    await vk.api.messages.removeChatUser({ chat_id: req.msgObject.peerId - 2000000000, member_id: resource.id, user_id: resource.id }).catch(console.error);
     let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
     if (!chat) {
       chat = await createChat(req.msgObject.peerId);
@@ -198,9 +195,12 @@ export async function autoKick(req: RequestMessageVkModel) {
     if (!chat.autoKickList) {
       chat.autoKickList = [];
     }
+    if (chat.autoKickList.findIndex((u) => u === resource.id) !== -1) {
+      return errorSend(req.msgObject, `Пользователь ${await stringifyMention(resource.id)} уже в автокике`);
+    }
     chat.autoKickList.push(resource.id);
     await chat.save();
-    req.msgObject.send(`${await stringifyMention(resource.id)} добавлен в автокик`).catch(console.error);
+    req.msgObject.send(`Пользователь ${await stringifyMention(resource.id)} добавлен в автокик`).catch(console.error);
   }
 }
 
@@ -209,10 +209,7 @@ export async function autoKickMinus(req: RequestMessageVkModel) {
     if (req.text.length !== 1) {
       return errorSend(req.msgObject, 'Не все параметры введены\nАвтокик- [пользователь]');
     }
-    const resource = await resolveResource({
-      api: vk.api,
-      resource: req.text[0]
-    }).catch(console.error);
+    const resource = await getResolveResource(req.text[0]);
     if (!resource || !['user', 'group'].includes(resource.type)) {
       return errorSend(req.msgObject, 'Первый параметр неверный');
     }
@@ -226,9 +223,80 @@ export async function autoKickMinus(req: RequestMessageVkModel) {
     if (chat.autoKickList.findIndex((id) => id === resource.id) !== -1) {
       chat.autoKickList = chat.autoKickList.filter((id) => id !== resource.id);
       await chat.save();
-      req.msgObject.send(`${await stringifyMention(resource.id)} удален из автокика`).catch(console.error);
+      req.msgObject.send(`Пользователь ${await stringifyMention(resource.id)} удален из автокика`).catch(console.error);
     } else {
       await errorSend(req.msgObject, `Пользователь ${await stringifyMention(resource.id)} не находится в списке автокика`);
+    }
+  }
+}
+
+export async function ban(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 2) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nБан [пользователь] [кол-во дней]');
+    }
+    let currentUser: User = await UserModule.findOne({ peerId: req.msgObject.senderId, chatId: req.msgObject.peerId });
+    if (!currentUser) {
+      currentUser = await createUser(req.msgObject.senderId, req);
+    }
+    const resource = await getResolveResource(req.text[0]);
+    if (!resource || !['user', 'group'].includes(resource.type)) {
+      return errorSend(req.msgObject, 'Первый параметр неверный');
+    }
+    if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 1 || Number(req.text[1]) > 90) {
+      return errorSend(req.msgObject, 'Второй аргумент не верный (1-90 дней)');
+    }
+    const user: User = await UserModule.findOne({ peerId: resource.id, chatId: req.msgObject.peerId });
+    if (await isOwnerMember(resource.id, req.msgObject.peerId)) {
+      return errorSend(req.msgObject, 'Нельзя кикнуть создателя беседы');
+    }
+    if (user && currentUser.status <= user.status && !await isOwnerMember(currentUser.peerId, req.msgObject.peerId)) {
+      return errorSend(req.msgObject, 'Нет прав для бана');
+    }
+    await vk.api.messages.removeChatUser({ chat_id: req.msgObject.peerId - 2000000000, member_id: resource.id, user_id: resource.id }).catch(console.error);
+    let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
+    if (!chat) {
+      chat = await createChat(req.msgObject.peerId);
+    }
+    if (!chat.banList) {
+      chat.banList = [];
+    }
+    if (chat.banList.findIndex((u) => u.id === resource.id) !== -1) {
+      return errorSend(req.msgObject, `Пользователь ${await stringifyMention(resource.id)} уже в банлисте`);
+    }
+    chat.banList.push({
+      id: resource.id,
+      endDate: moment().add(Number(req.text[1]), 'days').toDate()
+    });
+    chat.markModified('banList');
+    await chat.save();
+    req.msgObject.send(`Пользователь ${await stringifyMention(resource.id)} добавлен в банлист на ${Number(req.text[1])} дн.`).catch(console.error);
+  }
+}
+
+export async function banMinus(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nБан- [пользователь]');
+    }
+    const resource = await getResolveResource(req.text[0]);
+    if (!resource || !['user', 'group'].includes(resource.type)) {
+      return errorSend(req.msgObject, 'Первый параметр неверный');
+    }
+    let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
+    if (!chat) {
+      chat = await createChat(req.msgObject.peerId);
+    }
+    if (!chat.banList) {
+      chat.banList = [];
+    }
+    if (chat.banList.findIndex((u) => u.id === resource.id) !== -1) {
+      chat.banList = chat.banList.filter((u) => u.id !== resource.id);
+      chat.markModified('banList');
+      await chat.save();
+      req.msgObject.send(`Пользователь ${await stringifyMention(resource.id)} удален из банлиста`).catch(console.error);
+    } else {
+      await errorSend(req.msgObject, `Пользователь ${await stringifyMention(resource.id)} не находится в списке банлиста`);
     }
   }
 }

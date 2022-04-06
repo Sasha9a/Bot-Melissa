@@ -18,5 +18,9 @@ export enum CommandVkEnum {
   kick = 'кик',
   autoKick = 'автокик',
   autoKickMinus = 'автокик-',
-  autoKickList = 'автокики'
+  autoKickList = 'автокики',
+  ban = 'бан',
+  banMinus = 'бан-',
+  banList = 'баны',
+  clearBanList = 'очистить баны'
 }

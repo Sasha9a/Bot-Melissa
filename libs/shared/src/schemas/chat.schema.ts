@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, model } from "mongoose";
+import * as mongoose from 'mongoose';
 
 @Schema({ versionKey: false })
 export class Chat extends Document {
@@ -15,6 +16,9 @@ export class Chat extends Document {
 
   @Prop()
   public autoKickList: number[];
+
+  @Prop({ type: [mongoose.Schema.Types.Mixed] })
+  public banList: { id: number, endDate: Date }[];
 
 }
 

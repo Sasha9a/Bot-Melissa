@@ -3,6 +3,7 @@ import { vk } from "@bot-sadvers/api/vk/vk";
 import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 import * as moment from "moment-timezone";
+import { IResolvedOwnerResource, IResolvedTargetResource, resolveResource } from "vk-io";
 
 export async function createUser(peerId: number, req: RequestMessageVkModel): Promise<User> {
   const user: User = new UserModule({
@@ -35,14 +36,14 @@ export function parseMention(mention: string): { id: number, name: string } {
 export async function isOwnerMember(peerId: number, chatId: number): Promise<boolean> {
   const members = await vk.api.messages.getConversationMembers({ peer_id: chatId });
   const user = members.items.find((member) => member.member_id === peerId);
-  return user.is_owner as boolean;
+  return user?.is_owner as boolean;
 }
 
 export async function templateGetUser(user: User): Promise<string> {
   const status: Status = await StatusModule.findOne({ chatId: user.chatId, status: user?.status });
   let result = `Участник ${await stringifyMention(user.peerId)}:`;
   if (user?.joinDate) {
-    result = result.concat(`\nВ беседе c ${moment(user.joinDate).format('DD.MM.YYYY HH:mm ')} (${moment().diff(user.joinDate, 'days')} дн.)`);
+    result = result.concat(`\nВ беседе c ${moment(user.joinDate).format('DD.MM.YYYY HH:mm')} (${moment().diff(user.joinDate, 'days')} дн.)`);
   } else {
     result = result.concat(`\nВ беседе c -`);
   }
@@ -54,4 +55,11 @@ export async function templateGetUser(user: User): Promise<string> {
     result = result.concat(`\nСтатус: ${user?.status || 0}`);
   }
   return result;
+}
+
+export async function getResolveResource(text: string): Promise<void | IResolvedTargetResource | IResolvedOwnerResource> {
+  return await resolveResource({
+    api: vk.api,
+    resource: text
+  }).catch(console.error);
 }

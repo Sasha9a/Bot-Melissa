@@ -1,7 +1,7 @@
 import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
 import { errorSend } from "@bot-sadvers/api/vk/core/utils/error.utils.vk";
-import { createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
+import { checkBanList, createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
 import { createCommand } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { createUser, isOwnerMember, stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
 import { vk } from "@bot-sadvers/api/vk/vk";
@@ -9,6 +9,7 @@ import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import { Command, CommandModule } from "@bot-sadvers/shared/schemas/command.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
+import * as moment from "moment-timezone";
 
 export async function updateAll(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
@@ -28,7 +29,16 @@ export async function updateAll(req: RequestMessageVkModel) {
         }
         await user.save();
       }
-      const commandArray = [CommandVkEnum.setCommandStatus, CommandVkEnum.updateAll];
+      const commandArray = [
+        CommandVkEnum.setCommandStatus,
+        CommandVkEnum.updateAll,
+        CommandVkEnum.kick,
+        CommandVkEnum.autoKick,
+        CommandVkEnum.autoKickMinus,
+        CommandVkEnum.ban,
+        CommandVkEnum.banMinus,
+        CommandVkEnum.clearBanList
+      ];
       for (const comm of commandArray) {
         const command: Command = await CommandModule.findOne({ chatId: req.msgObject.peerId, command: comm });
         if (!command) {
@@ -117,5 +127,36 @@ export async function autoKickList(req: RequestMessageVkModel) {
     } else {
       req.msgObject.send(`Список автокика пустой`).catch(console.error);
     }
+  }
+}
+
+export async function banList(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
+    if (!chat) {
+      chat = await createChat(req.msgObject.peerId);
+    }
+    await checkBanList(chat);
+    if (chat.banList?.length) {
+      let result = 'Список пользователей в банлисте:';
+      for (const obj of chat.banList) {
+        result = result.concat(`\n${await stringifyMention(obj.id)} (до ${moment(obj.endDate).format('DD.MM.YYYY HH:mm')})`);
+      }
+      req.msgObject.send(result).catch(console.error);
+    } else {
+      req.msgObject.send(`Список банлиста пустой`).catch(console.error);
+    }
+  }
+}
+
+export async function clearBanList(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
+    if (!chat) {
+      chat = await createChat(req.msgObject.peerId);
+    }
+    chat.banList = [];
+    await chat.save();
+    req.msgObject.send(`Банлист очищен`).catch(console.error);
   }
 }
