@@ -18,7 +18,7 @@ import {
   autoKick,
   autoKickMinus,
   ban,
-  banMinus, clearWarnList,
+  banMinus, clearWarnList, convene,
   getStatuses,
   getUser,
   getUserMe,
@@ -32,6 +32,7 @@ import {
 import { vk } from "@bot-sadvers/api/vk/vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
+import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 import { ContextDefaultState, MessageContext } from "vk-io";
 import { environment } from "../../environments/environment";
 
@@ -68,7 +69,8 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.mute, func: mute },
   { command: CommandVkEnum.muteMinus, func: muteMinus },
   { command: CommandVkEnum.muteList, func: muteList },
-  { command: CommandVkEnum.clearMuteList, func: clearMuteList }
+  { command: CommandVkEnum.clearMuteList, func: clearMuteList },
+  { command: CommandVkEnum.convene, func: convene }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {
@@ -113,6 +115,15 @@ export async function inviteUser(message: MessageContext<ContextDefaultState>) {
       await vk.api.messages.removeChatUser({ chat_id: message.peerId - 2000000000, member_id: message.eventMemberId, user_id: message.eventMemberId }).catch(console.error);
       await message.send(`Пользователь ${await stringifyMention(message.eventMemberId)} находится в списке банлиста`).catch(console.error);
       return;
+    }
+    let user: User = await UserModule.findOne({ peerId: message.eventMemberId, chatId: message.peerId });
+    if (!user) {
+      user = new UserModule({
+        peerId: message.eventMemberId,
+        chatId: message.peerId,
+        status: 0
+      });
+      return await user.save();
     }
     if (chat.greetings) {
       let result = `${await stringifyMention(message.eventMemberId)}, ${chat.greetings}`;

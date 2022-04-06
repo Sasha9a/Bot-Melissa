@@ -6,6 +6,7 @@ import { vk } from "@bot-sadvers/api/vk/vk";
 import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
+import { MessagesConversationMember, UsersUserFull } from "vk-io/lib/api/schemas/objects";
 import { createUser, getResolveResource, isOwnerMember, parseMention, stringifyMention, templateGetUser } from "./user.utils.vk";
 import * as moment from "moment-timezone";
 
@@ -467,5 +468,65 @@ export async function muteMinus(req: RequestMessageVkModel) {
     } else {
       await errorSend(req.msgObject, `У пользователя ${await stringifyMention(resource.id)} нет мута`);
     }
+  }
+}
+
+export async function convene(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nСозвать [параметр]');
+    }
+    const members = await vk.api.messages.getConversationMembers({ peer_id: req.msgObject.peerId });
+    let membersList: { id: number, item: MessagesConversationMember, profile: UsersUserFull }[] = [];
+    for (const member of members.items) {
+      membersList.push({
+        id: member.member_id,
+        item: member,
+        profile: members.profiles.find((profile) => profile.id === member.member_id)
+      });
+    }
+    membersList = membersList.filter((m) => m.id !== req.msgObject.senderId && m.profile);
+    let result = '';
+    switch (req.text[0]) {
+      case 'всех': {
+        for (let i = 0; i != membersList.length; i++) {
+          result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
+        }
+        break;
+      }
+      case 'онлайн': {
+        membersList = membersList.filter((m) => m.profile.online);
+        for (let i = 0; i != membersList.length; i++) {
+          result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
+        }
+        break;
+      }
+      case 'оффлайн': {
+        membersList = membersList.filter((m) => !m.profile.online);
+        for (let i = 0; i != membersList.length; i++) {
+          result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
+        }
+        break;
+      }
+      case 'девочек': {
+        membersList = membersList.filter((m) => m.profile.sex === 1);
+        for (let i = 0; i != membersList.length; i++) {
+          result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
+        }
+        break;
+      }
+      case 'пацанов': {
+        membersList = membersList.filter((m) => m.profile.sex === 2);
+        for (let i = 0; i != membersList.length; i++) {
+          result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
+        }
+        break;
+      }
+      default: {
+        result = 'Нет такого параметра';
+        break;
+      }
+    }
+    req.msgObject.send(result).catch(console.error);
   }
 }
