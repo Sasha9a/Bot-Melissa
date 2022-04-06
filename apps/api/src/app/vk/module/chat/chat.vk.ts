@@ -37,7 +37,11 @@ export async function updateAll(req: RequestMessageVkModel) {
         CommandVkEnum.autoKickMinus,
         CommandVkEnum.ban,
         CommandVkEnum.banMinus,
-        CommandVkEnum.clearBanList
+        CommandVkEnum.clearBanList,
+        CommandVkEnum.setMaxWarn,
+        CommandVkEnum.warn,
+        CommandVkEnum.warnMinus,
+        CommandVkEnum.clearWarnList
       ];
       for (const comm of commandArray) {
         const command: Command = await CommandModule.findOne({ chatId: req.msgObject.peerId, command: comm });

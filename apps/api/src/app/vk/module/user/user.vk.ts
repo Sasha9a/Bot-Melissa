@@ -300,3 +300,102 @@ export async function banMinus(req: RequestMessageVkModel) {
     }
   }
 }
+
+export async function warn(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 2) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nПред [пользователь] [кол-во]');
+    }
+    let currentUser: User = await UserModule.findOne({ peerId: req.msgObject.senderId, chatId: req.msgObject.peerId });
+    if (!currentUser) {
+      currentUser = await createUser(req.msgObject.senderId, req);
+    }
+    const resource = await getResolveResource(req.text[0]);
+    if (!resource || !['user', 'group'].includes(resource.type)) {
+      return errorSend(req.msgObject, 'Первый параметр неверный');
+    }
+    let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
+    if (!chat) {
+      chat = await createChat(req.msgObject.peerId);
+    }
+    if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 1) {
+      return errorSend(req.msgObject, `Второй аргумент не верный`);
+    }
+    const user: User = await UserModule.findOne({ peerId: resource.id, chatId: req.msgObject.peerId });
+    if (await isOwnerMember(resource.id, req.msgObject.peerId)) {
+      return errorSend(req.msgObject, 'Нельзя наказать создателя беседы');
+    }
+    if (user && currentUser.status <= user.status && !await isOwnerMember(currentUser.peerId, req.msgObject.peerId)) {
+      return errorSend(req.msgObject, 'Нет прав для наказания');
+    }
+    if (user.warn + Number(req.text[1]) >= chat.maxWarn) {
+      user.warn = 0;
+      await user.save();
+      await vk.api.messages.removeChatUser({ chat_id: req.msgObject.peerId - 2000000000, member_id: resource.id, user_id: resource.id }).catch(console.error);
+      req.msgObject.send(`Пользователь ${await stringifyMention(resource.id)} был кикнут по достижению лимита кол-ва предупреждений`).catch(console.error);
+    } else {
+      user.warn += Number(req.text[1]);
+      await user.save();
+      req.msgObject.send(`Пользователь ${await stringifyMention(resource.id)} получает предупреждение в количестве: ${Number(req.text[1])} шт.`).catch(console.error);
+    }
+  }
+}
+
+export async function warnMinus(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 2) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nСнять пред [пользователь] [кол-во]');
+    }
+    let currentUser: User = await UserModule.findOne({ peerId: req.msgObject.senderId, chatId: req.msgObject.peerId });
+    if (!currentUser) {
+      currentUser = await createUser(req.msgObject.senderId, req);
+    }
+    const resource = await getResolveResource(req.text[0]);
+    if (!resource || !['user', 'group'].includes(resource.type)) {
+      return errorSend(req.msgObject, 'Первый параметр неверный');
+    }
+    if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 1) {
+      return errorSend(req.msgObject, `Второй аргумент не верный`);
+    }
+    const user: User = await UserModule.findOne({ peerId: resource.id, chatId: req.msgObject.peerId });
+    if (user && currentUser.status <= user.status && !await isOwnerMember(currentUser.peerId, req.msgObject.peerId)) {
+      return errorSend(req.msgObject, 'Нет прав для снятия наказания');
+    }
+    if (user.warn === 0) {
+      return errorSend(req.msgObject, `У пользователя ${await stringifyMention(resource.id)} нет предупреждений`);
+    }
+    if (user.warn - Number(req.text[1]) < 0) {
+      user.warn = 0;
+    } else {
+      user.warn -= Number(req.text[1]);
+    }
+    await user.save();
+    req.msgObject.send(`Пользователю ${await stringifyMention(resource.id)} сняли предупреждение в количестве: ${Number(req.text[1])} шт.`).catch(console.error);
+  }
+}
+
+export async function warnList(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    let result = 'Список пользователей с предом:';
+    const users: User[] = await UserModule.find({ warn: { $ne: 0 }, chatId: req.msgObject.peerId });
+    if (!users.length) {
+      req.msgObject.send(`Список пользователей с предом пустой`).catch(console.error);
+    } else {
+      let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
+      if (!chat) {
+        chat = await createChat(req.msgObject.peerId);
+      }
+      for (const user of users) {
+        result = result.concat(`\n${await stringifyMention(user.peerId)}: ${user.warn} / ${chat.maxWarn}`);
+      }
+      req.msgObject.send(result).catch(console.error);
+    }
+  }
+}
+
+export async function clearWarnList(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    await UserModule.updateMany({ warn: { $ne: 0 }, chatId: req.msgObject.peerId }, { warn: 0 });
+    req.msgObject.send(`Список пользователей с предом очищен`).catch(console.error);
+  }
+}

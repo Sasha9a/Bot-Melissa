@@ -23,5 +23,9 @@ export enum CommandVkEnum {
   banMinus = 'бан-',
   banList = 'баны',
   clearBanList = 'очистить баны',
-  setMaxWarn = 'установить пред'
+  setMaxWarn = 'установить пред',
+  warn = 'пред',
+  warnMinus = 'снять пред',
+  warnList = 'преды',
+  clearWarnList = 'очистить преды'
 }

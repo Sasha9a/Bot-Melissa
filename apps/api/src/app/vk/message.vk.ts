@@ -18,7 +18,7 @@ import {
   autoKick,
   autoKickMinus,
   ban,
-  banMinus,
+  banMinus, clearWarnList,
   getStatuses,
   getUser,
   getUserMe,
@@ -27,7 +27,7 @@ import {
   setIconMe,
   setNick,
   setNickMe,
-  setStatus
+  setStatus, warn, warnList, warnMinus
 } from "@bot-sadvers/api/vk/module/user/user.vk";
 import { vk } from "@bot-sadvers/api/vk/vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
@@ -60,7 +60,11 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.banMinus, func: banMinus },
   { command: CommandVkEnum.banList, func: banList },
   { command: CommandVkEnum.clearBanList, func: clearBanList },
-  { command: CommandVkEnum.setMaxWarn, func: setMaxWarn }
+  { command: CommandVkEnum.setMaxWarn, func: setMaxWarn },
+  { command: CommandVkEnum.warn, func: warn },
+  { command: CommandVkEnum.warnMinus, func: warnMinus },
+  { command: CommandVkEnum.warnList, func: warnList },
+  { command: CommandVkEnum.clearWarnList, func: clearWarnList }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {

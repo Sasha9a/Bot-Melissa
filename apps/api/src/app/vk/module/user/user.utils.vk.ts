@@ -1,5 +1,7 @@
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
+import { createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
 import { vk } from "@bot-sadvers/api/vk/vk";
+import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 import * as moment from "moment-timezone";
@@ -41,6 +43,10 @@ export async function isOwnerMember(peerId: number, chatId: number): Promise<boo
 
 export async function templateGetUser(user: User): Promise<string> {
   const status: Status = await StatusModule.findOne({ chatId: user.chatId, status: user?.status });
+  let chat: Chat = await ChatModule.findOne({ chatId: user.chatId });
+  if (!chat) {
+    chat = await createChat(user.chatId);
+  }
   let result = `Участник ${await stringifyMention(user.peerId)}:`;
   if (user?.joinDate) {
     result = result.concat(`\nВ беседе c ${moment(user.joinDate).format('DD.MM.YYYY HH:mm')} (${moment().diff(user.joinDate, 'days')} дн.)`);
@@ -54,6 +60,7 @@ export async function templateGetUser(user: User): Promise<string> {
   } else {
     result = result.concat(`\nСтатус: ${user?.status || 0}`);
   }
+  result = result.concat(`\nПредупреждения: ${user?.warn || 0} / ${chat.maxWarn}`);
   return result;
 }
 
