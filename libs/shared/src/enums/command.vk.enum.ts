@@ -32,5 +32,8 @@ export enum CommandVkEnum {
   muteMinus = 'мут-',
   muteList = 'муты',
   clearMuteList = 'очистить муты',
-  convene = 'созвать'
+  convene = 'созвать',
+  setMarriages = 'установить браки',
+  marriage = 'брак',
+  marriages = 'браки'
 }

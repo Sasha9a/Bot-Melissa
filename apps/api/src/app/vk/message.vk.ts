@@ -7,10 +7,11 @@ import {
   clearBanList, clearMuteList,
   getGreetings,
   getRules, muteList,
-  setGreetings, setMaxWarn,
+  setGreetings, setMarriages, setMaxWarn,
   setRules,
   updateAll
 } from "@bot-sadvers/api/vk/module/chat/chat.vk";
+import { marriage, marriages } from "@bot-sadvers/api/vk/module/marriage/marriage.vk";
 import { accessCheck } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { getCommandsStatus, setCommandStatus, setNameStatus } from "@bot-sadvers/api/vk/module/status/status.vk";
 import { isOwnerMember, stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
@@ -32,9 +33,12 @@ import {
 import { vk } from "@bot-sadvers/api/vk/vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
+import { Marriage, MarriageModule } from "@bot-sadvers/shared/schemas/marriage.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
-import { ContextDefaultState, MessageContext } from "vk-io";
+import { ContextDefaultState, Keyboard, MessageContext, MessageEventContext } from "vk-io";
+import { MessagesConversationMember, UsersUserFull } from "vk-io/lib/api/schemas/objects";
 import { environment } from "../../environments/environment";
+import * as moment from "moment-timezone";
 
 const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => Promise<any> }[] = [
   { command: CommandVkEnum.updateAll, func: updateAll },
@@ -70,7 +74,10 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.muteMinus, func: muteMinus },
   { command: CommandVkEnum.muteList, func: muteList },
   { command: CommandVkEnum.clearMuteList, func: clearMuteList },
-  { command: CommandVkEnum.convene, func: convene }
+  { command: CommandVkEnum.convene, func: convene },
+  { command: CommandVkEnum.setMarriages, func: setMarriages },
+  { command: CommandVkEnum.marriage, func: marriage },
+  { command: CommandVkEnum.marriages, func: marriages }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {
@@ -138,5 +145,118 @@ export async function inviteUser(message: MessageContext<ContextDefaultState>) {
 export async function kickUser(message: MessageContext<ContextDefaultState>) {
   if (!await isOwnerMember(message.eventMemberId, message.peerId)) {
     await vk.api.messages.removeChatUser({ chat_id: message.peerId - 2000000000, member_id: message.eventMemberId, user_id: message.eventMemberId }).catch(console.error);
+  }
+}
+
+export async function messageEvent(message: MessageEventContext) {
+  if (message.eventPayload?.command == CommandVkEnum.marriage) {
+    if (message.eventPayload?.userId === message.userId) {
+      const marriage: Marriage = await MarriageModule.findOne({ chatId: message.peerId, $or: [ {userFirstId: message.eventPayload?.userFromId, userSecondId: message.eventPayload?.userId}, {userFirstId: message.eventPayload?.userId, userSecondId: message.eventPayload?.userFromId} ] });
+      if (message.eventPayload?.status === 0 && !marriage?.isConfirmed) {
+        await MarriageModule.deleteOne({ chatId: message.peerId, $or: [ {userFirstId: message.eventPayload?.userFromId, userSecondId: message.eventPayload?.userId}, {userFirstId: message.eventPayload?.userId, userSecondId: message.eventPayload?.userFromId} ] });
+        await vk.api.messages.send({
+          peer_id: message.peerId,
+          random_id: moment().unix(),
+          message: `${await stringifyMention(message.eventPayload?.userFromId)} увы, но ${await stringifyMention(message.userId)} отказался(-ась) от предложения вступление в брак`
+        }).catch(console.error);
+      }
+      if (message.eventPayload?.status === 1 && marriage?.status === 0 && !marriage?.isConfirmed) {
+        await MarriageModule.updateOne({ chatId: message.peerId, userFirstId: message.eventPayload?.userFromId, userSecondId: message.eventPayload?.userId }, { status: 1 });
+        let result = '';
+
+        const members = await vk.api.messages.getConversationMembers({ peer_id: message.peerId });
+        let membersList: { id: number, item: MessagesConversationMember, profile: UsersUserFull }[] = [];
+        for (const member of members.items) {
+          membersList.push({
+            id: member.member_id,
+            item: member,
+            profile: members.profiles.find((profile) => profile.id === member.member_id)
+          });
+        }
+        membersList = membersList.filter((m) => m.id !== message.userId && m.profile);
+        for (let i = 0; i != membersList.length; i++) {
+          result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
+        }
+        result = result.concat(` Уважаемые пользователи беседы.`);
+        result = result.concat(`\nСегодня — самое прекрасное и незабываемое событие в вашей жизни. Создание семьи – это начало доброго союза двух любящих сердец.`);
+        result = result.concat(`\nС этого дня вы пойдёте по жизни рука об руку, вместе переживая и радость счастливых дней, и огорчения.`);
+        result = result.concat(`\nКак трудно в нашем сложном и огромном мире встретить человека, который будет любить, и ценить, принимать твои недостатки и восхищаться достоинствами, который всегда поймет и простит. Судьба подарила вам счастье, встретив такого человека!`);
+        result = result.concat(`\nСоблюдая торжественный обряд перед регистрацией брака, в присутствии ваших родных и друзей, прошу вас ответить ${await stringifyMention(message.eventPayload?.userFromId)}, является ли ваше желание стать супругами свободным, взаимным и искренним, готовы ли вы разделить это счастье и эту ответственность, поддерживать и любить друг друга и в горе и в радости?`);
+
+        const builder = Keyboard.builder()
+          .callbackButton({
+            label: 'Да',
+            payload: {
+              command: CommandVkEnum.marriage,
+              status: 2,
+              userId: message.eventPayload?.userFromId,
+              userFromId: message.userId
+            },
+            color: Keyboard.POSITIVE_COLOR
+          }).callbackButton({
+            label: 'Нет',
+            payload: {
+              command: CommandVkEnum.marriage,
+              status: 0,
+              userId: message.eventPayload?.userFromId,
+              userFromId: message.userId
+            },
+            color: Keyboard.NEGATIVE_COLOR
+          });
+
+        await vk.api.messages.send({
+          peer_id: message.peerId,
+          random_id: moment().unix(),
+          message: result,
+          keyboard: builder.inline()
+        }).catch(console.error);
+      }
+      if (message.eventPayload?.status === 2 && marriage?.status === 1 && !marriage?.isConfirmed) {
+        await MarriageModule.updateOne({ chatId: message.peerId, userFirstId: message.eventPayload?.userId, userSecondId: message.eventPayload?.userFromId }, { status: 2 });
+        const result = `Ваш ответ ${await stringifyMention(message.eventPayload?.userFromId)}?`;
+
+        const builder = Keyboard.builder()
+          .callbackButton({
+            label: 'Да',
+            payload: {
+              command: CommandVkEnum.marriage,
+              status: 3,
+              userId: message.eventPayload?.userFromId,
+              userFromId: message.userId
+            },
+            color: Keyboard.POSITIVE_COLOR
+          }).callbackButton({
+            label: 'Нет',
+            payload: {
+              command: CommandVkEnum.marriage,
+              status: 0,
+              userId: message.eventPayload?.userFromId,
+              userFromId: message.userId
+            },
+            color: Keyboard.NEGATIVE_COLOR
+          });
+
+        await vk.api.messages.send({
+          peer_id: message.peerId,
+          random_id: moment().unix(),
+          message: result,
+          keyboard: builder.inline()
+        }).catch(console.error);
+      }
+      if (message.eventPayload?.status === 3 && marriage?.status === 2 && !marriage?.isConfirmed) {
+        await MarriageModule.updateOne({ chatId: message.peerId, userFirstId: message.eventPayload?.userFromId, userSecondId: message.eventPayload?.userId }, { status: 0, isConfirmed: true, marriageDate: moment().toDate() });
+        let result = '';
+
+        result = result.concat(`С вашего взаимного согласия, доброй воле и в соответствии с Семейным кодексом Беседы Ваш брак регистрируется.`);
+        result = result.concat(`\nВ знак верности и непрерывности брачного союза, в знак любви и преданности друг другу прошу вас обменяться обручальными кольцами, которые с давних времен символизируют святость брака, и пусть они напоминают вам, что ваши сердца всегда будут рядом.`);
+        result = result.concat(`\nС этого момента вы стали еще ближе друг другу, вы стали настоящей семьёй. Любите, берегите и уважайте друг друга!`);
+
+        await vk.api.messages.send({
+          peer_id: message.peerId,
+          random_id: moment().unix(),
+          message: result
+        }).catch(console.error);
+      }
+    }
   }
 }

@@ -1,3 +1,4 @@
+import { TypeMarriagesEnum } from "@bot-sadvers/shared/enums/type.marriages.enum";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, model } from "mongoose";
 import * as mongoose from 'mongoose';
@@ -25,6 +26,9 @@ export class Chat extends Document {
 
   @Prop()
   public maxWarn: number;
+
+  @Prop({ type: Number, default: 0 })
+  public typeMarriages: TypeMarriagesEnum;
 
 }
 

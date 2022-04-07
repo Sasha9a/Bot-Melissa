@@ -6,6 +6,7 @@ import { createCommand } from "@bot-sadvers/api/vk/module/status/status.utils.vk
 import { createUser, isOwnerMember, stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
 import { vk } from "@bot-sadvers/api/vk/vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
+import { TypeMarriagesEnum } from "@bot-sadvers/shared/enums/type.marriages.enum";
 import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import { Command, CommandModule } from "@bot-sadvers/shared/schemas/command.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
@@ -44,7 +45,8 @@ export async function updateAll(req: RequestMessageVkModel) {
         CommandVkEnum.clearWarnList,
         CommandVkEnum.mute,
         CommandVkEnum.muteMinus,
-        CommandVkEnum.clearMuteList
+        CommandVkEnum.clearMuteList,
+        CommandVkEnum.setMarriages
       ];
       for (const comm of commandArray) {
         const command: Command = await CommandModule.findOne({ chatId: req.msgObject.peerId, command: comm });
@@ -213,5 +215,43 @@ export async function clearMuteList(req: RequestMessageVkModel) {
     chat.muteList = [];
     await chat.save();
     req.msgObject.send(`Муты очищены`).catch(console.error);
+  }
+}
+
+export async function setMarriages(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nУстановить браки [номер параметра]\n' +
+        '0 - Традиционные\n1 - Многоженство\n2 - Однополые\n3 - Многоженство и однополые');
+    }
+    if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 0 || Number(req.text[0]) > 3) {
+      return errorSend(req.msgObject, 'Первый аргумент не верный (0-3)');
+    }
+    let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
+    if (!chat) {
+      chat = await createChat(req.msgObject.peerId);
+    }
+    chat.typeMarriages = Number(req.text[0]);
+    await chat.save();
+    let textTypeMarriages;
+    switch (Number(req.text[0])) {
+      case TypeMarriagesEnum.traditional: {
+        textTypeMarriages = 'Традиционные';
+        break;
+      }
+      case TypeMarriagesEnum.polygamy: {
+        textTypeMarriages = 'Многоженство';
+        break;
+      }
+      case TypeMarriagesEnum.sameSex: {
+        textTypeMarriages = 'Однополые';
+        break;
+      }
+      case TypeMarriagesEnum.polygamyAndSameSex: {
+        textTypeMarriages = 'Многоженство и однополые';
+        break;
+      }
+    }
+    req.msgObject.send(`В беседе установлена идеология браков: ${textTypeMarriages}`).catch(console.error);
   }
 }
