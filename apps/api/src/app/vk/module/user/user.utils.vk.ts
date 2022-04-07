@@ -2,6 +2,7 @@ import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.m
 import { createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
 import { vk } from "@bot-sadvers/api/vk/vk";
 import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
+import { Marriage, MarriageModule } from "@bot-sadvers/shared/schemas/marriage.schema";
 import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 import * as moment from "moment-timezone";
@@ -47,6 +48,7 @@ export async function templateGetUser(user: User): Promise<string> {
   if (!chat) {
     chat = await createChat(user.chatId);
   }
+  const marriages: Marriage[] = await MarriageModule.find({ chatId: chat.chatId, $or: [ { userFirstId: user.peerId }, { userSecondId: user.peerId } ] });
   let result = `Участник ${await stringifyMention(user.peerId)}:`;
   if (user?.joinDate) {
     result = result.concat(`\nВ беседе c ${moment(user.joinDate).format('DD.MM.YYYY HH:mm')} (${moment().diff(user.joinDate, 'days')} дн.)`);
@@ -61,6 +63,12 @@ export async function templateGetUser(user: User): Promise<string> {
     result = result.concat(`\nСтатус: ${user?.status || 0}`);
   }
   result = result.concat(`\nПредупреждения: ${user?.warn || 0} / ${chat.maxWarn}`);
+  if (marriages?.length) {
+    result = result.concat(`\nВ браке с `);
+    for (let i = 0; i != marriages.length; i++) {
+      result = result.concat(`${await stringifyMention(marriages[i].userFirstId === user.peerId ? marriages[i].userSecondId : marriages[i].userFirstId)}${i !== marriages.length - 1 ? ', ' : ''}`);
+    }
+  }
   return result;
 }
 
