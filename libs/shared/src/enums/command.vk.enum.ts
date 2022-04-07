@@ -35,5 +35,6 @@ export enum CommandVkEnum {
   convene = 'созвать',
   setMarriages = 'установить браки',
   marriage = 'брак',
-  marriages = 'браки'
+  marriages = 'браки',
+  divorce = 'развод'
 }

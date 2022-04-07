@@ -11,7 +11,7 @@ import {
   setRules,
   updateAll
 } from "@bot-sadvers/api/vk/module/chat/chat.vk";
-import { marriage, marriages } from "@bot-sadvers/api/vk/module/marriage/marriage.vk";
+import { divorce, marriage, marriages } from "@bot-sadvers/api/vk/module/marriage/marriage.vk";
 import { accessCheck } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { getCommandsStatus, setCommandStatus, setNameStatus } from "@bot-sadvers/api/vk/module/status/status.vk";
 import { isOwnerMember, stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
@@ -77,7 +77,8 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.convene, func: convene },
   { command: CommandVkEnum.setMarriages, func: setMarriages },
   { command: CommandVkEnum.marriage, func: marriage },
-  { command: CommandVkEnum.marriages, func: marriages }
+  { command: CommandVkEnum.marriages, func: marriages },
+  { command: CommandVkEnum.divorce, func: divorce }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {

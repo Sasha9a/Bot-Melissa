@@ -97,3 +97,20 @@ export async function marriages(req: RequestMessageVkModel) {
     req.msgObject.send(result).catch(console.error);
   }
 }
+
+export async function divorce(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nРазвод [пользователь]');
+    }
+    const user: User = await UserModule.findOne({ peerId: parseMention(req.text[0])?.id, chatId: req.msgObject.peerId });
+    if (!user) {
+      return errorSend(req.msgObject, 'Нет такого пользователя');
+    }
+    if (!await MarriageModule.findOne({ chatId: req.msgObject.peerId, isConfirmed: true, $or: [ { userFirstId: req.msgObject.senderId, userSecondId: user.peerId }, { userFirstId: user.peerId, userSecondId: req.msgObject.senderId } ] })) {
+      return errorSend(req.msgObject, 'Вы не в браке');
+    }
+    await MarriageModule.deleteOne({ chatId: req.msgObject.peerId, $or: [ {userFirstId: req.msgObject.senderId, userSecondId: user.peerId}, {userFirstId: user.peerId, userSecondId: req.msgObject.senderId} ] });
+    req.msgObject.send(`${await stringifyMention(req.msgObject.senderId)} и ${await stringifyMention(user.peerId)} развелись`).catch(console.error);
+  }
+}
