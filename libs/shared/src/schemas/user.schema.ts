@@ -25,6 +25,9 @@ export class User extends Document {
   @Prop({ default: 0 })
   public warn: number;
 
+  @Prop()
+  public lastActivityDate: Date;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

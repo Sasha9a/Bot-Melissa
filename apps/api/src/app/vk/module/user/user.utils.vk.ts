@@ -26,16 +26,6 @@ export async function stringifyMention(userId: number): Promise<string> {
   }
 }
 
-export function parseMention(mention: string): { id: number, name: string } {
-  if (mention.split('|').length !== 2) {
-    return null;
-  }
-  return {
-    id: Number(mention.substring(3).split('|')[0]),
-    name: mention.split('|')[1].slice(0, -1)
-  };
-}
-
 export async function isOwnerMember(peerId: number, chatId: number): Promise<boolean> {
   const members = await vk.api.messages.getConversationMembers({ peer_id: chatId });
   const user = members.items.find((member) => member.member_id === peerId);
@@ -87,4 +77,8 @@ export async function getFullUserInfo(user: string, message: MessageContext<Cont
     return null;
   }
   return userResult;
+}
+
+export async function updateLastActivityUser(message: MessageContext<ContextDefaultState>) {
+  await UserModule.updateOne({ peerId: message.senderId, chatId: message.peerId }, { lastActivityDate: moment().toDate() });
 }
