@@ -1,14 +1,12 @@
 import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
 import { errorSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
-import { createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
-import { parseMention, stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
+import { getFullUserInfo, stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
 import { vk } from "@bot-sadvers/api/vk/vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { TypeMarriagesEnum } from "@bot-sadvers/shared/enums/type.marriages.enum";
-import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import { Marriage, MarriageModule } from "@bot-sadvers/shared/schemas/marriage.schema";
-import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
+import { User } from "@bot-sadvers/shared/schemas/user.schema";
 import { Keyboard } from "vk-io";
 import { MessagesConversationMember, UsersUserFull } from "vk-io/lib/api/schemas/objects";
 import * as moment from "moment-timezone";
@@ -18,18 +16,14 @@ export async function marriage(req: RequestMessageVkModel) {
     if (req.text.length !== 1) {
       return errorSend(req.msgObject, 'Не все параметры введены\nБрак [пользователь]');
     }
-    let chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
-    if (!chat) {
-      chat = await createChat(req.msgObject.peerId);
-    }
-    const user: User = await UserModule.findOne({ peerId: parseMention(req.text[0])?.id, chatId: req.msgObject.peerId });
+    const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
-      return errorSend(req.msgObject, 'Нет такого пользователя');
+      return ;
     }
     if (await MarriageModule.findOne({ chatId: req.msgObject.peerId, $or: [ { userFirstId: req.msgObject.senderId, userSecondId: user.peerId }, { userFirstId: user.peerId, userSecondId: req.msgObject.senderId } ] })) {
       return errorSend(req.msgObject, 'Вы уже находитесь в браке с этим пользователем или на стадии оформления');
     }
-    if (chat.typeMarriages === TypeMarriagesEnum.traditional || chat.typeMarriages === TypeMarriagesEnum.sameSex) {
+    if (req.chat.typeMarriages === TypeMarriagesEnum.traditional || req.chat.typeMarriages === TypeMarriagesEnum.sameSex) {
       const marriageCurrentUser: Marriage = await MarriageModule.findOne({ chatId: req.msgObject.peerId, $or: [ { userFirstId: req.msgObject.senderId }, { userSecondId: req.msgObject.senderId } ] });
       if (marriageCurrentUser) {
         return errorSend(req.msgObject, 'Вы уже находитесь в браке или на стадии оформления');
@@ -48,7 +42,7 @@ export async function marriage(req: RequestMessageVkModel) {
         profile: members.profiles.find((profile) => profile.id === member.member_id)
       });
     }
-    if (chat.typeMarriages === TypeMarriagesEnum.traditional || chat.typeMarriages === TypeMarriagesEnum.polygamy) {
+    if (req.chat.typeMarriages === TypeMarriagesEnum.traditional || req.chat.typeMarriages === TypeMarriagesEnum.polygamy) {
       const firstUser = membersList.find((u) => u.id === req.msgObject.senderId);
       const secondUser = membersList.find((u) => u.id === user.peerId);
       if (firstUser?.profile?.sex === secondUser?.profile?.sex) {
@@ -103,9 +97,9 @@ export async function divorce(req: RequestMessageVkModel) {
     if (req.text.length !== 1) {
       return errorSend(req.msgObject, 'Не все параметры введены\nРазвод [пользователь]');
     }
-    const user: User = await UserModule.findOne({ peerId: parseMention(req.text[0])?.id, chatId: req.msgObject.peerId });
+    const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
-      return errorSend(req.msgObject, 'Нет такого пользователя');
+      return ;
     }
     if (!await MarriageModule.findOne({ chatId: req.msgObject.peerId, isConfirmed: true, $or: [ { userFirstId: req.msgObject.senderId, userSecondId: user.peerId }, { userFirstId: user.peerId, userSecondId: req.msgObject.senderId } ] })) {
       return errorSend(req.msgObject, 'Вы не в браке');
