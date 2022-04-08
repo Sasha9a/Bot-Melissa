@@ -396,7 +396,7 @@ export async function muteMinus(req: RequestMessageVkModel) {
 
 export async function convene(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length !== 1) {
+    if (req.text.length < 1) {
       return errorSend(req.msgObject, 'Не все параметры введены\nСозвать [параметр]');
     }
     const members = await vk.api.messages.getConversationMembers({ peer_id: req.msgObject.peerId });
@@ -410,45 +410,45 @@ export async function convene(req: RequestMessageVkModel) {
     }
     membersList = membersList.filter((m) => m.id !== req.msgObject.senderId && m.profile);
     let result = '';
-    switch (req.text[0]) {
-      case 'всех': {
-        for (let i = 0; i != membersList.length; i++) {
-          result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
-        }
-        break;
+    if (req.fullText === 'всех') {
+      for (let i = 0; i != membersList.length; i++) {
+        result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
       }
-      case 'онлайн': {
-        membersList = membersList.filter((m) => m.profile.online);
-        for (let i = 0; i != membersList.length; i++) {
-          result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
-        }
-        break;
+    } else if (req.fullText === 'онлайн') {
+      membersList = membersList.filter((m) => m.profile.online);
+      for (let i = 0; i != membersList.length; i++) {
+        result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
       }
-      case 'оффлайн': {
-        membersList = membersList.filter((m) => !m.profile.online);
-        for (let i = 0; i != membersList.length; i++) {
-          result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
-        }
-        break;
+    } else if (req.fullText === 'оффлайн') {
+      membersList = membersList.filter((m) => !m.profile.online);
+      for (let i = 0; i != membersList.length; i++) {
+        result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
       }
-      case 'девочек': {
-        membersList = membersList.filter((m) => m.profile.sex === 1);
-        for (let i = 0; i != membersList.length; i++) {
-          result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
-        }
-        break;
+    } else if (req.fullText === 'ж') {
+      membersList = membersList.filter((m) => m.profile.sex === 1);
+      for (let i = 0; i != membersList.length; i++) {
+        result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
       }
-      case 'пацанов': {
-        membersList = membersList.filter((m) => m.profile.sex === 2);
-        for (let i = 0; i != membersList.length; i++) {
-          result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
-        }
-        break;
+    } else if (req.fullText === 'м') {
+      membersList = membersList.filter((m) => m.profile.sex === 2);
+      for (let i = 0; i != membersList.length; i++) {
+        result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
       }
-      default: {
-        result = 'Нет такого параметра';
-        break;
+    } else if (!isNaN(Number(req.text[0])) && Number(req.text[0]) >= 0 && Number(req.text[0]) <= 10 && req.text[1] === 'статус') {
+      const users: User[] = await UserModule.find({ status: Number(req.text[0]), chatId: req.msgObject.peerId });
+      membersList = membersList.filter((m) => users.some((u) => m.id === u.peerId));
+      for (let i = 0; i != membersList.length; i++) {
+        result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
       }
+    } else if (/^([0-9]|10)-([0-9]|10)$/.test(req.text[0]) && req.text[1] === 'статусы'
+      && Number(req.text[0].split('-')[0]) < Number(req.text[0].split('-')[1])) {
+      const users: User[] = await UserModule.find({ status: { $gte: Number(req.text[0].split('-')[0]), $lte: Number(req.text[0].split('-')[1]) }, chatId: req.msgObject.peerId });
+      membersList = membersList.filter((m) => users.some((u) => m.id === u.peerId));
+      for (let i = 0; i != membersList.length; i++) {
+        result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
+      }
+    } else {
+      result = 'Нет такого параметра';
     }
     req.msgObject.send(result).catch(console.error);
   }
