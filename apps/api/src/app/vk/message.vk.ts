@@ -23,7 +23,7 @@ import {
   getStatuses,
   getUser,
   getUserMe,
-  kick, mute, muteMinus,
+  kick, mute, muteMinus, probability,
   setIcon,
   setIconMe,
   setNick,
@@ -78,7 +78,8 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.setMarriages, func: setMarriages },
   { command: CommandVkEnum.marriage, func: marriage },
   { command: CommandVkEnum.marriages, func: marriages },
-  { command: CommandVkEnum.divorce, func: divorce }
+  { command: CommandVkEnum.divorce, func: divorce },
+  { command: CommandVkEnum.probability, func: probability }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {

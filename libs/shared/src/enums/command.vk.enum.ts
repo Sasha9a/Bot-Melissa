@@ -36,5 +36,6 @@ export enum CommandVkEnum {
   setMarriages = 'установить браки',
   marriage = 'брак',
   marriages = 'браки',
-  divorce = 'развод'
+  divorce = 'развод',
+  probability = 'вероятность'
 }

@@ -122,7 +122,7 @@ export async function getStatuses(req: RequestMessageVkModel) {
         }
       }
     }
-    req.msgObject.send(result).catch(console.error);
+    req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
 }
 
@@ -325,7 +325,7 @@ export async function warnList(req: RequestMessageVkModel) {
       for (const user of users) {
         result = result.concat(`\n${await stringifyMention(user.peerId)}: ${user.warn} / ${req.chat.maxWarn}`);
       }
-      req.msgObject.send(result).catch(console.error);
+      req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
     }
   }
 }
@@ -451,5 +451,14 @@ export async function convene(req: RequestMessageVkModel) {
       result = 'Нет такого параметра';
     }
     req.msgObject.send(result).catch(console.error);
+  }
+}
+
+export async function probability(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length < 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nВероятность [вопрос]');
+    }
+    req.msgObject.send(`${await stringifyMention(req.user.peerId)}, вероятность составляет ${(Math.floor(Math.random() * (100 + 1)))}%`, { disable_mentions: true }).catch(console.error);
   }
 }
