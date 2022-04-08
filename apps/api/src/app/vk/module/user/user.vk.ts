@@ -481,3 +481,49 @@ export async function who(req: RequestMessageVkModel) {
     req.msgObject.send(`${await stringifyMention(req.user.peerId)}, это ${await stringifyMention(membersList[(Math.floor(Math.random() * membersList.length))].id)}`).catch(console.error);
   }
 }
+
+export async function activity(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    const members = await vk.api.messages.getConversationMembers({ peer_id: req.msgObject.peerId });
+    const users: User[] = await UserModule.find({ chatId: req.msgObject.peerId });
+    let membersList: { id: number, item: MessagesConversationMember, profile: UsersUserFull, lastActivity: Date }[] = [];
+    for (const member of members.items) {
+      membersList.push({
+        id: member.member_id,
+        item: member,
+        profile: members.profiles.find((profile) => profile.id === member.member_id),
+        lastActivity: users.find((u) => u.peerId === member.member_id)?.lastActivityDate
+      });
+    }
+    membersList = membersList.filter((m) => m.profile);
+    membersList.sort((a, b) => {
+      if (!a.lastActivity) {
+        return 1;
+      }
+      if (!b.lastActivity) {
+        return -1;
+      }
+      return moment(a.lastActivity).unix() > moment(b.lastActivity).unix() ? -1 : 1;
+    });
+    let result = 'Последний актив:';
+    for (const member of membersList) {
+      if (member.lastActivity) {
+        const days = moment().diff(moment(member.lastActivity)) / 1000 / 60 / 60 / 24;
+        const hours = moment().diff(moment(member.lastActivity)) / 1000 / 60 / 60 % 24;
+        const minutes = moment().diff(moment(member.lastActivity)) / 1000 / 60 % 60;
+        if (days >= 1) {
+          result = result.concat(`\n${await stringifyMention(member.id)} - ${days.toFixed()} дн. ${hours.toFixed()} час.`);
+        } else if (hours >= 1) {
+          result = result.concat(`\n${await stringifyMention(member.id)} - ${hours.toFixed()} час. ${minutes.toFixed()} мин.`);
+        } else if (minutes > 10) {
+          result = result.concat(`\n${await stringifyMention(member.id)} - ${minutes.toFixed()} мин.`);
+        } else {
+          result = result.concat(`\n${await stringifyMention(member.id)} - актив`);
+        }
+      } else {
+        result = result.concat(`\n${await stringifyMention(member.id)} - неактив`);
+      }
+    }
+    req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
+  }
+}

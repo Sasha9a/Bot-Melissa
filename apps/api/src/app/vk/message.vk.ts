@@ -16,6 +16,7 @@ import { accessCheck } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { getCommandsStatus, setCommandStatus, setNameStatus } from "@bot-sadvers/api/vk/module/status/status.vk";
 import { isOwnerMember, stringifyMention, updateLastActivityUser } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
 import {
+  activity,
   autoKick,
   autoKickMinus,
   ban,
@@ -80,7 +81,8 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.marriages, func: marriages },
   { command: CommandVkEnum.divorce, func: divorce },
   { command: CommandVkEnum.probability, func: probability },
-  { command: CommandVkEnum.who, func: who }
+  { command: CommandVkEnum.who, func: who },
+  { command: CommandVkEnum.activity, func: activity }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {
@@ -93,7 +95,7 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
     await vk.api.messages.delete({ cmids: message.conversationMessageId, delete_for_all: true, peer_id: message.peerId }).catch(console.error);
     return;
   }
-  updateLastActivityUser(message);
+  await updateLastActivityUser(message);
   const request: RequestMessageVkModel = new RequestMessageVkModel();
   request.chat = chat;
   for (const command of commands) {
