@@ -7,6 +7,7 @@ import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema"
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 import * as moment from "moment-timezone";
 import { ContextDefaultState, IResolvedOwnerResource, IResolvedTargetResource, MessageContext, resolveResource } from "vk-io";
+import { MessagesConversationMember, UsersUserFull } from "vk-io/lib/api/schemas/objects";
 
 export async function createUser(peerId: number, req: RequestMessageVkModel): Promise<User> {
   const user: User = new UserModule({
@@ -81,4 +82,37 @@ export async function getFullUserInfo(user: string, message: MessageContext<Cont
 
 export async function updateLastActivityUser(message: MessageContext<ContextDefaultState>) {
   await UserModule.updateOne({ peerId: message.senderId, chatId: message.peerId }, { lastActivityDate: moment().toDate() });
+}
+
+export async function autoKickInDays(chat: Chat, message: MessageContext<ContextDefaultState>) {
+  if (chat.autoKickInDays > 0 && (!chat.autoKickInDaysDate || moment().diff(moment(chat.autoKickInDaysDate)) / 1000 / 60 / 60 > 24)) {
+    chat.autoKickInDaysDate = moment().toDate();
+    await chat.save();
+
+    const members = await vk.api.messages.getConversationMembers({ peer_id: message.peerId });
+    const users: User[] = await UserModule.find({ chatId: message.peerId });
+    let membersList: { id: number, item: MessagesConversationMember, profile: UsersUserFull, user: User }[] = [];
+    for (const member of members.items) {
+      membersList.push({
+        id: member.member_id,
+        item: member,
+        profile: members.profiles.find((profile) => profile.id === member.member_id),
+        user: users.find((u) => u.peerId === member.member_id)
+      });
+    }
+    membersList = membersList.filter((m) => m.profile);
+    for (const member of membersList) {
+      if (member.user.lastActivityDate) {
+        const days = moment().diff(moment(member.user.lastActivityDate)) / 1000 / 60 / 60 / 24;
+        if (Number(days.toFixed()) >= chat.autoKickInDays) {
+          await vk.api.messages.removeChatUser({ chat_id: message.peerId - 2000000000, member_id: member.id, user_id: member.id }).catch(console.error);
+        }
+      } else {
+        const days = moment().diff(moment(member.user.joinDate)) / 1000 / 60 / 60 / 24;
+        if (Number(days.toFixed()) >= chat.autoKickInDays) {
+          await vk.api.messages.removeChatUser({ chat_id: message.peerId - 2000000000, member_id: member.id, user_id: member.id }).catch(console.error);
+        }
+      }
+    }
+  }
 }

@@ -14,7 +14,7 @@ import {
 import { divorce, marriage, marriages } from "@bot-sadvers/api/vk/module/marriage/marriage.vk";
 import { accessCheck } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { getCommandsStatus, setCommandStatus, setNameStatus } from "@bot-sadvers/api/vk/module/status/status.vk";
-import { isOwnerMember, stringifyMention, updateLastActivityUser } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
+import { autoKickInDays, isOwnerMember, stringifyMention, updateLastActivityUser } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
 import {
   activity,
   autoKick,
@@ -97,6 +97,7 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
     return;
   }
   await updateLastActivityUser(message);
+  await autoKickInDays(chat, message);
   const request: RequestMessageVkModel = new RequestMessageVkModel();
   request.chat = chat;
   for (const command of commands) {
