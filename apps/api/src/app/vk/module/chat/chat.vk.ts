@@ -46,7 +46,8 @@ export async function updateAll(req: RequestMessageVkModel) {
         CommandVkEnum.mute,
         CommandVkEnum.muteMinus,
         CommandVkEnum.clearMuteList,
-        CommandVkEnum.setMarriages
+        CommandVkEnum.setMarriages,
+        CommandVkEnum.setAutoKickInDays
       ];
       for (const comm of commandArray) {
         const command: Command = await CommandModule.findOne({ chatId: req.msgObject.peerId, command: comm });
@@ -209,5 +210,23 @@ export async function setMarriages(req: RequestMessageVkModel) {
       }
     }
     await yesSend(req.msgObject, `В беседе установлена идеология браков: ${textTypeMarriages}`);
+  }
+}
+
+export async function setAutoKickInDays(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nУстановить автокик [кол-во дней]');
+    }
+    if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 0 || Number(req.text[0]) > 90) {
+      return errorSend(req.msgObject, 'Первый аргумент не верный (0-90)');
+    }
+    req.chat.autoKickInDays = Number(req.text[0]);
+    await req.chat.save();
+    if (Number(req.text[0]) === 0) {
+      await yesSend(req.msgObject, `Автокик отключен по активу`);
+    } else {
+      await yesSend(req.msgObject, `Автокик установлен по неактиву через ${Number(req.text[0])} дн.`);
+    }
   }
 }

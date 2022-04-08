@@ -39,5 +39,6 @@ export enum CommandVkEnum {
   divorce = 'развод',
   probability = 'вопрос вероятность',
   who = 'вопрос кто',
-  activity = 'актив'
+  activity = 'актив',
+  setAutoKickInDays = 'установить автокик'
 }

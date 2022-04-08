@@ -6,7 +6,7 @@ import {
   banList,
   clearBanList, clearMuteList,
   getGreetings,
-  getRules, muteList,
+  getRules, muteList, setAutoKickInDays,
   setGreetings, setMarriages, setMaxWarn,
   setRules,
   updateAll
@@ -82,7 +82,8 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.divorce, func: divorce },
   { command: CommandVkEnum.probability, func: probability },
   { command: CommandVkEnum.who, func: who },
-  { command: CommandVkEnum.activity, func: activity }
+  { command: CommandVkEnum.activity, func: activity },
+  { command: CommandVkEnum.setAutoKickInDays, func: setAutoKickInDays }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {

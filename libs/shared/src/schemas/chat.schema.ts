@@ -30,6 +30,9 @@ export class Chat extends Document {
   @Prop({ type: Number, default: 0 })
   public typeMarriages: TypeMarriagesEnum;
 
+  @Prop({ default: 0 })
+  public autoKickInDays: number;
+
 }
 
 export const ChatSchema = SchemaFactory.createForClass(Chat);
