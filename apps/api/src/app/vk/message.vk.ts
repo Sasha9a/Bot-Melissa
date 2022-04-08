@@ -28,7 +28,7 @@ import {
   setIconMe,
   setNick,
   setNickMe,
-  setStatus, warn, warnList, warnMinus
+  setStatus, warn, warnList, warnMinus, who
 } from "@bot-sadvers/api/vk/module/user/user.vk";
 import { vk } from "@bot-sadvers/api/vk/vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
@@ -79,7 +79,8 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.marriage, func: marriage },
   { command: CommandVkEnum.marriages, func: marriages },
   { command: CommandVkEnum.divorce, func: divorce },
-  { command: CommandVkEnum.probability, func: probability }
+  { command: CommandVkEnum.probability, func: probability },
+  { command: CommandVkEnum.who, func: who }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {

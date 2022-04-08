@@ -457,8 +457,27 @@ export async function convene(req: RequestMessageVkModel) {
 export async function probability(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nВероятность [вопрос]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nВопрос вероятность [вопрос]');
     }
     req.msgObject.send(`${await stringifyMention(req.user.peerId)}, вероятность составляет ${(Math.floor(Math.random() * (100 + 1)))}%`, { disable_mentions: true }).catch(console.error);
+  }
+}
+
+export async function who(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length < 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nВопрос кто [вопрос]');
+    }
+    const members = await vk.api.messages.getConversationMembers({ peer_id: req.msgObject.peerId });
+    let membersList: { id: number, item: MessagesConversationMember, profile: UsersUserFull }[] = [];
+    for (const member of members.items) {
+      membersList.push({
+        id: member.member_id,
+        item: member,
+        profile: members.profiles.find((profile) => profile.id === member.member_id)
+      });
+    }
+    membersList = membersList.filter((m) => m.profile);
+    req.msgObject.send(`${await stringifyMention(req.user.peerId)}, это ${await stringifyMention(membersList[(Math.floor(Math.random() * membersList.length))].id)}`).catch(console.error);
   }
 }
