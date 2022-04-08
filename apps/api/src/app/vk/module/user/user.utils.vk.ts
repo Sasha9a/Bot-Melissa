@@ -1,12 +1,12 @@
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
-import { createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
+import { errorSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
 import { vk } from "@bot-sadvers/api/vk/vk";
-import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
+import { Chat } from "@bot-sadvers/shared/schemas/chat.schema";
 import { Marriage, MarriageModule } from "@bot-sadvers/shared/schemas/marriage.schema";
 import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 import * as moment from "moment-timezone";
-import { IResolvedOwnerResource, IResolvedTargetResource, resolveResource } from "vk-io";
+import { ContextDefaultState, IResolvedOwnerResource, IResolvedTargetResource, MessageContext, resolveResource } from "vk-io";
 
 export async function createUser(peerId: number, req: RequestMessageVkModel): Promise<User> {
   const user: User = new UserModule({
@@ -42,12 +42,8 @@ export async function isOwnerMember(peerId: number, chatId: number): Promise<boo
   return user?.is_owner as boolean;
 }
 
-export async function templateGetUser(user: User): Promise<string> {
+export async function templateGetUser(user: User, chat: Chat): Promise<string> {
   const status: Status = await StatusModule.findOne({ chatId: user.chatId, status: user?.status });
-  let chat: Chat = await ChatModule.findOne({ chatId: user.chatId });
-  if (!chat) {
-    chat = await createChat(user.chatId);
-  }
   const marriages: Marriage[] = await MarriageModule.find({ chatId: chat.chatId, $or: [ { userFirstId: user.peerId }, { userSecondId: user.peerId } ] });
   let result = `Участник ${await stringifyMention(user.peerId)}:`;
   if (user?.joinDate) {
@@ -77,4 +73,18 @@ export async function getResolveResource(text: string): Promise<void | IResolved
     api: vk.api,
     resource: text
   }).catch(console.error);
+}
+
+export async function getFullUserInfo(user: string, message: MessageContext<ContextDefaultState>): Promise<User> {
+  const resource = await getResolveResource(user);
+  if (!resource || !['user', 'group'].includes(resource.type)) {
+    await errorSend(message, 'Пользователь не верно указан');
+    return null;
+  }
+  const userResult: User = await UserModule.findOne({ peerId: resource.id, chatId: message.peerId });
+  if (!userResult) {
+    await errorSend(message, 'Нет такого пользователя');
+    return null;
+  }
+  return userResult;
 }

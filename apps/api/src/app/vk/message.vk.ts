@@ -1,6 +1,6 @@
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
-import { errorSend } from "@bot-sadvers/api/vk/core/utils/error.utils.vk";
-import { checkBanList, checkMuteList, createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
+import { errorSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
+import { checkBanList, checkMuteList } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
 import {
   autoKickList,
   banList,
@@ -83,19 +83,28 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {
   const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
+  if (!chat) {
+    return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
+  }
   await checkMuteList(chat);
   if (chat.muteList.findIndex((u) => u.id === message.senderId) !== -1) {
     await vk.api.messages.delete({ cmids: message.conversationMessageId, delete_for_all: true, peer_id: message.peerId }).catch(console.error);
     return;
   }
   const request: RequestMessageVkModel = new RequestMessageVkModel();
+  request.chat = chat;
   for (const command of commands) {
     if (message.text?.toLowerCase().startsWith(command.command) && (!message.text[command.command.length] || message.text[command.command.length] === ' ')) {
       if (await accessCheck(message.senderId, command.command, message.peerId)) {
+        const currentUser: User = await UserModule.findOne({ peerId: message.senderId, chatId: message.peerId });
+        if (!currentUser) {
+          return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
+        }
         request.command = command.command;
         request.fullText = message.text.substring(message.text.indexOf(command.command) + command.command.length + 2);
         request.text = request.fullText.length ? request.fullText.split(' ') : [];
         request.msgObject = message;
+        request.user = currentUser;
         command.func(request).catch(console.error);
       } else {
         await errorSend(message, 'Нет доступа');
@@ -111,7 +120,7 @@ export async function inviteUser(message: MessageContext<ContextDefaultState>) {
   } else {
     const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
     if (!chat) {
-      await createChat(message.peerId);
+      return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
     }
     await checkBanList(chat);
     if (chat.autoKickList && chat.autoKickList.findIndex((id) => id === message.eventMemberId) !== -1) {

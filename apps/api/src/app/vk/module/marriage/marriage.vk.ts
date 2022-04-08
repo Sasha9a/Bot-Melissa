@@ -1,6 +1,6 @@
 import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
-import { errorSend } from "@bot-sadvers/api/vk/core/utils/error.utils.vk";
+import { errorSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
 import { createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
 import { parseMention, stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
 import { vk } from "@bot-sadvers/api/vk/vk";
