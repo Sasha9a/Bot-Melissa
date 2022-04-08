@@ -36,6 +36,9 @@ export class Chat extends Document {
   @Prop()
   public autoKickInDaysDate: Date;
 
+  @Prop({ default: true })
+  public isInvite: boolean;
+
 }
 
 export const ChatSchema = SchemaFactory.createForClass(Chat);

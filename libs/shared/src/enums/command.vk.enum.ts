@@ -41,5 +41,6 @@ export enum CommandVkEnum {
   who = 'вопрос кто',
   activity = 'актив',
   setAutoKickInDays = 'установить автокик',
-  getChat = 'чат'
+  getChat = 'чат',
+  statusChat = 'приватность беседы'
 }

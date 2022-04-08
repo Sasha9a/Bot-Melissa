@@ -8,7 +8,7 @@ import {
   getGreetings,
   getRules, muteList, setAutoKickInDays,
   setGreetings, setMarriages, setMaxWarn,
-  setRules,
+  setRules, statusChat,
   updateAll
 } from "@bot-sadvers/api/vk/module/chat/chat.vk";
 import { divorce, marriage, marriages } from "@bot-sadvers/api/vk/module/marriage/marriage.vk";
@@ -84,7 +84,8 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.who, func: who },
   { command: CommandVkEnum.activity, func: activity },
   { command: CommandVkEnum.setAutoKickInDays, func: setAutoKickInDays },
-  { command: CommandVkEnum.getChat, func: getChat }
+  { command: CommandVkEnum.getChat, func: getChat },
+  { command: CommandVkEnum.statusChat, func: statusChat }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {
@@ -131,6 +132,10 @@ export async function inviteUser(message: MessageContext<ContextDefaultState>) {
       return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
     }
     await checkBanList(chat);
+    if (!chat.isInvite && !await isOwnerMember(message.senderId, message.peerId)) {
+      await vk.api.messages.removeChatUser({ chat_id: message.peerId - 2000000000, member_id: message.eventMemberId, user_id: message.eventMemberId }).catch(console.error);
+      return ;
+    }
     if (chat.autoKickList && chat.autoKickList.findIndex((id) => id === message.eventMemberId) !== -1) {
       await vk.api.messages.removeChatUser({ chat_id: message.peerId - 2000000000, member_id: message.eventMemberId, user_id: message.eventMemberId }).catch(console.error);
       await message.send(`Пользователь ${await stringifyMention(message.eventMemberId)} находится в списке автокика`).catch(console.error);

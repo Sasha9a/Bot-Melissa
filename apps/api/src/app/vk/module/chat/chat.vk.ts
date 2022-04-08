@@ -47,7 +47,8 @@ export async function updateAll(req: RequestMessageVkModel) {
         CommandVkEnum.muteMinus,
         CommandVkEnum.clearMuteList,
         CommandVkEnum.setMarriages,
-        CommandVkEnum.setAutoKickInDays
+        CommandVkEnum.setAutoKickInDays,
+        CommandVkEnum.statusChat
       ];
       for (const comm of commandArray) {
         const command: Command = await CommandModule.findOne({ chatId: req.msgObject.peerId, command: comm });
@@ -260,6 +261,25 @@ export async function getChat(req: RequestMessageVkModel) {
     result = result.concat(`\n4. Макс. кол-во предов: ${req.chat.maxWarn || 0}`);
     result = result.concat(`\n5. Идеология браков: ${textTypeMarriages}`);
     result = result.concat(`\n6. Автокик за неактив: ${req.chat.autoKickInDays > 0 ? (req.chat.autoKickInDays + ' дн.') : 'Выключен'}`);
+    result = result.concat(`\n7. Статус беседы: ${req.chat.isInvite ? 'Открытая' : 'Закрытая'}`);
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
+  }
+}
+
+export async function statusChat(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nСтатус беседы [параметр]\n1 - Открытая\n0 - Закрытая');
+    }
+    if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 0 || Number(req.text[0]) > 1) {
+      return errorSend(req.msgObject, 'Первый аргумент не верный (0-1)');
+    }
+    req.chat.isInvite = req.text[0] === '1';
+    await req.chat.save();
+    if (Number(req.text[0]) === 0) {
+      await yesSend(req.msgObject, `Статус беседы изменен на Закрытую`);
+    } else {
+      await yesSend(req.msgObject, `Статус беседы изменен на Открытую`);
+    }
   }
 }
