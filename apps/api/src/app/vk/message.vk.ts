@@ -93,7 +93,7 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
     await vk.api.messages.delete({ cmids: message.conversationMessageId, delete_for_all: true, peer_id: message.peerId }).catch(console.error);
     return;
   }
-  await updateLastActivityUser(message);
+  updateLastActivityUser(message);
   const request: RequestMessageVkModel = new RequestMessageVkModel();
   request.chat = chat;
   for (const command of commands) {

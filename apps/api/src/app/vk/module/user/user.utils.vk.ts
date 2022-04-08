@@ -79,6 +79,6 @@ export async function getFullUserInfo(user: string, message: MessageContext<Cont
   return userResult;
 }
 
-export async function updateLastActivityUser(message: MessageContext<ContextDefaultState>) {
-  await UserModule.updateOne({ peerId: message.senderId, chatId: message.peerId }, { lastActivityDate: moment().toDate() });
+export function updateLastActivityUser(message: MessageContext<ContextDefaultState>) {
+  UserModule.updateOne({ peerId: message.senderId, chatId: message.peerId }, { lastActivityDate: moment().toDate() });
 }
