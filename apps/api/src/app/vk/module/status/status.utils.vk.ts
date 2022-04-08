@@ -1,7 +1,7 @@
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { Command, CommandModule } from "@bot-sadvers/shared/schemas/command.schema";
 import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
-import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
+import { User } from "@bot-sadvers/shared/schemas/user.schema";
 
 export async function createStatus(statusNumber: number, chatId: number): Promise<Status> {
   const status: Status = new StatusModule({
@@ -20,8 +20,7 @@ export async function createCommand(command: CommandVkEnum, status: number, chat
   return await _command.save();
 }
 
-export async function accessCheck(peerId: number, command: CommandVkEnum, chatId: number): Promise<boolean> {
-  const user: User = await UserModule.findOne({ peerId: peerId, chatId: chatId });
+export async function accessCheck(user: User, command: CommandVkEnum, chatId: number): Promise<boolean> {
   const infoCommand: Command = await CommandModule.findOne({ chatId: chatId, command: command });
   return (user?.status || 0) >= (infoCommand?.status || 0);
 }

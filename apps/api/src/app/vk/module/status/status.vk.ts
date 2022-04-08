@@ -1,6 +1,6 @@
 import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
-import { errorSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
+import { errorSend, yesSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
 import { createCommand, createStatus } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { Command, CommandModule } from "@bot-sadvers/shared/schemas/command.schema";
@@ -20,7 +20,7 @@ export async function setNameStatus(req: RequestMessageVkModel) {
     }
     status.name = req.fullText.substring(req.fullText.indexOf(req.text[1]));
     await status.save();
-    req.msgObject.send(`Установлено название статуса "${status.name}" для статуса ${Number(req.text[0])}`).catch(console.error);
+    await yesSend(req.msgObject, `Установлено название статуса "${status.name}" для статуса ${Number(req.text[0])}`);
   }
 }
 
@@ -43,7 +43,7 @@ export async function setCommandStatus(req: RequestMessageVkModel) {
       command.status = Number(req.text[0]);
       await command.save();
     }
-    req.msgObject.send(`Установлен доступ к команде "${command.command}" от статуса ${Number(req.text[0])}`).catch(console.error);
+    await yesSend(req.msgObject, `Установлен доступ к команде "${command.command}" от статуса ${Number(req.text[0])}`);
   }
 }
 
@@ -52,6 +52,9 @@ export async function getCommandsStatus(req: RequestMessageVkModel) {
     let result = 'Доступы команд:';
     const commandArray = Object.values(CommandVkEnum);
     for (const _comm of commandArray) {
+      if (_comm === CommandVkEnum.updateAll) {
+        continue;
+      }
       const command: Command = await CommandModule.findOne({ chatId: req.msgObject.peerId, command: _comm });
       result = result.concat(`\n${_comm} - (${command?.status || 0})`);
     }

@@ -83,11 +83,11 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {
   const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
-  if (!chat) {
+  if (!chat && !(message.text?.toLowerCase().startsWith(CommandVkEnum.updateAll) && (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' '))) {
     return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
   }
   await checkMuteList(chat);
-  if (chat.muteList.findIndex((u) => u.id === message.senderId) !== -1) {
+  if (chat?.muteList?.findIndex((u) => u.id === message.senderId) !== -1) {
     await vk.api.messages.delete({ cmids: message.conversationMessageId, delete_for_all: true, peer_id: message.peerId }).catch(console.error);
     return;
   }
@@ -95,11 +95,11 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
   request.chat = chat;
   for (const command of commands) {
     if (message.text?.toLowerCase().startsWith(command.command) && (!message.text[command.command.length] || message.text[command.command.length] === ' ')) {
-      if (await accessCheck(message.senderId, command.command, message.peerId)) {
-        const currentUser: User = await UserModule.findOne({ peerId: message.senderId, chatId: message.peerId });
-        if (!currentUser) {
-          return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
-        }
+      const currentUser: User = await UserModule.findOne({ peerId: message.senderId, chatId: message.peerId });
+      if (!currentUser) {
+        return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
+      }
+      if (await accessCheck(currentUser, command.command, message.peerId)) {
         request.command = command.command;
         request.fullText = message.text.substring(message.text.indexOf(command.command) + command.command.length + 2);
         request.text = request.fullText.length ? request.fullText.split(' ') : [];
