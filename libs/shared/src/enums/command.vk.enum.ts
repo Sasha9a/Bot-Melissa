@@ -40,5 +40,6 @@ export enum CommandVkEnum {
   probability = 'вопрос вероятность',
   who = 'вопрос кто',
   activity = 'актив',
-  setAutoKickInDays = 'установить автокик'
+  setAutoKickInDays = 'установить автокик',
+  getChat = 'чат'
 }

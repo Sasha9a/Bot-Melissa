@@ -4,7 +4,7 @@ import { checkBanList, checkMuteList } from "@bot-sadvers/api/vk/module/chat/cha
 import {
   autoKickList,
   banList,
-  clearBanList, clearMuteList,
+  clearBanList, clearMuteList, getChat,
   getGreetings,
   getRules, muteList, setAutoKickInDays,
   setGreetings, setMarriages, setMaxWarn,
@@ -83,7 +83,8 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.probability, func: probability },
   { command: CommandVkEnum.who, func: who },
   { command: CommandVkEnum.activity, func: activity },
-  { command: CommandVkEnum.setAutoKickInDays, func: setAutoKickInDays }
+  { command: CommandVkEnum.setAutoKickInDays, func: setAutoKickInDays },
+  { command: CommandVkEnum.getChat, func: getChat }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {

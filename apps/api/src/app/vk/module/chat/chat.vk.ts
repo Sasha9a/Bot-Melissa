@@ -230,3 +230,36 @@ export async function setAutoKickInDays(req: RequestMessageVkModel) {
     }
   }
 }
+
+export async function getChat(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    const chatInfo = await vk.api.messages.getConversationsById({ peer_ids: req.msgObject.peerId });
+    let textTypeMarriages;
+    switch (req.chat.typeMarriages) {
+      case TypeMarriagesEnum.traditional: {
+        textTypeMarriages = 'Традиционные';
+        break;
+      }
+      case TypeMarriagesEnum.polygamy: {
+        textTypeMarriages = 'Многоженство';
+        break;
+      }
+      case TypeMarriagesEnum.sameSex: {
+        textTypeMarriages = 'Однополые';
+        break;
+      }
+      case TypeMarriagesEnum.polygamyAndSameSex: {
+        textTypeMarriages = 'Многоженство и однополые';
+        break;
+      }
+    }
+    let result = 'Информация о беседе:';
+    result = result.concat(`\n1. Номер беседы: ${req.chat.chatId}`);
+    result = result.concat(`\n2. Название беседы: ${chatInfo.items[0]?.chat_settings?.title || '-'}`);
+    result = result.concat(`\n3. Владелец беседы: ${await stringifyMention(chatInfo.items[0]?.chat_settings?.owner_id)}`);
+    result = result.concat(`\n4. Макс. кол-во предов: ${req.chat.maxWarn || 0}`);
+    result = result.concat(`\n5. Идеология браков: ${textTypeMarriages}`);
+    result = result.concat(`\n6. Автокик за неактив: ${req.chat.autoKickInDays > 0 ? (req.chat.autoKickInDays + ' дн.') : 'Выключен'}`);
+    req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
+  }
+}
