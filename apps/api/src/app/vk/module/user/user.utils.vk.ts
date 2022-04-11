@@ -85,7 +85,7 @@ export async function updateLastActivityUser(message: MessageContext<ContextDefa
 }
 
 export async function autoKickInDays(chat: Chat, message: MessageContext<ContextDefaultState>) {
-  if (chat.autoKickInDays > 0 && (!chat.autoKickInDaysDate || moment().diff(moment(chat.autoKickInDaysDate)) / 1000 / 60 / 60 > 12)) {
+  if (chat && chat.autoKickInDays > 0 && (!chat.autoKickInDaysDate || moment().diff(moment(chat.autoKickInDaysDate)) / 1000 / 60 / 60 > 12)) {
     chat.autoKickInDaysDate = moment().toDate();
     await chat.save();
 

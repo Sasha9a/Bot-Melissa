@@ -95,7 +95,7 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
     return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
   }
   await checkMuteList(chat);
-  if (chat?.muteList?.findIndex((u) => u.id === message.senderId) !== -1) {
+  if (chat && chat?.muteList?.findIndex((u) => u.id === message.senderId) !== -1) {
     await vk.api.messages.delete({ cmids: message.conversationMessageId, delete_for_all: true, peer_id: message.peerId }).catch(console.error);
     return;
   }
@@ -106,7 +106,7 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
   for (const command of commands) {
     if (message.text?.toLowerCase().startsWith(command.command) && (!message.text[command.command.length] || message.text[command.command.length] === ' ')) {
       const currentUser: User = await UserModule.findOne({ peerId: message.senderId, chatId: message.peerId });
-      if (!currentUser) {
+      if (!currentUser && !(message.text?.toLowerCase().startsWith(CommandVkEnum.updateAll) && (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' '))) {
         return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
       }
       if (await accessCheck(currentUser, command.command, message.peerId)) {
