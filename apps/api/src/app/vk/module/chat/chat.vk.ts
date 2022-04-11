@@ -297,3 +297,26 @@ export async function statusChat(req: RequestMessageVkModel) {
     }
   }
 }
+
+export async function onlineList(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    const members = await vk.api.messages.getConversationMembers({ peer_id: req.msgObject.peerId });
+    const users: User[] = await UserModule.find({ chatId: req.msgObject.peerId });
+    let membersList: { id: number, item: MessagesConversationMember, profile: UsersUserFull, user: User }[] = [];
+    for (const member of members.items) {
+      membersList.push({
+        id: member.member_id,
+        item: member,
+        profile: members.profiles.find((profile) => profile.id === member.member_id),
+        user: users.find((u) => u.peerId === member.member_id)
+      });
+    }
+    membersList = membersList.filter((m) => m.profile && m.profile.online_info?.is_online);
+    let result = 'Список пользователей онлайн:';
+    for (let i = 0; i != membersList.length; i++) {
+      result = result.concat(`\n${i + 1}. ${await stringifyMention(membersList[i].id)}${membersList[i].user?.icon ? ' ' + membersList[i].user?.icon : ''}`);
+      result = result.concat(` - (${membersList[i].profile.online_info?.is_mobile ? '📱' : '🖥'})`);
+    }
+    req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
+  }
+}

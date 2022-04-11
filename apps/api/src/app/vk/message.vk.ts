@@ -6,7 +6,7 @@ import {
   banList,
   clearBanList, clearMuteList, getChat,
   getGreetings,
-  getRules, muteList, setAutoKickInDays,
+  getRules, muteList, onlineList, setAutoKickInDays,
   setGreetings, setMarriages, setMaxWarn,
   setRules, statusChat,
   updateAll
@@ -85,7 +85,8 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
   { command: CommandVkEnum.activity, func: activity },
   { command: CommandVkEnum.setAutoKickInDays, func: setAutoKickInDays },
   { command: CommandVkEnum.getChat, func: getChat },
-  { command: CommandVkEnum.statusChat, func: statusChat }
+  { command: CommandVkEnum.statusChat, func: statusChat },
+  { command: CommandVkEnum.onlineList, func: onlineList }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {
