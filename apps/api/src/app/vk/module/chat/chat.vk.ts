@@ -11,6 +11,7 @@ import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import { Command, CommandModule } from "@bot-sadvers/shared/schemas/command.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 import * as moment from "moment-timezone";
+import { MessagesConversationMember, UsersUserFull } from "vk-io/lib/api/schemas/objects";
 
 export async function updateAll(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
@@ -235,6 +236,16 @@ export async function setAutoKickInDays(req: RequestMessageVkModel) {
 export async function getChat(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     const chatInfo = await vk.api.messages.getConversationsById({ peer_ids: req.msgObject.peerId });
+    const members = await vk.api.messages.getConversationMembers({ peer_id: req.msgObject.peerId });
+    let membersList: { id: number, item: MessagesConversationMember, profile: UsersUserFull }[] = [];
+    for (const member of members.items) {
+      membersList.push({
+        id: member.member_id,
+        item: member,
+        profile: members.profiles.find((profile) => profile.id === member.member_id)
+      });
+    }
+    membersList = membersList.filter((m) => m.profile);
     let textTypeMarriages;
     switch (req.chat.typeMarriages) {
       case TypeMarriagesEnum.traditional: {
@@ -258,10 +269,13 @@ export async function getChat(req: RequestMessageVkModel) {
     result = result.concat(`\n1. Номер беседы: ${req.chat.chatId}`);
     result = result.concat(`\n2. Название беседы: ${chatInfo.items[0]?.chat_settings?.title || '-'}`);
     result = result.concat(`\n3. Владелец беседы: ${await stringifyMention(chatInfo.items[0]?.chat_settings?.owner_id)}`);
-    result = result.concat(`\n4. Макс. кол-во предов: ${req.chat.maxWarn || 0}`);
-    result = result.concat(`\n5. Идеология браков: ${textTypeMarriages}`);
-    result = result.concat(`\n6. Автокик за неактив: ${req.chat.autoKickInDays > 0 ? (req.chat.autoKickInDays + ' дн.') : 'Выключен'}`);
-    result = result.concat(`\n7. Статус беседы: ${req.chat.isInvite ? 'Открытая' : 'Закрытая'}`);
+    result = result.concat(`\n4. Кол-во участников: ${members.count}`);
+    result = result.concat(`\n5. Кол-во девушек в беседе: ${membersList.reduce((count, m) => m.profile?.sex === 1 ? count + 1 : count, 0)}`);
+    result = result.concat(`\n6. Кол-во мужчин в беседе: ${membersList.reduce((count, m) => m.profile?.sex === 2 ? count + 1 : count, 0)}`);
+    result = result.concat(`\n7. Макс. кол-во предов: ${req.chat.maxWarn || 0}`);
+    result = result.concat(`\n8. Идеология браков: ${textTypeMarriages}`);
+    result = result.concat(`\n9. Автокик за неактив: ${req.chat.autoKickInDays > 0 ? (req.chat.autoKickInDays + ' дн.') : 'Выключен'}`);
+    result = result.concat(`\n10. Статус беседы: ${req.chat.isInvite ? 'Открытая' : 'Закрытая'}`);
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
 }
