@@ -19,7 +19,7 @@ ssh -tt -i ~/.ssh/id_rsa root@45.141.78.161 << EOF
 cd Bot-Sadvers
 sudo git pull
 sudo npm install
-nx affected:build --all
+nx build api
 sudo pm2 restart Bot-Sadvers
 exit
 EOF

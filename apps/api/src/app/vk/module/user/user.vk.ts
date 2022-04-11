@@ -62,7 +62,7 @@ export async function setIcon(req: RequestMessageVkModel) {
 
 export async function getUserMe(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    req.msgObject.send(await templateGetUser(req.user, req.chat)).catch(console.error);
+    req.msgObject.send(await templateGetUser(req.user, req.chat), { disable_mentions: true }).catch(console.error);
   }
 }
 
@@ -75,7 +75,7 @@ export async function getUser(req: RequestMessageVkModel) {
     if (!user) {
       return ;
     }
-    req.msgObject.send(await templateGetUser(user, req.chat)).catch(console.error);
+    req.msgObject.send(await templateGetUser(user, req.chat), { disable_mentions: true }).catch(console.error);
   }
 }
 

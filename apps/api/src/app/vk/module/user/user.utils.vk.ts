@@ -28,14 +28,13 @@ export async function stringifyMention(userId: number): Promise<string> {
 }
 
 export async function isOwnerMember(peerId: number, chatId: number): Promise<boolean> {
-  const members = await vk.api.messages.getConversationMembers({ peer_id: chatId });
-  const user = members.items.find((member) => member.member_id === peerId);
-  return user?.is_owner as boolean;
+  const chatInfo = await vk.api.messages.getConversationsById({ peer_ids: chatId });
+  return chatInfo.items[0]?.chat_settings?.owner_id === peerId;
 }
 
 export async function templateGetUser(user: User, chat: Chat): Promise<string> {
   const status: Status = await StatusModule.findOne({ chatId: user.chatId, status: user?.status });
-  const marriages: Marriage[] = await MarriageModule.find({ chatId: chat.chatId, $or: [ { userFirstId: user.peerId }, { userSecondId: user.peerId } ] });
+  const marriages: Marriage[] = await MarriageModule.find({ chatId: chat.chatId, isConfirmed: true, $or: [ { userFirstId: user.peerId }, { userSecondId: user.peerId } ] });
   let result = `Участник ${await stringifyMention(user.peerId)}:`;
   if (user?.joinDate) {
     result = result.concat(`\nВ беседе c ${moment(user.joinDate).format('DD.MM.YYYY HH:mm')} (${moment().diff(user.joinDate, 'days')} дн.)`);

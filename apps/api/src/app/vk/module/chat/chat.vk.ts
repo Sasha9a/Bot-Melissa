@@ -80,7 +80,7 @@ export async function setRules(req: RequestMessageVkModel) {
 export async function getRules(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.chat.rules) {
-      req.msgObject.send(`Текст правил: ${req.chat.rules}`).catch(console.error);
+      req.msgObject.send(`Текст правил: ${req.chat.rules}`, { disable_mentions: true }).catch(console.error);
     } else {
       await errorSend(req.msgObject, `Нет правил`);
     }
@@ -101,7 +101,7 @@ export async function setGreetings(req: RequestMessageVkModel) {
 export async function getGreetings(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.chat.greetings) {
-      req.msgObject.send(`Текст приветствия: ${req.chat.greetings}`).catch(console.error);
+      req.msgObject.send(`Текст приветствия: ${req.chat.greetings}`, { disable_mentions: true }).catch(console.error);
     } else {
       await errorSend(req.msgObject, `Нет приветствия`);
     }
@@ -115,7 +115,7 @@ export async function autoKickList(req: RequestMessageVkModel) {
       for (const peerId of req.chat.autoKickList) {
         result = result.concat(`\n${await stringifyMention(peerId)}`);
       }
-      req.msgObject.send(result).catch(console.error);
+      req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
     } else {
       await errorSend(req.msgObject, `Список автокика пустой`);
     }
@@ -130,7 +130,7 @@ export async function banList(req: RequestMessageVkModel) {
       for (const obj of req.chat.banList) {
         result = result.concat(`\n${await stringifyMention(obj.id)} (до ${moment(obj.endDate).format('DD.MM.YYYY HH:mm')})`);
       }
-      req.msgObject.send(result).catch(console.error);
+      req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
     } else {
       await errorSend(req.msgObject, `Список банлиста пустой`);
     }
@@ -166,7 +166,7 @@ export async function muteList(req: RequestMessageVkModel) {
       for (const obj of req.chat.muteList) {
         result = result.concat(`\n${await stringifyMention(obj.id)} (до ${moment(obj.endDate).format('DD.MM.YYYY HH:mm')})`);
       }
-      req.msgObject.send(result).catch(console.error);
+      req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
     } else {
       await errorSend(req.msgObject, `Список мута пустой`);
     }

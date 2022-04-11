@@ -88,7 +88,7 @@ export async function marriages(req: RequestMessageVkModel) {
         result = result.concat(`\n${await stringifyMention(marriage.userFirstId)} и ${await stringifyMention(marriage.userSecondId)} (${moment().diff(marriage.marriageDate, 'days')} дн.)`);
       }
     }
-    req.msgObject.send(result).catch(console.error);
+    req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
 }
 
