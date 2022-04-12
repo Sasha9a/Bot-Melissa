@@ -37,7 +37,6 @@ import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import { Marriage, MarriageModule } from "@bot-sadvers/shared/schemas/marriage.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 import { ContextDefaultState, Keyboard, MessageContext, MessageEventContext } from "vk-io";
-import { MessagesConversationMember, UsersUserFull } from "vk-io/lib/api/schemas/objects";
 import { environment } from "../../environments/environment";
 import * as moment from "moment-timezone";
 
@@ -186,22 +185,7 @@ export async function messageEvent(message: MessageEventContext) {
       }
       if (message.eventPayload?.status === 1 && marriage?.status === 0 && !marriage?.isConfirmed) {
         await MarriageModule.updateOne({ chatId: message.peerId, userFirstId: message.eventPayload?.userFromId, userSecondId: message.eventPayload?.userId }, { status: 1 });
-        let result = '';
-
-        const members = await vk.api.messages.getConversationMembers({ peer_id: message.peerId });
-        let membersList: { id: number, item: MessagesConversationMember, profile: UsersUserFull }[] = [];
-        for (const member of members.items) {
-          membersList.push({
-            id: member.member_id,
-            item: member,
-            profile: members.profiles.find((profile) => profile.id === member.member_id)
-          });
-        }
-        membersList = membersList.filter((m) => m.id !== message.userId && m.profile);
-        for (let i = 0; i != membersList.length; i++) {
-          result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
-        }
-        result = result.concat(` Уважаемые пользователи беседы.`);
+        let result = 'Уважаемые пользователи беседы.';
         result = result.concat(`\nСегодня — самое прекрасное и незабываемое событие в вашей жизни. Создание семьи – это начало доброго союза двух любящих сердец.`);
         result = result.concat(`\nС этого дня вы пойдёте по жизни рука об руку, вместе переживая и радость счастливых дней, и огорчения.`);
         result = result.concat(`\nКак трудно в нашем сложном и огромном мире встретить человека, который будет любить, и ценить, принимать твои недостатки и восхищаться достоинствами, который всегда поймет и простит. Судьба подарила вам счастье, встретив такого человека!`);
