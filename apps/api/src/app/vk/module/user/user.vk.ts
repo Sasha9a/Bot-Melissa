@@ -485,7 +485,7 @@ export async function who(req: RequestMessageVkModel) {
 export async function activity(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     const members = await vk.api.messages.getConversationMembers({ peer_id: req.msgObject.peerId });
-    const users: User[] = await UserModule.find({ chatId: req.msgObject.peerId });
+    const users: User[] = await UserModule.find({ chatId: req.msgObject.peerId }, { lastActivityDate: 1 });
     let membersList: { id: number, item: MessagesConversationMember, profile: UsersUserFull, lastActivity: Date }[] = [];
     for (const member of members.items) {
       membersList.push({
