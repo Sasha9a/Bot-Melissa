@@ -412,40 +412,40 @@ export async function convene(req: RequestMessageVkModel) {
     let result = '';
     if (req.fullText === 'всех') {
       for (let i = 0; i != membersList.length; i++) {
-        result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
+        result = result.concat(`${await stringifyMention(membersList[i].item.member_id, membersList[i].profile)}${i !== membersList.length - 1 ? ', ' : ''}`);
       }
     } else if (req.fullText === 'онлайн') {
       membersList = membersList.filter((m) => m.profile.online);
       for (let i = 0; i != membersList.length; i++) {
-        result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
+        result = result.concat(`${await stringifyMention(membersList[i].item.member_id, membersList[i].profile)}${i !== membersList.length - 1 ? ', ' : ''}`);
       }
     } else if (req.fullText === 'оффлайн') {
       membersList = membersList.filter((m) => !m.profile.online);
       for (let i = 0; i != membersList.length; i++) {
-        result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
+        result = result.concat(`${await stringifyMention(membersList[i].item.member_id, membersList[i].profile)}${i !== membersList.length - 1 ? ', ' : ''}`);
       }
     } else if (req.fullText === 'ж') {
       membersList = membersList.filter((m) => m.profile.sex === 1);
       for (let i = 0; i != membersList.length; i++) {
-        result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
+        result = result.concat(`${await stringifyMention(membersList[i].item.member_id, membersList[i].profile)}${i !== membersList.length - 1 ? ', ' : ''}`);
       }
     } else if (req.fullText === 'м') {
       membersList = membersList.filter((m) => m.profile.sex === 2);
       for (let i = 0; i != membersList.length; i++) {
-        result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
+        result = result.concat(`${await stringifyMention(membersList[i].item.member_id, membersList[i].profile)}${i !== membersList.length - 1 ? ', ' : ''}`);
       }
     } else if (!isNaN(Number(req.text[0])) && Number(req.text[0]) >= 0 && Number(req.text[0]) <= 10 && req.text[1] === 'статус') {
-      const users: User[] = await UserModule.find({ status: Number(req.text[0]), chatId: req.msgObject.peerId });
+      const users: User[] = await UserModule.find({ status: Number(req.text[0]), chatId: req.msgObject.peerId }, { peerId: 1 });
       membersList = membersList.filter((m) => users.some((u) => m.id === u.peerId));
       for (let i = 0; i != membersList.length; i++) {
-        result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
+        result = result.concat(`${await stringifyMention(membersList[i].item.member_id, membersList[i].profile)}${i !== membersList.length - 1 ? ', ' : ''}`);
       }
     } else if (/^([0-9]|10)-([0-9]|10)$/.test(req.text[0]) && req.text[1] === 'статусы'
       && Number(req.text[0].split('-')[0]) < Number(req.text[0].split('-')[1])) {
-      const users: User[] = await UserModule.find({ status: { $gte: Number(req.text[0].split('-')[0]), $lte: Number(req.text[0].split('-')[1]) }, chatId: req.msgObject.peerId });
+      const users: User[] = await UserModule.find({ status: { $gte: Number(req.text[0].split('-')[0]), $lte: Number(req.text[0].split('-')[1]) }, chatId: req.msgObject.peerId }, { peerId: 1 });
       membersList = membersList.filter((m) => users.some((u) => m.id === u.peerId));
       for (let i = 0; i != membersList.length; i++) {
-        result = result.concat(`${await stringifyMention(membersList[i].item.member_id)}${i !== membersList.length - 1 ? ', ' : ''}`);
+        result = result.concat(`${await stringifyMention(membersList[i].item.member_id, membersList[i].profile)}${i !== membersList.length - 1 ? ', ' : ''}`);
       }
     } else {
       result = 'Нет такого параметра';
@@ -459,7 +459,7 @@ export async function probability(req: RequestMessageVkModel) {
     if (req.text.length < 1) {
       return errorSend(req.msgObject, 'Не все параметры введены\nВопрос вероятность [вопрос]');
     }
-    req.msgObject.send(`${await stringifyMention(req.user.peerId)}, вероятность составляет ${(Math.floor(Math.random() * (100 + 1)))}%`, { disable_mentions: true }).catch(console.error);
+    req.msgObject.send(`${await stringifyMention(req.user.peerId)}, вероятность составляет ${Math.floor(Math.random() * (100 + 1))}%`, { disable_mentions: true }).catch(console.error);
   }
 }
 
@@ -478,7 +478,10 @@ export async function who(req: RequestMessageVkModel) {
       });
     }
     membersList = membersList.filter((m) => m.profile);
-    req.msgObject.send(`${await stringifyMention(req.user.peerId)}, это ${await stringifyMention(membersList[(Math.floor(Math.random() * membersList.length))].id)}`).catch(console.error);
+    const rand = Math.floor(Math.random() * membersList.length);
+    let result = `${await stringifyMention(req.user.peerId, membersList.find((m) => m.id === req.user.peerId)?.profile)}, это `;
+    result = result.concat(await stringifyMention(membersList[rand].id, membersList[rand].profile));
+    req.msgObject.send(result).catch(console.error);
   }
 }
 
