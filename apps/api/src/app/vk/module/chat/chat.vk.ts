@@ -268,7 +268,7 @@ export async function getChat(req: RequestMessageVkModel) {
     let result = 'Информация о беседе:';
     result = result.concat(`\n1. Номер беседы: ${req.chat.chatId}`);
     result = result.concat(`\n2. Название беседы: ${chatInfo.items[0]?.chat_settings?.title || '-'}`);
-    result = result.concat(`\n3. Владелец беседы: ${await stringifyMention(chatInfo.items[0]?.chat_settings?.owner_id)}`);
+    result = result.concat(`\n3. Владелец беседы: ${await stringifyMention(chatInfo.items[0]?.chat_settings?.owner_id, membersList.find((m) => m.id === chatInfo.items[0]?.chat_settings?.owner_id)?.profile)}`);
     result = result.concat(`\n4. Кол-во участников: ${members.count}`);
     result = result.concat(`\n5. Кол-во девушек в беседе: ${membersList.reduce((count, m) => m.profile?.sex === 1 ? count + 1 : count, 0)}`);
     result = result.concat(`\n6. Кол-во мужчин в беседе: ${membersList.reduce((count, m) => m.profile?.sex === 2 ? count + 1 : count, 0)}`);
@@ -301,7 +301,7 @@ export async function statusChat(req: RequestMessageVkModel) {
 export async function onlineList(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     const members = await vk.api.messages.getConversationMembers({ peer_id: req.msgObject.peerId });
-    const users: User[] = await UserModule.find({ chatId: req.msgObject.peerId });
+    const users: User[] = await UserModule.find({ chatId: req.msgObject.peerId }, { icon: 1 });
     let membersList: { id: number, item: MessagesConversationMember, profile: UsersUserFull, user: User }[] = [];
     for (const member of members.items) {
       membersList.push({
@@ -314,7 +314,7 @@ export async function onlineList(req: RequestMessageVkModel) {
     membersList = membersList.filter((m) => m.profile && m.profile.online_info?.is_online);
     let result = 'Список пользователей онлайн:';
     for (let i = 0; i != membersList.length; i++) {
-      result = result.concat(`\n${i + 1}. ${await stringifyMention(membersList[i].id)}${membersList[i].user?.icon ? ' ' + membersList[i].user?.icon : ''}`);
+      result = result.concat(`\n${i + 1}. ${await stringifyMention(membersList[i].id, membersList[i].profile)}${membersList[i].user?.icon ? ' ' + membersList[i].user?.icon : ''}`);
       result = result.concat(` - (${membersList[i].profile.online_info?.is_mobile ? '📱' : '🖥'})`);
     }
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
