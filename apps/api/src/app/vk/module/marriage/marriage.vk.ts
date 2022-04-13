@@ -20,6 +20,9 @@ export async function marriage(req: RequestMessageVkModel) {
     if (!user) {
       return ;
     }
+    if (req.msgObject.senderId === user.peerId) {
+      return errorSend(req.msgObject, 'Нельзя самому себе предложить брак');
+    }
     if (await MarriageModule.findOne({ chatId: req.msgObject.peerId, $or: [ { userFirstId: req.msgObject.senderId, userSecondId: user.peerId }, { userFirstId: user.peerId, userSecondId: req.msgObject.senderId } ] })) {
       return errorSend(req.msgObject, 'Вы уже находитесь в браке с этим пользователем или на стадии оформления');
     }
