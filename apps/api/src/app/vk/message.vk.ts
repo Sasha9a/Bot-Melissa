@@ -40,6 +40,8 @@ import { ContextDefaultState, Keyboard, MessageContext, MessageEventContext } fr
 import { environment } from "../../environments/environment";
 import * as moment from "moment-timezone";
 
+const nameBot = 'лиса';
+
 const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => Promise<any> }[] = [
   { command: CommandVkEnum.updateAll, func: updateAll },
   { command: CommandVkEnum.getUserMe, func: getUserMe },
@@ -90,9 +92,6 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {
   const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
-  if (!chat && !(message.text?.toLowerCase().startsWith(CommandVkEnum.updateAll) && (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' '))) {
-    return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
-  }
   await checkMuteList(chat);
   if (chat && chat?.muteList?.findIndex((u) => u.id === message.senderId) !== -1) {
     await vk.api.messages.delete({ cmids: message.conversationMessageId, delete_for_all: true, peer_id: message.peerId }).catch(console.error);
@@ -100,25 +99,31 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
   }
   await updateLastActivityUser(message);
   await autoKickInDays(chat, message);
-  const request: RequestMessageVkModel = new RequestMessageVkModel();
-  request.chat = chat;
-  for (const command of commands) {
-    if (message.text?.toLowerCase().startsWith(command.command) && (!message.text[command.command.length] || message.text[command.command.length] === ' ')) {
-      const currentUser: User = await UserModule.findOne({ peerId: message.senderId, chatId: message.peerId });
-      if (!currentUser && !(message.text?.toLowerCase().startsWith(CommandVkEnum.updateAll) && (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' '))) {
-        return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
+  if (message.text?.toLowerCase().startsWith(nameBot) && message.text[nameBot.length] === ' ') {
+    message.text = message.text.substring(nameBot.length + 1);
+    if (!chat && !(message.text?.toLowerCase().startsWith(CommandVkEnum.updateAll) && (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' '))) {
+      return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
+    }
+    const request: RequestMessageVkModel = new RequestMessageVkModel();
+    request.chat = chat;
+    for (const command of commands) {
+      if (message.text?.toLowerCase().startsWith(command.command) && (!message.text[command.command.length] || message.text[command.command.length] === ' ')) {
+        const currentUser: User = await UserModule.findOne({ peerId: message.senderId, chatId: message.peerId });
+        if (!currentUser && !(message.text?.toLowerCase().startsWith(CommandVkEnum.updateAll) && (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' '))) {
+          return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
+        }
+        if (await accessCheck(currentUser, command.command, message.peerId)) {
+          request.command = command.command;
+          request.fullText = message.text.substring(message.text.indexOf(command.command) + command.command.length + 2);
+          request.text = request.fullText.length ? request.fullText.split(' ') : [];
+          request.msgObject = message;
+          request.user = currentUser;
+          command.func(request).catch(console.error);
+        } else {
+          await errorSend(message, 'Нет доступа');
+        }
+        break;
       }
-      if (await accessCheck(currentUser, command.command, message.peerId)) {
-        request.command = command.command;
-        request.fullText = message.text.substring(message.text.indexOf(command.command) + command.command.length + 2);
-        request.text = request.fullText.length ? request.fullText.split(' ') : [];
-        request.msgObject = message;
-        request.user = currentUser;
-        command.func(request).catch(console.error);
-      } else {
-        await errorSend(message, 'Нет доступа');
-      }
-      break;
     }
   }
 }
