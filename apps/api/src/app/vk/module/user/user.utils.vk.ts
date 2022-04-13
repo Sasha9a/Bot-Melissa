@@ -39,7 +39,7 @@ export async function isOwnerMember(peerId: number, chatId: number): Promise<boo
 }
 
 export async function templateGetUser(user: User, chat: Chat): Promise<string> {
-  const status: Status = await StatusModule.findOne({ chatId: user.chatId, status: user?.status });
+  const status: Status = await StatusModule.findOne({ chatId: user.chatId, status: user?.status }, { name: 1 });
   const marriages: Marriage[] = await MarriageModule.find({ chatId: chat.chatId, isConfirmed: true, $or: [ { userFirstId: user.peerId }, { userSecondId: user.peerId } ] });
   let result = `Участник ${await stringifyMention(user.peerId)}:`;
   if (user?.joinDate) {
