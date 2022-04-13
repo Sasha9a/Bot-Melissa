@@ -18,10 +18,16 @@ export async function createUser(peerId: number, req: RequestMessageVkModel): Pr
   return await user.save();
 }
 
-export async function stringifyMention(userId: number): Promise<string> {
-  const dataUser = await vk.api.users.get({ user_ids: [userId] });
-  if (dataUser[0]) {
-    return `[id${dataUser[0].id}|${dataUser[0].first_name + ' ' + dataUser[0].last_name}]`;
+export async function stringifyMention(userId: number, userInfo?: any): Promise<string> {
+  let dataUser;
+  if (userInfo) {
+    dataUser = userInfo;
+  } else {
+    dataUser = await vk.api.users.get({ user_ids: [userId] });
+    dataUser = dataUser[0];
+  }
+  if (dataUser) {
+    return `[id${dataUser.id}|${dataUser.first_name + ' ' + dataUser.last_name}]`;
   } else {
     return '';
   }

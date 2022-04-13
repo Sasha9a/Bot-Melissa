@@ -512,16 +512,16 @@ export async function activity(req: RequestMessageVkModel) {
         const hours = moment().diff(moment(member.lastActivity)) / 1000 / 60 / 60 % 24;
         const minutes = moment().diff(moment(member.lastActivity)) / 1000 / 60 % 60;
         if (days >= 1) {
-          result = result.concat(`\n${await stringifyMention(member.id)} - ${days.toFixed()} дн. ${hours.toFixed()} час.`);
+          result = result.concat(`\n${await stringifyMention(member.id, member.profile)} - ${days.toFixed()} дн. ${hours.toFixed()} час.`);
         } else if (hours >= 1) {
-          result = result.concat(`\n${await stringifyMention(member.id)} - ${hours.toFixed()} час. ${minutes.toFixed()} мин.`);
+          result = result.concat(`\n${await stringifyMention(member.id, member.profile)} - ${hours.toFixed()} час. ${minutes.toFixed()} мин.`);
         } else if (minutes > 10) {
-          result = result.concat(`\n${await stringifyMention(member.id)} - ${minutes.toFixed()} мин.`);
+          result = result.concat(`\n${await stringifyMention(member.id, member.profile)} - ${minutes.toFixed()} мин.`);
         } else {
-          result = result.concat(`\n${await stringifyMention(member.id)} - актив`);
+          result = result.concat(`\n${await stringifyMention(member.id, member.profile)} - актив`);
         }
       } else {
-        result = result.concat(`\n${await stringifyMention(member.id)} - неактив`);
+        result = result.concat(`\n${await stringifyMention(member.id, member.profile)} - неактив`);
       }
     }
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
