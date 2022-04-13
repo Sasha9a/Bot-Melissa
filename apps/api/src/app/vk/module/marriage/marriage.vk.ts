@@ -78,7 +78,7 @@ export async function marriage(req: RequestMessageVkModel) {
         },
         color: Keyboard.NEGATIVE_COLOR
       });
-    req.msgObject.send(`${await stringifyMention(req.msgObject.senderId)} решился сделать предложение ${await stringifyMention(user.peerId)}`, { keyboard: builder.inline() }).catch(console.error);
+    req.msgObject.send(`${await stringifyMention(req.msgObject.senderId, membersList.find((m) => m.id === req.msgObject.senderId))} решился сделать предложение ${await stringifyMention(user.peerId, membersList.find((m) => m.id === user.peerId))}`, { keyboard: builder.inline() }).catch(console.error);
   }
 }
 
