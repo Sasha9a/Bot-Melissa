@@ -11,24 +11,30 @@ export async function createChat(chatId: number): Promise<Chat> {
 
 export async function checkBanList(chat: Chat): Promise<void> {
   if (chat) {
+    const local = chat.banList;
     for (const obj of chat.banList) {
       if (moment().diff(moment(obj.endDate), 'minutes') > 0) {
         chat.banList = chat.banList.filter((u) => u.id !== obj.id);
-        chat.markModified('banList');
-        await chat.save();
       }
+    }
+    if (local.length !== chat.banList.length) {
+      chat.markModified('banList');
+      await chat.save();
     }
   }
 }
 
 export async function checkMuteList(chat: Chat): Promise<void> {
   if (chat) {
+    const local = chat.muteList;
     for (const obj of chat.muteList) {
       if (moment().diff(moment(obj.endDate), 'minutes') > 0) {
         chat.muteList = chat.muteList.filter((u) => u.id !== obj.id);
-        chat.markModified('muteList');
-        await chat.save();
       }
+    }
+    if (local.length !== chat.muteList.length) {
+      chat.markModified('muteList');
+      await chat.save();
     }
   }
 }

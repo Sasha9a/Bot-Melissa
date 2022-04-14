@@ -13,8 +13,8 @@ export async function setNickMe(req: RequestMessageVkModel) {
     if (!req.text.length) {
       return errorSend(req.msgObject, 'Вы не ввели ник');
     }
-    req.user.nick = req.fullText;
-    await req.user.save();
+    req.user.info.nick = req.fullText;
+    await req.user.info.save();
     await yesSend(req.msgObject, `Установлен ник для ${await stringifyMention(req.msgObject.senderId)}: "${req.fullText}"`);
   }
 }
@@ -39,8 +39,8 @@ export async function setIconMe(req: RequestMessageVkModel) {
     if (!req.text.length) {
       return errorSend(req.msgObject, 'Вы не ввели значок');
     }
-    req.user.icon = req.fullText;
-    await req.user.save();
+    req.user.info.icon = req.fullText;
+    await req.user.info.save();
     await yesSend(req.msgObject, `Установлен значок для ${await stringifyMention(req.msgObject.senderId)}: "${req.fullText}"`);
   }
 }
@@ -62,7 +62,7 @@ export async function setIcon(req: RequestMessageVkModel) {
 
 export async function getUserMe(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    req.msgObject.send(await templateGetUser(req.user, req.chat), { disable_mentions: true }).catch(console.error);
+    req.msgObject.send(await templateGetUser(req.user.info, req.chat), { disable_mentions: true }).catch(console.error);
   }
 }
 
@@ -94,8 +94,8 @@ export async function setStatus(req: RequestMessageVkModel) {
     if (await isOwnerMember(user.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нельзя менять статус создателю беседы');
     }
-    if ((req.user.status <= Number(req.text[1]) && !await isOwnerMember(req.user.peerId, req.msgObject.peerId))
-      || (req.user.status <= user.status && !await isOwnerMember(req.user.peerId, req.msgObject.peerId))) {
+    if ((req.user.info.status <= Number(req.text[1]) && !await isOwnerMember(req.user.info.peerId, req.msgObject.peerId))
+      || (req.user.info.status <= user.status && !await isOwnerMember(req.user.info.peerId, req.msgObject.peerId))) {
       return errorSend(req.msgObject, 'Нет прав для выдачи такого статуса');
     }
     user.status = Number(req.text[1]);
@@ -138,7 +138,7 @@ export async function kick(req: RequestMessageVkModel) {
     if (await isOwnerMember(user.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нельзя кикнуть создателя беседы');
     }
-    if (req.user.status <= user.status && !await isOwnerMember(req.user.peerId, req.msgObject.peerId)) {
+    if (req.user.info.status <= user.status && !await isOwnerMember(req.user.info.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нет прав для кика');
     }
     await vk.api.messages.removeChatUser({ chat_id: req.msgObject.peerId - 2000000000, member_id: user.peerId }).then(async () => {
@@ -159,7 +159,7 @@ export async function autoKick(req: RequestMessageVkModel) {
     if (await isOwnerMember(user.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нельзя кикнуть создателя беседы');
     }
-    if (req.user.status <= user.status && !await isOwnerMember(req.user.peerId, req.msgObject.peerId)) {
+    if (req.user.info.status <= user.status && !await isOwnerMember(req.user.info.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нет прав для автокика');
     }
     await vk.api.messages.removeChatUser({ chat_id: req.msgObject.peerId - 2000000000, member_id: user.peerId, user_id: user.peerId }).catch(console.error);
@@ -212,7 +212,7 @@ export async function ban(req: RequestMessageVkModel) {
     if (await isOwnerMember(user.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нельзя кикнуть создателя беседы');
     }
-    if (req.user.status <= user.status && !await isOwnerMember(req.user.peerId, req.msgObject.peerId)) {
+    if (req.user.info.status <= user.status && !await isOwnerMember(req.user.info.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нет прав для бана');
     }
     await vk.api.messages.removeChatUser({ chat_id: req.msgObject.peerId - 2000000000, member_id: user.peerId, user_id: user.peerId }).catch(console.error);
@@ -270,7 +270,7 @@ export async function warn(req: RequestMessageVkModel) {
     if (await isOwnerMember(user.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нельзя наказать создателя беседы');
     }
-    if (req.user.status <= user.status && !await isOwnerMember(req.user.peerId, req.msgObject.peerId)) {
+    if (req.user.info.status <= user.status && !await isOwnerMember(req.user.info.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нет прав для наказания');
     }
     if (user.warn + Number(req.text[1]) >= req.chat.maxWarn) {
@@ -299,7 +299,7 @@ export async function warnMinus(req: RequestMessageVkModel) {
     if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 1) {
       return errorSend(req.msgObject, `Второй аргумент не верный`);
     }
-    if (req.user.status <= user.status && !await isOwnerMember(req.user.peerId, req.msgObject.peerId)) {
+    if (req.user.info.status <= user.status && !await isOwnerMember(req.user.info.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нет прав для снятия наказания');
     }
     if (user.warn === 0) {
@@ -352,7 +352,7 @@ export async function mute(req: RequestMessageVkModel) {
     if (await isOwnerMember(user.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нельзя выдать мут создателю беседы');
     }
-    if (req.user.status <= user.status && !await isOwnerMember(req.user.peerId, req.msgObject.peerId)) {
+    if (req.user.info.status <= user.status && !await isOwnerMember(req.user.info.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нет прав для мута');
     }
     if (!req.chat.muteList) {
@@ -459,7 +459,7 @@ export async function probability(req: RequestMessageVkModel) {
     if (req.text.length < 1) {
       return errorSend(req.msgObject, 'Не все параметры введены\nВопрос вероятность [вопрос]');
     }
-    req.msgObject.send(`${await stringifyMention(req.user.peerId)}, вероятность составляет ${Math.floor(Math.random() * (100 + 1))}%`, { disable_mentions: true }).catch(console.error);
+    req.msgObject.send(`${await stringifyMention(req.user.info.peerId)}, вероятность составляет ${Math.floor(Math.random() * (100 + 1))}%`, { disable_mentions: true }).catch(console.error);
   }
 }
 
@@ -479,7 +479,7 @@ export async function who(req: RequestMessageVkModel) {
     }
     membersList = membersList.filter((m) => m.profile);
     const rand = Math.floor(Math.random() * membersList.length);
-    let result = `${await stringifyMention(req.user.peerId, membersList.find((m) => m.id === req.user.peerId)?.profile)}, это `;
+    let result = `${await stringifyMention(req.user.info.peerId, membersList.find((m) => m.id === req.user.info.peerId)?.profile)}, это `;
     result = result.concat(await stringifyMention(membersList[rand].id, membersList[rand].profile));
     req.msgObject.send(result).catch(console.error);
   }

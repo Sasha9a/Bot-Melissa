@@ -37,6 +37,7 @@ import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import { Marriage, MarriageModule } from "@bot-sadvers/shared/schemas/marriage.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 import { ContextDefaultState, Keyboard, MessageContext, MessageEventContext } from "vk-io";
+import { MessagesConversationMember, UsersUserFull } from "vk-io/lib/api/schemas/objects";
 import { environment } from "../../environments/environment";
 import * as moment from "moment-timezone";
 
@@ -92,13 +93,24 @@ const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => 
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {
   const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
+  const members = await vk.api.messages.getConversationMembers({ peer_id: message.peerId });
+  const users: User[] = await UserModule.find({ chatId: message.peerId });
+  const membersList: { id: number, item: MessagesConversationMember, profile: UsersUserFull, info: User }[] = [];
+  for (const member of members.items) {
+    membersList.push({
+      id: member.member_id,
+      item: member,
+      profile: members.profiles.find((profile) => profile.id === member.member_id),
+      info: users.find((u) => u.peerId === member.member_id)
+    });
+  }
   await checkMuteList(chat);
-  if (chat && chat?.muteList?.findIndex((u) => u.id === message.senderId) !== -1) {
+  if (chat && chat.muteList?.findIndex((u) => u.id === message.senderId) !== -1) {
     await vk.api.messages.delete({ cmids: message.conversationMessageId, delete_for_all: true, peer_id: message.peerId }).catch(console.error);
     return;
   }
   await updateLastActivityUser(message);
-  await autoKickInDays(chat, message);
+  await autoKickInDays(chat, message, membersList);
   if (message.text?.toLowerCase().startsWith(nameBot) && message.text[nameBot.length] === ' ') {
     message.text = message.text.substring(nameBot.length + 1);
     if (!chat && !(message.text?.toLowerCase().startsWith(CommandVkEnum.updateAll) && (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' '))) {
@@ -106,13 +118,14 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
     }
     const request: RequestMessageVkModel = new RequestMessageVkModel();
     request.chat = chat;
+    request.members = membersList;
     for (const command of commands) {
       if (message.text?.toLowerCase().startsWith(command.command) && (!message.text[command.command.length] || message.text[command.command.length] === ' ')) {
-        const currentUser: User = await UserModule.findOne({ peerId: message.senderId, chatId: message.peerId });
-        if (!currentUser && !(message.text?.toLowerCase().startsWith(CommandVkEnum.updateAll) && (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' '))) {
+        const currentUser = request.members.find((m) => m.id === message.senderId);
+        if (!currentUser?.info && !(message.text?.toLowerCase().startsWith(CommandVkEnum.updateAll) && (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' '))) {
           return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
         }
-        if (await accessCheck(currentUser, command.command, message.peerId)) {
+        if (await accessCheck(currentUser?.info, command.command, message.peerId)) {
           request.command = command.command;
           request.fullText = message.text.substring(message.text.indexOf(command.command) + command.command.length + 2);
           request.text = request.fullText.length ? request.fullText.split(' ') : [];
