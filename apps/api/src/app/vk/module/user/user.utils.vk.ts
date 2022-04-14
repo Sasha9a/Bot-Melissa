@@ -38,27 +38,28 @@ export async function isOwnerMember(peerId: number, chatId: number): Promise<boo
   return chatInfo.items[0]?.chat_settings?.owner_id === peerId;
 }
 
-export async function templateGetUser(req: RequestMessageVkModel): Promise<string> {
-  const status: Status = await StatusModule.findOne({ chatId: req.user.info?.chatId, status: req.user.info?.status }, { name: 1 });
-  const marriages: Marriage[] = await MarriageModule.find({ chatId: req.chat.chatId, isConfirmed: true, $or: [ { userFirstId: req.user.info?.peerId }, { userSecondId: req.user.info?.peerId } ] });
-  let result = `Участник ${await stringifyMention({ userId: req.user.info?.peerId, userInfo: req.user.profile })}:`;
-  if (req.user.info?.joinDate) {
-    result = result.concat(`\nВ беседе c ${moment(req.user.info?.joinDate).format('DD.MM.YYYY HH:mm')} (${moment().diff(req.user.info?.joinDate, 'days')} дн.)`);
+export async function templateGetUser(req: RequestMessageVkModel, userId: number): Promise<string> {
+  const user = req.members.find((m) => m.id === userId);
+  const status: Status = await StatusModule.findOne({ chatId: req.chat.chatId, status: user?.info?.status }, { name: 1 });
+  const marriages: Marriage[] = await MarriageModule.find({ chatId: req.chat.chatId, isConfirmed: true, $or: [ { userFirstId: userId }, { userSecondId: userId } ] });
+  let result = `Участник ${await stringifyMention({ userId: userId, userInfo: user?.profile })}:`;
+  if (user?.info?.joinDate) {
+    result = result.concat(`\nВ беседе c ${moment(user?.info?.joinDate).format('DD.MM.YYYY HH:mm')} (${moment().diff(user?.info?.joinDate, 'days')} дн.)`);
   } else {
     result = result.concat(`\nВ беседе c -`);
   }
-  result = result.concat(`\nНик: ${req.user.info?.nick || '-'}`);
-  result = result.concat(`\nЗначок: ${req.user.info?.icon || '-'}`);
+  result = result.concat(`\nНик: ${user?.info?.nick || '-'}`);
+  result = result.concat(`\nЗначок: ${user?.info?.icon || '-'}`);
   if (status?.name?.length) {
-    result = result.concat(`\nСтатус: ${status.name} (${req.user.info?.status || 0})`);
+    result = result.concat(`\nСтатус: ${status.name} (${user?.info?.status || 0})`);
   } else {
-    result = result.concat(`\nСтатус: ${req.user.info?.status || 0}`);
+    result = result.concat(`\nСтатус: ${user?.info?.status || 0}`);
   }
-  result = result.concat(`\nПредупреждения: ${req.user.info?.warn || 0} / ${req.chat.maxWarn}`);
+  result = result.concat(`\nПредупреждения: ${user?.info?.warn || 0} / ${req.chat.maxWarn}`);
   if (marriages?.length) {
     result = result.concat(`\nВ браке с `);
     for (let i = 0; i != marriages.length; i++) {
-      const userResultId = marriages[i].userFirstId === req.user.info?.peerId ? marriages[i].userSecondId : marriages[i].userFirstId;
+      const userResultId = marriages[i].userFirstId === user?.info?.peerId ? marriages[i].userSecondId : marriages[i].userFirstId;
       result = result.concat(`${await stringifyMention({ userId: userResultId, userInfo: req.members.find((m) => m.id === userResultId)?.profile })}${i !== marriages.length - 1 ? ', ' : ''}`);
     }
   }
