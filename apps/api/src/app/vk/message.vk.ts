@@ -24,7 +24,6 @@ import {
   banMinus, clearWarnList, convene,
   getStatuses,
   getUser,
-  getUserMe,
   kick, mute, muteMinus, probability,
   setIcon,
   setIconMe,
@@ -46,7 +45,6 @@ const nameBot = 'лиса';
 
 const commands: { command: CommandVkEnum, func: (req: RequestMessageVkModel) => Promise<any> }[] = [
   { command: CommandVkEnum.updateAll, func: updateAll },
-  { command: CommandVkEnum.getUserMe, func: getUserMe },
   { command: CommandVkEnum.getUser, func: getUser },
   { command: CommandVkEnum.setNickMe, func: setNickMe },
   { command: CommandVkEnum.setNick, func: setNick },

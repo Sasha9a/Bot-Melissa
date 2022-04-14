@@ -59,22 +59,20 @@ export async function setIcon(req: RequestMessageVkModel) {
   }
 }
 
-export async function getUserMe(req: RequestMessageVkModel) {
-  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    req.msgObject.send(await templateGetUser(req, req.user.id), { disable_mentions: true }).catch(console.error);
-  }
-}
-
 export async function getUser(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nКто [пользователь]');
+    if (req.text.length > 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nУчастник [пользователь]');
     }
-    const user: User = await getFullUserInfo(req.text[0], req.msgObject);
-    if (!user) {
-      return ;
+    if (req.text.length === 1) {
+      const user: User = await getFullUserInfo(req.text[0], req.msgObject);
+      if (!user) {
+        return ;
+      }
+      req.msgObject.send(await templateGetUser(req, user.peerId), { disable_mentions: true }).catch(console.error);
+    } else {
+      req.msgObject.send(await templateGetUser(req, req.user.id), { disable_mentions: true }).catch(console.error);
     }
-    req.msgObject.send(await templateGetUser(req, user.peerId), { disable_mentions: true }).catch(console.error);
   }
 }
 
