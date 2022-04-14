@@ -456,11 +456,40 @@ export async function who(req: RequestMessageVkModel) {
     if (req.text.length < 1) {
       return errorSend(req.msgObject, 'Не все параметры введены\nКто [вопрос]');
     }
-
-    const membersList = req.members.filter((m) => m.profile);
-    const rand = Math.floor(Math.random() * membersList.length);
-    let result = `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}, это `;
-    result = result.concat(await stringifyMention({ userId: membersList[rand].id, userInfo: membersList[rand].profile }));
+    let result: string;
+    if (req.text[0].toLowerCase() === 'я') {
+      const adjectives = [
+        'Азартный', 'Безбожный', 'Ангельский', 'Безжалостный', 'Бездушный',
+        'Безумный', 'Великий', 'Всепоглощающий', 'Глухой', 'Головокружительный',
+        'Грубый', 'Добрый', 'Дикий', 'Дотошный', 'Живой',
+        'Жгучий', 'Жуткий', 'Загадочный', 'Зевающий', 'Загробный',
+        'Злой', 'Идеальный', 'Истреблённый', 'Кричащий', 'Крабовый',
+        'Красивый', 'Кровавый', 'Леденящий', 'Лютый', 'Мертвый',
+        'Мерцающий', 'Могучий', 'Наглый', 'Напыщенный', 'Незрелый',
+        'Олимпийский', 'Образцовый', 'Огромный', 'Потрясающий', 'Пламенный',
+        'Пьянящий', 'Радикальный', 'Ревностный', 'Седой', 'Сказочный',
+        'Страстный', 'Твёрдый', 'Ужасающий', 'Фантастический', 'Чёрный',
+        'Чёрствый', 'Экстремальный', 'Яркий', 'Яростный', 'Ядовитый'
+      ];
+      const nouns = [
+        'абрикос', 'аквариум', 'барсук', 'бизнесмен', 'выдра',
+        'водитель', 'гриб', 'грузчик', 'дерево', 'дятел',
+        'доктор', 'ёж', 'егерь', 'жаба', 'жонглёр',
+        'заяц', 'знахарь', 'икра', 'искатель', 'килька',
+        'клоун', 'лизун', 'логопед', 'манго', 'майко',
+        'окулист', 'олух', 'пацифист', 'пекарь', 'бревно',
+        'веник', 'редька', 'ректор', 'садист', 'мазохист',
+        'актив', 'пассив', 'сварщик', 'селёдка', 'тракторист',
+        'уж', 'учитель', 'фантазёр', 'черешня', 'язва'
+      ];
+      result = `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}, вы - `;
+      result = result.concat(`${adjectives[Math.floor(Math.random() * adjectives.length)]} ${nouns[Math.floor(Math.random() * nouns.length)]}`);
+    } else {
+      const membersList = req.members.filter((m) => m.profile);
+      const rand = Math.floor(Math.random() * membersList.length);
+      result = `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}, это `;
+      result = result.concat(await stringifyMention({ userId: membersList[rand].id, userInfo: membersList[rand].profile }));
+    }
     req.msgObject.send(result).catch(console.error);
   }
 }
