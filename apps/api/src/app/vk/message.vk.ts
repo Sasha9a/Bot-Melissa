@@ -11,6 +11,7 @@ import {
   setRules, statusChat,
   updateAll
 } from "@bot-sadvers/api/vk/module/chat/chat.vk";
+import { checkTimeMarriage } from "@bot-sadvers/api/vk/module/marriage/marriage.utils.vk";
 import { divorce, marriage, marriages } from "@bot-sadvers/api/vk/module/marriage/marriage.vk";
 import { accessCheck } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { getCommandsStatus, setCommandStatus, setNameStatus } from "@bot-sadvers/api/vk/module/status/status.vk";
@@ -111,6 +112,7 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
   }
   await updateLastActivityUser(message);
   await autoKickInDays(chat, message, membersList);
+  await checkTimeMarriage(chat, membersList, message);
   if (message.text?.toLowerCase().startsWith(nameBot) && message.text[nameBot.length] === ' ') {
     message.text = message.text.substring(nameBot.length + 1);
     if (!chat && !(message.text?.toLowerCase().startsWith(CommandVkEnum.updateAll) && (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' '))) {
@@ -193,7 +195,7 @@ export async function messageEvent(message: MessageEventContext) {
   if (message.eventPayload?.command == CommandVkEnum.marriage) {
     if (message.eventPayload?.userId === message.userId) {
       const marriage: Marriage = await MarriageModule.findOne({ chatId: message.peerId, $or: [ {userFirstId: message.eventPayload?.userFromId, userSecondId: message.eventPayload?.userId}, {userFirstId: message.eventPayload?.userId, userSecondId: message.eventPayload?.userFromId} ] });
-      if (message.eventPayload?.status === 0 && !marriage?.isConfirmed) {
+      if (marriage && message.eventPayload?.status === 0 && !marriage.isConfirmed) {
         await MarriageModule.deleteOne({ chatId: message.peerId, $or: [ {userFirstId: message.eventPayload?.userFromId, userSecondId: message.eventPayload?.userId}, {userFirstId: message.eventPayload?.userId, userSecondId: message.eventPayload?.userFromId} ] });
         await vk.api.messages.send({
           peer_id: message.peerId,
@@ -201,8 +203,8 @@ export async function messageEvent(message: MessageEventContext) {
           message: `${await stringifyMention({ userId: message.eventPayload?.userFromId })} увы, но ${await stringifyMention({ userId: message.userId })} отказался(-ась) от предложения вступление в брак`
         }).catch(console.error);
       }
-      if (message.eventPayload?.status === 1 && marriage?.status === 0 && !marriage?.isConfirmed) {
-        await MarriageModule.updateOne({ chatId: message.peerId, userFirstId: message.eventPayload?.userFromId, userSecondId: message.eventPayload?.userId }, { status: 1 });
+      if (marriage && message.eventPayload?.status === 1 && marriage?.status === 0 && !marriage.isConfirmed) {
+        await MarriageModule.updateOne({ chatId: message.peerId, userFirstId: message.eventPayload?.userFromId, userSecondId: message.eventPayload?.userId }, { status: 1, checkDate: moment().add(1, 'hour').toDate() });
         let result = 'Уважаемые пользователи беседы.';
         result = result.concat(`\nСегодня — самое прекрасное и незабываемое событие в вашей жизни. Создание семьи – это начало доброго союза двух любящих сердец.`);
         result = result.concat(`\nС этого дня вы пойдёте по жизни рука об руку, вместе переживая и радость счастливых дней, и огорчения.`);
@@ -237,8 +239,8 @@ export async function messageEvent(message: MessageEventContext) {
           keyboard: builder.inline()
         }).catch(console.error);
       }
-      if (message.eventPayload?.status === 2 && marriage?.status === 1 && !marriage?.isConfirmed) {
-        await MarriageModule.updateOne({ chatId: message.peerId, userFirstId: message.eventPayload?.userId, userSecondId: message.eventPayload?.userFromId }, { status: 2 });
+      if (marriage && message.eventPayload?.status === 2 && marriage?.status === 1 && !marriage.isConfirmed) {
+        await MarriageModule.updateOne({ chatId: message.peerId, userFirstId: message.eventPayload?.userId, userSecondId: message.eventPayload?.userFromId }, { status: 2, checkDate: moment().add(1, 'hour').toDate() });
         const result = `Ваш ответ ${await stringifyMention({ userId: message.eventPayload?.userFromId })}?`;
 
         const builder = Keyboard.builder()
@@ -269,8 +271,8 @@ export async function messageEvent(message: MessageEventContext) {
           keyboard: builder.inline()
         }).catch(console.error);
       }
-      if (message.eventPayload?.status === 3 && marriage?.status === 2 && !marriage?.isConfirmed) {
-        await MarriageModule.updateOne({ chatId: message.peerId, userFirstId: message.eventPayload?.userFromId, userSecondId: message.eventPayload?.userId }, { status: 0, isConfirmed: true, marriageDate: moment().toDate() });
+      if (marriage && message.eventPayload?.status === 3 && marriage?.status === 2 && !marriage.isConfirmed) {
+        await MarriageModule.updateOne({ chatId: message.peerId, userFirstId: message.eventPayload?.userFromId, userSecondId: message.eventPayload?.userId }, { status: 0, isConfirmed: true, marriageDate: moment().toDate(), checkDate: null });
         let result = '';
 
         result = result.concat(`С вашего взаимного согласия, доброй воле и в соответствии с Семейным кодексом Беседы Ваш брак регистрируется.`);

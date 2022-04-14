@@ -44,7 +44,8 @@ export async function marriage(req: RequestMessageVkModel) {
     const marriage = new MarriageModule(<Partial<Marriage>>{
       chatId: req.msgObject.peerId,
       userFirstId: req.msgObject.senderId,
-      userSecondId: user.peerId
+      userSecondId: user.peerId,
+      checkDate: moment().toDate()
     });
     await marriage.save();
     const builder = Keyboard.builder()

@@ -22,6 +22,9 @@ export class Marriage extends Document {
   @Prop({ default: 0 })
   public status: number;
 
+  @Prop()
+  public checkDate: Date;
+
 }
 
 export const MarriageSchema = SchemaFactory.createForClass(Marriage);
