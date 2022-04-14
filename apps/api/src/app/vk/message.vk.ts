@@ -129,7 +129,7 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
         }
         if (await accessCheck(currentUser?.info, command.command, message.peerId)) {
           request.command = command.command;
-          request.fullText = message.text.substring(message.text.indexOf(command.command) + command.command.length + 2);
+          request.fullText = message.text.substring(message.text.indexOf(command.command) + command.command.length + 1);
           request.text = request.fullText.length ? request.fullText.split(' ') : [];
           request.msgObject = message;
           request.user = currentUser;
