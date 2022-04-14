@@ -156,12 +156,12 @@ export async function inviteUser(message: MessageContext<ContextDefaultState>) {
     }
     if (chat.autoKickList && chat.autoKickList.findIndex((id) => id === message.eventMemberId) !== -1) {
       await vk.api.messages.removeChatUser({ chat_id: message.peerId - 2000000000, member_id: message.eventMemberId, user_id: message.eventMemberId }).catch(console.error);
-      await message.send(`Пользователь ${await stringifyMention(message.eventMemberId)} находится в списке автокика`).catch(console.error);
+      await message.send(`Пользователь ${await stringifyMention({ userId: message.eventMemberId })} находится в списке автокика`).catch(console.error);
       return;
     }
     if (chat.banList && chat.banList.findIndex((u) => u.id === message.eventMemberId) !== -1) {
       await vk.api.messages.removeChatUser({ chat_id: message.peerId - 2000000000, member_id: message.eventMemberId, user_id: message.eventMemberId }).catch(console.error);
-      await message.send(`Пользователь ${await stringifyMention(message.eventMemberId)} находится в списке банлиста`).catch(console.error);
+      await message.send(`Пользователь ${await stringifyMention({ userId: message.eventMemberId })} находится в списке банлиста`).catch(console.error);
       return;
     }
     let user: User = await UserModule.findOne({ peerId: message.eventMemberId, chatId: message.peerId });
@@ -174,7 +174,7 @@ export async function inviteUser(message: MessageContext<ContextDefaultState>) {
       return await user.save();
     }
     if (chat.greetings) {
-      let result = `${await stringifyMention(message.eventMemberId)}, ${chat.greetings}`;
+      let result = `${await stringifyMention({ userId: message.eventMemberId })}, ${chat.greetings}`;
       if (chat.rules) {
         result = result.concat(`\n\n${chat.rules}`);
       }
@@ -198,7 +198,7 @@ export async function messageEvent(message: MessageEventContext) {
         await vk.api.messages.send({
           peer_id: message.peerId,
           random_id: moment().unix(),
-          message: `${await stringifyMention(message.eventPayload?.userFromId)} увы, но ${await stringifyMention(message.userId)} отказался(-ась) от предложения вступление в брак`
+          message: `${await stringifyMention({ userId: message.eventPayload?.userFromId })} увы, но ${await stringifyMention({ userId: message.userId })} отказался(-ась) от предложения вступление в брак`
         }).catch(console.error);
       }
       if (message.eventPayload?.status === 1 && marriage?.status === 0 && !marriage?.isConfirmed) {
@@ -207,7 +207,7 @@ export async function messageEvent(message: MessageEventContext) {
         result = result.concat(`\nСегодня — самое прекрасное и незабываемое событие в вашей жизни. Создание семьи – это начало доброго союза двух любящих сердец.`);
         result = result.concat(`\nС этого дня вы пойдёте по жизни рука об руку, вместе переживая и радость счастливых дней, и огорчения.`);
         result = result.concat(`\nКак трудно в нашем сложном и огромном мире встретить человека, который будет любить, и ценить, принимать твои недостатки и восхищаться достоинствами, который всегда поймет и простит. Судьба подарила вам счастье, встретив такого человека!`);
-        result = result.concat(`\nСоблюдая торжественный обряд перед регистрацией брака, в присутствии ваших родных и друзей, прошу вас ответить ${await stringifyMention(message.eventPayload?.userFromId)}, является ли ваше желание стать супругами свободным, взаимным и искренним, готовы ли вы разделить это счастье и эту ответственность, поддерживать и любить друг друга и в горе и в радости?`);
+        result = result.concat(`\nСоблюдая торжественный обряд перед регистрацией брака, в присутствии ваших родных и друзей, прошу вас ответить ${await stringifyMention({ userId: message.eventPayload?.userFromId })}, является ли ваше желание стать супругами свободным, взаимным и искренним, готовы ли вы разделить это счастье и эту ответственность, поддерживать и любить друг друга и в горе и в радости?`);
 
         const builder = Keyboard.builder()
           .callbackButton({
@@ -239,7 +239,7 @@ export async function messageEvent(message: MessageEventContext) {
       }
       if (message.eventPayload?.status === 2 && marriage?.status === 1 && !marriage?.isConfirmed) {
         await MarriageModule.updateOne({ chatId: message.peerId, userFirstId: message.eventPayload?.userId, userSecondId: message.eventPayload?.userFromId }, { status: 2 });
-        const result = `Ваш ответ ${await stringifyMention(message.eventPayload?.userFromId)}?`;
+        const result = `Ваш ответ ${await stringifyMention({ userId: message.eventPayload?.userFromId })}?`;
 
         const builder = Keyboard.builder()
           .callbackButton({

@@ -7,27 +7,24 @@ import { createUser, isOwnerMember, stringifyMention } from "@bot-sadvers/api/vk
 import { vk } from "@bot-sadvers/api/vk/vk";
 import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
 import { TypeMarriagesEnum } from "@bot-sadvers/shared/enums/type.marriages.enum";
-import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import { Command, CommandModule } from "@bot-sadvers/shared/schemas/command.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
 import * as moment from "moment-timezone";
-import { MessagesConversationMember, UsersUserFull } from "vk-io/lib/api/schemas/objects";
 
 export async function updateAll(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     const isOwner = await isOwnerMember(req.msgObject.senderId, req.msgObject.peerId);
     if (isOwner) {
-      const members = await vk.api.messages.getConversationMembers({ peer_id: req.msgObject.peerId });
-      for (const member of members.items) {
-        let user: User = await UserModule.findOne({ peerId: member.member_id, chatId: req.msgObject.peerId });
+      for (const member of req.members) {
+        let user: User = await UserModule.findOne({ peerId: member.item.member_id, chatId: req.msgObject.peerId });
         if (!user) {
-          user = await createUser(member.member_id, req);
+          user = await createUser(member.item.member_id, req);
         }
-        if (member.is_owner) {
+        if (member.item.is_owner) {
           user.status = 10;
         }
         if (!user.joinDate) {
-          user.joinDate = new Date(member.join_date * 1000);
+          user.joinDate = new Date(member.item.join_date * 1000);
         }
         await user.save();
       }
@@ -57,8 +54,7 @@ export async function updateAll(req: RequestMessageVkModel) {
           await createCommand(comm, 10, req.msgObject.peerId);
         }
       }
-      const chat: Chat = await ChatModule.findOne({ chatId: req.msgObject.peerId });
-      if (!chat) {
+      if (!req.chat) {
         await createChat(req.msgObject.peerId);
       }
       await yesSend(req.msgObject, `Данные беседы обновлены`);
@@ -113,7 +109,7 @@ export async function autoKickList(req: RequestMessageVkModel) {
     if (req.chat.autoKickList?.length) {
       let result = 'Список пользователей в автокике:';
       for (const peerId of req.chat.autoKickList) {
-        result = result.concat(`\n${await stringifyMention(peerId)}`);
+        result = result.concat(`\n${await stringifyMention({ userId: peerId, userInfo: req.members.find((m) => m.id === peerId)?.profile })}`);
       }
       req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
     } else {
@@ -128,7 +124,7 @@ export async function banList(req: RequestMessageVkModel) {
     if (req.chat.banList?.length) {
       let result = 'Список пользователей в банлисте:';
       for (const obj of req.chat.banList) {
-        result = result.concat(`\n${await stringifyMention(obj.id)} (до ${moment(obj.endDate).format('DD.MM.YYYY HH:mm')})`);
+        result = result.concat(`\n${await stringifyMention({ userId: obj.id, userInfo: req.members.find((m) => m.id === obj.id)?.profile })} (до ${moment(obj.endDate).format('DD.MM.YYYY HH:mm')})`);
       }
       req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
     } else {
@@ -164,7 +160,7 @@ export async function muteList(req: RequestMessageVkModel) {
     if (req.chat.muteList?.length) {
       let result = 'Список пользователей в муте:';
       for (const obj of req.chat.muteList) {
-        result = result.concat(`\n${await stringifyMention(obj.id)} (до ${moment(obj.endDate).format('DD.MM.YYYY HH:mm')})`);
+        result = result.concat(`\n${await stringifyMention({ userId: obj.id, userInfo: req.members.find((m) => m.id === obj.id)?.profile })} (до ${moment(obj.endDate).format('DD.MM.YYYY HH:mm')})`);
       }
       req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
     } else {
@@ -236,16 +232,7 @@ export async function setAutoKickInDays(req: RequestMessageVkModel) {
 export async function getChat(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     const chatInfo = await vk.api.messages.getConversationsById({ peer_ids: req.msgObject.peerId });
-    const members = await vk.api.messages.getConversationMembers({ peer_id: req.msgObject.peerId });
-    let membersList: { id: number, item: MessagesConversationMember, profile: UsersUserFull }[] = [];
-    for (const member of members.items) {
-      membersList.push({
-        id: member.member_id,
-        item: member,
-        profile: members.profiles.find((profile) => profile.id === member.member_id)
-      });
-    }
-    membersList = membersList.filter((m) => m.profile);
+    const membersList = req.members.filter((m) => m.profile);
     let textTypeMarriages;
     switch (req.chat.typeMarriages) {
       case TypeMarriagesEnum.traditional: {
@@ -268,8 +255,8 @@ export async function getChat(req: RequestMessageVkModel) {
     let result = 'Информация о беседе:';
     result = result.concat(`\n1. Номер беседы: ${req.chat.chatId}`);
     result = result.concat(`\n2. Название беседы: ${chatInfo.items[0]?.chat_settings?.title || '-'}`);
-    result = result.concat(`\n3. Владелец беседы: ${await stringifyMention(chatInfo.items[0]?.chat_settings?.owner_id, membersList.find((m) => m.id === chatInfo.items[0]?.chat_settings?.owner_id)?.profile)}`);
-    result = result.concat(`\n4. Кол-во участников: ${members.count}`);
+    result = result.concat(`\n3. Владелец беседы: ${await stringifyMention({ userId: chatInfo.items[0]?.chat_settings?.owner_id, userInfo: membersList.find((m) => m.id === chatInfo.items[0]?.chat_settings?.owner_id)?.profile })}`);
+    result = result.concat(`\n4. Кол-во участников: ${req.members.length}`);
     result = result.concat(`\n5. Кол-во девушек в беседе: ${membersList.reduce((count, m) => m.profile?.sex === 1 ? count + 1 : count, 0)}`);
     result = result.concat(`\n6. Кол-во мужчин в беседе: ${membersList.reduce((count, m) => m.profile?.sex === 2 ? count + 1 : count, 0)}`);
     result = result.concat(`\n7. Макс. кол-во предов: ${req.chat.maxWarn || 0}`);
@@ -300,21 +287,10 @@ export async function statusChat(req: RequestMessageVkModel) {
 
 export async function onlineList(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    const members = await vk.api.messages.getConversationMembers({ peer_id: req.msgObject.peerId });
-    const users: User[] = await UserModule.find({ chatId: req.msgObject.peerId }, { icon: 1 });
-    let membersList: { id: number, item: MessagesConversationMember, profile: UsersUserFull, user: User }[] = [];
-    for (const member of members.items) {
-      membersList.push({
-        id: member.member_id,
-        item: member,
-        profile: members.profiles.find((profile) => profile.id === member.member_id),
-        user: users.find((u) => u.peerId === member.member_id)
-      });
-    }
-    membersList = membersList.filter((m) => m.profile && m.profile.online_info?.is_online);
+    const membersList = req.members.filter((m) => m.profile && m.profile.online_info?.is_online);
     let result = 'Список пользователей онлайн:';
     for (let i = 0; i != membersList.length; i++) {
-      result = result.concat(`\n${i + 1}. ${await stringifyMention(membersList[i].id, membersList[i].profile)}${membersList[i].user?.icon ? ' ' + membersList[i].user?.icon : ''}`);
+      result = result.concat(`\n${i + 1}. ${await stringifyMention({ userId: membersList[i].id, userInfo: membersList[i].profile })}${membersList[i].info?.icon ? ' ' + membersList[i].info?.icon : ''}`);
       result = result.concat(` - (${membersList[i].profile.online_info?.is_mobile ? '📱' : '🖥'})`);
     }
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
