@@ -445,7 +445,7 @@ export async function convene(req: RequestMessageVkModel) {
 export async function probability(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nВопрос вероятность [вопрос]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nВероятность [вопрос]');
     }
     req.msgObject.send(`${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}, вероятность составляет ${Math.floor(Math.random() * (100 + 1))}%`, { disable_mentions: true }).catch(console.error);
   }
@@ -454,7 +454,7 @@ export async function probability(req: RequestMessageVkModel) {
 export async function who(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nВопрос кто [вопрос]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nКто [вопрос]');
     }
 
     const membersList = req.members.filter((m) => m.profile);
