@@ -300,14 +300,14 @@ export async function onlineList(req: RequestMessageVkModel) {
 
 export async function help(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    let result = '';
+    let result = 'Список команд:';
     for (const _comm of commands) {
       if (_comm.command === CommandVkEnum.updateAll) {
         continue;
       }
       result = result.concat(`\n${_comm.command}`);
       if (_comm.argv.length) {
-        result = result.concat(_comm.argv);
+        result = result.concat(` ${_comm.argv}`);
       }
     }
     req.msgObject.send(result).catch(console.error);
