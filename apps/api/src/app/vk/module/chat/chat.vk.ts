@@ -1,6 +1,7 @@
 import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
 import { errorSend, yesSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
+import { commands } from "@bot-sadvers/api/vk/message.vk";
 import { checkBanList, createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
 import { createCommand } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
 import { createUser, isOwnerMember, stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
@@ -294,5 +295,21 @@ export async function onlineList(req: RequestMessageVkModel) {
       result = result.concat(` - (${membersList[i].profile.online_info?.is_mobile ? '📱' : '🖥'})`);
     }
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
+  }
+}
+
+export async function help(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    let result = '';
+    for (const _comm of commands) {
+      if (_comm.command === CommandVkEnum.updateAll) {
+        continue;
+      }
+      result = result.concat(`\n${_comm.command}`);
+      if (_comm.argv.length) {
+        result = result.concat(_comm.argv);
+      }
+    }
+    req.msgObject.send(result).catch(console.error);
   }
 }
