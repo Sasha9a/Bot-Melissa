@@ -36,6 +36,9 @@ export class Chat extends Document {
   @Prop()
   public autoKickInDaysDate: Date;
 
+  @Prop({ default: 9 })
+  public autoKickToStatus: number;
+
   @Prop({ default: true })
   public isInvite: boolean;
 

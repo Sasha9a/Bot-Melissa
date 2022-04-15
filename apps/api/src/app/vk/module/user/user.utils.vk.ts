@@ -99,12 +99,12 @@ export async function autoKickInDays(chat: Chat, message: MessageContext<Context
     for (const member of membersList) {
       if (member.info?.lastActivityDate) {
         const days = moment().diff(moment(member.info.lastActivityDate)) / 1000 / 60 / 60 / 24;
-        if (Number(days.toFixed()) >= chat.autoKickInDays) {
+        if (Number(days.toFixed()) >= chat.autoKickInDays && chat.autoKickToStatus >= member.info?.status) {
           await vk.api.messages.removeChatUser({ chat_id: message.peerId - 2000000000, member_id: member.id, user_id: member.id }).catch(console.error);
         }
       } else if (member.info?.joinDate) {
         const days = moment().diff(moment(member.info.joinDate)) / 1000 / 60 / 60 / 24;
-        if (Number(days.toFixed()) >= chat.autoKickInDays) {
+        if (Number(days.toFixed()) >= chat.autoKickInDays && chat.autoKickToStatus >= member.info?.status) {
           await vk.api.messages.removeChatUser({ chat_id: message.peerId - 2000000000, member_id: member.id, user_id: member.id }).catch(console.error);
         }
       }

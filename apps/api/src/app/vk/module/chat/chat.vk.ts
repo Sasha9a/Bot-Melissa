@@ -201,7 +201,8 @@ export async function getChat(req: RequestMessageVkModel) {
     result = result.concat(`\n7. Макс. кол-во предов: ${req.chat.maxWarn || 0}`);
     result = result.concat(`\n8. Идеология браков: ${textTypeMarriages}`);
     result = result.concat(`\n9. Автокик за неактив: ${req.chat.autoKickInDays > 0 ? (req.chat.autoKickInDays + ' дн.') : 'Выключен'}`);
-    result = result.concat(`\n10. Статус беседы: ${req.chat.isInvite ? 'Открытая' : 'Закрытая'}`);
+    result = result.concat(`\n10. Автокик по какой статус: ${req.chat.autoKickToStatus || '-'}`);
+    result = result.concat(`\n11. Статус беседы: ${req.chat.isInvite ? 'Открытая' : 'Закрытая'}`);
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
 }
@@ -238,9 +239,9 @@ export async function settings(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 2) {
       return errorSend(req.msgObject, 'Не все параметры введены\nЛиса настройки (номер параметра) (значение)\n' +
-        'Номера параметров:\n1. Установить преды\n2. Установить браки\n3. Установить автокик\n4. Приватность беседы');
+        'Номера параметров:\n1. Установить преды\n2. Установить браки\n3. Установить автокик\n4. Приватность беседы\n5. Автокик по статус');
     }
-    if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 1 || Number(req.text[0]) > 4) {
+    if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 1 || Number(req.text[0]) > 5) {
       return errorSend(req.msgObject, 'Первый аргумент не верный');
     }
     switch (Number(req.text[0])) {
@@ -306,6 +307,15 @@ export async function settings(req: RequestMessageVkModel) {
         } else {
           await yesSend(req.msgObject, `Статус беседы изменен на Открытую`);
         }
+        break;
+      }
+      case 5: {
+        if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 0 || Number(req.text[1]) > 10) {
+          return errorSend(req.msgObject, 'Второй аргумент не верный (0-10)');
+        }
+        req.chat.autoKickToStatus = Number(req.text[1]);
+        await req.chat.save();
+        await yesSend(req.msgObject, `Автокик установлен по статус ${Number(req.text[1])} включительно`);
         break;
       }
     }
