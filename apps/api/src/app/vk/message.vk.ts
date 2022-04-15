@@ -8,15 +8,12 @@ import {
   clearMuteList,
   getChat,
   getGreetings,
-  getRules, help,
+  getRules,
+  help,
   muteList,
   onlineList,
-  setAutoKickInDays,
   setGreetings,
-  setMarriages,
-  setMaxWarn,
-  setRules,
-  statusChat,
+  setRules, settings,
   updateAll
 } from "@bot-sadvers/api/vk/module/chat/chat.vk";
 import { checkTimeMarriage } from "@bot-sadvers/api/vk/module/marriage/marriage.utils.vk";
@@ -84,7 +81,6 @@ export const commands: { command: CommandVkEnum, func: (req: RequestMessageVkMod
   { command: CommandVkEnum.banMinus, func: banMinus, argv: '(пользователь)' },
   { command: CommandVkEnum.banList, func: banList, argv: '' },
   { command: CommandVkEnum.clearBanList, func: clearBanList, argv: '' },
-  { command: CommandVkEnum.setMaxWarn, func: setMaxWarn, argv: '(количество)' },
   { command: CommandVkEnum.warn, func: warn, argv: '(пользователь) (количество)' },
   { command: CommandVkEnum.warnMinus, func: warnMinus, argv: '(пользователь) (количество)' },
   { command: CommandVkEnum.warnList, func: warnList, argv: '' },
@@ -94,18 +90,16 @@ export const commands: { command: CommandVkEnum, func: (req: RequestMessageVkMod
   { command: CommandVkEnum.muteList, func: muteList, argv: '' },
   { command: CommandVkEnum.clearMuteList, func: clearMuteList, argv: '' },
   { command: CommandVkEnum.convene, func: convene, argv: '(параметр)' },
-  { command: CommandVkEnum.setMarriages, func: setMarriages, argv: '(номер параметра)' },
   { command: CommandVkEnum.marriage, func: marriage, argv: '(пользователь)' },
   { command: CommandVkEnum.marriages, func: marriages, argv: '' },
   { command: CommandVkEnum.divorce, func: divorce, argv: '(пользователь)' },
   { command: CommandVkEnum.probability, func: probability, argv: '(вопрос)' },
   { command: CommandVkEnum.who, func: who, argv: '(вопрос)' },
   { command: CommandVkEnum.activity, func: activity, argv: '' },
-  { command: CommandVkEnum.setAutoKickInDays, func: setAutoKickInDays, argv: '(количество дней)' },
   { command: CommandVkEnum.getChat, func: getChat, argv: '' },
-  { command: CommandVkEnum.statusChat, func: statusChat, argv: '(параметр)' },
   { command: CommandVkEnum.onlineList, func: onlineList, argv: '' },
-  { command: CommandVkEnum.help, func: help, argv: '' }
+  { command: CommandVkEnum.help, func: help, argv: '' },
+  { command: CommandVkEnum.settings, func: settings, argv: '(номер параметра) (значение)' }
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {

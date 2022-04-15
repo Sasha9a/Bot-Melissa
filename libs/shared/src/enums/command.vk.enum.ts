@@ -22,7 +22,6 @@ export enum CommandVkEnum {
   banMinus = 'бан-',
   banList = 'баны',
   clearBanList = 'очистить баны',
-  setMaxWarn = 'установить пред',
   warn = 'пред',
   warnMinus = 'снять пред',
   warnList = 'преды',
@@ -32,16 +31,14 @@ export enum CommandVkEnum {
   muteList = 'муты',
   clearMuteList = 'очистить муты',
   convene = 'созвать',
-  setMarriages = 'установить браки',
   marriage = 'брак',
   marriages = 'браки',
   divorce = 'развод',
   probability = 'вероятность',
   who = 'кто',
   activity = 'актив',
-  setAutoKickInDays = 'установить автокик',
   getChat = 'чат',
-  statusChat = 'приватность беседы',
   onlineList = 'онлайн',
-  help = 'помощь'
+  help = 'помощь',
+  settings = 'настройки'
 }

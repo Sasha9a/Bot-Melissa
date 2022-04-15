@@ -38,16 +38,13 @@ export async function updateAll(req: RequestMessageVkModel) {
         CommandVkEnum.ban,
         CommandVkEnum.banMinus,
         CommandVkEnum.clearBanList,
-        CommandVkEnum.setMaxWarn,
         CommandVkEnum.warn,
         CommandVkEnum.warnMinus,
         CommandVkEnum.clearWarnList,
         CommandVkEnum.mute,
         CommandVkEnum.muteMinus,
         CommandVkEnum.clearMuteList,
-        CommandVkEnum.setMarriages,
-        CommandVkEnum.setAutoKickInDays,
-        CommandVkEnum.statusChat
+        CommandVkEnum.settings,
       ];
       for (const comm of commandArray) {
         const command: Command = await CommandModule.findOne({ chatId: req.msgObject.peerId, command: comm });
@@ -142,20 +139,6 @@ export async function clearBanList(req: RequestMessageVkModel) {
   }
 }
 
-export async function setMaxWarn(req: RequestMessageVkModel) {
-  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nУстановить пред [количество]');
-    }
-    if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 1 || Number(req.text[0]) > 10) {
-      return errorSend(req.msgObject, 'Первый аргумент не верный (1-10)');
-    }
-    req.chat.maxWarn = Number(req.text[0]);
-    await req.chat.save();
-    await yesSend(req.msgObject, `Установлено максимальное количество предов: ${req.chat.maxWarn}`);
-  }
-}
-
 export async function muteList(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.chat.muteList?.length) {
@@ -175,58 +158,6 @@ export async function clearMuteList(req: RequestMessageVkModel) {
     req.chat.muteList = [];
     await req.chat.save();
     await yesSend(req.msgObject, `Муты очищены`);
-  }
-}
-
-export async function setMarriages(req: RequestMessageVkModel) {
-  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nУстановить браки [номер параметра]\n' +
-        '0 - Традиционные\n1 - Многоженство\n2 - Однополые\n3 - Многоженство и однополые');
-    }
-    if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 0 || Number(req.text[0]) > 3) {
-      return errorSend(req.msgObject, 'Первый аргумент не верный (0-3)');
-    }
-    req.chat.typeMarriages = Number(req.text[0]);
-    await req.chat.save();
-    let textTypeMarriages;
-    switch (Number(req.text[0])) {
-      case TypeMarriagesEnum.traditional: {
-        textTypeMarriages = 'Традиционные';
-        break;
-      }
-      case TypeMarriagesEnum.polygamy: {
-        textTypeMarriages = 'Многоженство';
-        break;
-      }
-      case TypeMarriagesEnum.sameSex: {
-        textTypeMarriages = 'Однополые';
-        break;
-      }
-      case TypeMarriagesEnum.polygamyAndSameSex: {
-        textTypeMarriages = 'Многоженство и однополые';
-        break;
-      }
-    }
-    await yesSend(req.msgObject, `В беседе установлена идеология браков: ${textTypeMarriages}`);
-  }
-}
-
-export async function setAutoKickInDays(req: RequestMessageVkModel) {
-  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nУстановить автокик [кол-во дней]');
-    }
-    if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 0 || Number(req.text[0]) > 90) {
-      return errorSend(req.msgObject, 'Первый аргумент не верный (0-90)');
-    }
-    req.chat.autoKickInDays = Number(req.text[0]);
-    await req.chat.save();
-    if (Number(req.text[0]) === 0) {
-      await yesSend(req.msgObject, `Автокик отключен по активу`);
-    } else {
-      await yesSend(req.msgObject, `Автокик установлен по неактиву через ${Number(req.text[0])} дн.`);
-    }
   }
 }
 
@@ -268,24 +199,6 @@ export async function getChat(req: RequestMessageVkModel) {
   }
 }
 
-export async function statusChat(req: RequestMessageVkModel) {
-  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nСтатус беседы [параметр]\n1 - Открытая\n0 - Закрытая');
-    }
-    if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 0 || Number(req.text[0]) > 1) {
-      return errorSend(req.msgObject, 'Первый аргумент не верный (0-1)');
-    }
-    req.chat.isInvite = req.text[0] === '1';
-    await req.chat.save();
-    if (Number(req.text[0]) === 0) {
-      await yesSend(req.msgObject, `Статус беседы изменен на Закрытую`);
-    } else {
-      await yesSend(req.msgObject, `Статус беседы изменен на Открытую`);
-    }
-  }
-}
-
 export async function onlineList(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     const membersList = req.members.filter((m) => m.profile && m.profile.online_info?.is_online);
@@ -311,5 +224,83 @@ export async function help(req: RequestMessageVkModel) {
       }
     }
     req.msgObject.send(result).catch(console.error);
+  }
+}
+
+export async function settings(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length < 2) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nНастройки (номер параметра) (значение)\n' +
+        'Номера параметров:\n1. Установить преды\n2. Установить браки\n3. Установить автокик\n4. Приватность беседы');
+    }
+    if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 1 || Number(req.text[0]) > 4) {
+      return errorSend(req.msgObject, 'Первый аргумент не верный');
+    }
+    switch (Number(req.text[0])) {
+      case 1: {
+        if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 1 || Number(req.text[1]) > 10) {
+          return errorSend(req.msgObject, 'Второй аргумент не верный (1-10)');
+        }
+        req.chat.maxWarn = Number(req.text[1]);
+        await req.chat.save();
+        await yesSend(req.msgObject, `Установлено максимальное количество предов: ${req.chat.maxWarn}`);
+        break;
+      }
+      case 2: {
+        if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 0 || Number(req.text[1]) > 3) {
+          return errorSend(req.msgObject, 'Второй аргумент не верный (0-3)\n' +
+            '0 - Традиционные\n1 - Многоженство\n2 - Однополые\n3 - Многоженство и однополые');
+        }
+        req.chat.typeMarriages = Number(req.text[1]);
+        await req.chat.save();
+        let textTypeMarriages;
+        switch (Number(req.text[1])) {
+          case TypeMarriagesEnum.traditional: {
+            textTypeMarriages = 'Традиционные';
+            break;
+          }
+          case TypeMarriagesEnum.polygamy: {
+            textTypeMarriages = 'Многоженство';
+            break;
+          }
+          case TypeMarriagesEnum.sameSex: {
+            textTypeMarriages = 'Однополые';
+            break;
+          }
+          case TypeMarriagesEnum.polygamyAndSameSex: {
+            textTypeMarriages = 'Многоженство и однополые';
+            break;
+          }
+        }
+        await yesSend(req.msgObject, `В беседе установлена идеология браков: ${textTypeMarriages}`);
+        break;
+      }
+      case 3: {
+        if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 0 || Number(req.text[1]) > 90) {
+          return errorSend(req.msgObject, 'Второй аргумент не верный (0-90)');
+        }
+        req.chat.autoKickInDays = Number(req.text[1]);
+        await req.chat.save();
+        if (Number(req.text[1]) === 0) {
+          await yesSend(req.msgObject, `Автокик отключен по активу`);
+        } else {
+          await yesSend(req.msgObject, `Автокик установлен по неактиву через ${Number(req.text[1])} дн.`);
+        }
+        break;
+      }
+      case 4: {
+        if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 0 || Number(req.text[1]) > 1) {
+          return errorSend(req.msgObject, 'Второй аргумент не верный (0-1)');
+        }
+        req.chat.isInvite = req.text[1] === '1';
+        await req.chat.save();
+        if (Number(req.text[1]) === 0) {
+          await yesSend(req.msgObject, `Статус беседы изменен на Закрытую`);
+        } else {
+          await yesSend(req.msgObject, `Статус беседы изменен на Открытую`);
+        }
+        break;
+      }
+    }
   }
 }
