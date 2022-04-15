@@ -53,7 +53,6 @@ export async function templateGetUser(req: RequestMessageVkModel, userId: number
     result = result.concat(`\nСтатус: ${user?.info?.status || 0}`);
   }
   result = result.concat(`\nПредупреждения: ${user?.info?.warn || 0} / ${req.chat.maxWarn}`);
-  result = result.concat(`\nО себе: ${user?.info?.aboutMe || '-'}`);
   if (marriages?.length) {
     result = result.concat(`\nВ браке с `);
     for (let i = 0; i != marriages.length; i++) {
@@ -61,6 +60,7 @@ export async function templateGetUser(req: RequestMessageVkModel, userId: number
       result = result.concat(`${await stringifyMention({ userId: userResultId, userInfo: req.members.find((m) => m.id === userResultId)?.profile })}${i !== marriages.length - 1 ? ', ' : ''}`);
     }
   }
+  result = result.concat(`\nО себе: ${user?.info?.aboutMe || '-'}`);
   return result;
 }
 

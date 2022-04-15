@@ -25,6 +25,9 @@ export async function updateAll(req: RequestMessageVkModel) {
             age: member.profile?.bdate ? moment().diff(moment(member.profile.bdate, 'D.M.YYYY'), 'years') : null
           });
         }
+        if (member.profile?.bdate && moment().diff(moment(member.profile.bdate, 'D.M.YYYY'), 'years') >= 1) {
+          user.age = moment().diff(moment(member.profile.bdate, 'D.M.YYYY'), 'years');
+        }
         if (member.item.is_owner) {
           user.status = 10;
         }
