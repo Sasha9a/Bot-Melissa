@@ -201,7 +201,7 @@ export async function getChat(req: RequestMessageVkModel) {
     result = result.concat(`\n7. Макс. кол-во предов: ${req.chat.maxWarn || 0}`);
     result = result.concat(`\n8. Идеология браков: ${textTypeMarriages}`);
     result = result.concat(`\n9. Автокик за неактив: ${req.chat.autoKickInDays > 0 ? (req.chat.autoKickInDays + ' дн.') : 'Выключен'}`);
-    result = result.concat(`\n10. Автокик по какой статус: ${req.chat.autoKickToStatus || '-'}`);
+    result = result.concat(`\n10. Автокик по какой статус: ${req.chat.autoKickToStatus ?? '-'}`);
     result = result.concat(`\n11. Статус беседы: ${req.chat.isInvite ? 'Открытая' : 'Закрытая'}`);
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
