@@ -5,6 +5,7 @@ export enum CommandVkEnum {
   setNick = 'ник',
   setIconMe = 'мне значок',
   setIcon = 'значок',
+  setAgeMe = 'мне возраст',
   setStatus = 'статус',
   getStatuses = 'статусы',
   setNameStatus = 'название статуса',

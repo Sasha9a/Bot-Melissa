@@ -19,7 +19,11 @@ export async function updateAll(req: RequestMessageVkModel) {
       for (const member of req.members) {
         let user: User = await UserModule.findOne({ peerId: member.item.member_id, chatId: req.msgObject.peerId });
         if (!user) {
-          user = await createUser(member.item.member_id, req);
+          user = await createUser({
+            chatId: req.msgObject.peerId,
+            peerId: member.item.member_id,
+            age: member.profile?.bdate ? moment().diff(moment(member.profile.bdate, 'D.M.YYYY'), 'years') : null
+          });
         }
         if (member.item.is_owner) {
           user.status = 10;

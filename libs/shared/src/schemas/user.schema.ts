@@ -13,7 +13,7 @@ export class User extends Document {
   @Prop()
   public joinDate: Date;
 
-  @Prop({ required: true })
+  @Prop({ default: 0 })
   public status: number;
 
   @Prop()
@@ -21,6 +21,12 @@ export class User extends Document {
 
   @Prop()
   public icon: string;
+
+  @Prop()
+  public age: number;
+
+  @Prop()
+  public aboutMe: string;
 
   @Prop({ default: 0 })
   public warn: number;

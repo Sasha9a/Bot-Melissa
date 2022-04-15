@@ -13,7 +13,8 @@ import {
   muteList,
   onlineList,
   setGreetings,
-  setRules, settings,
+  setRules,
+  settings,
   updateAll
 } from "@bot-sadvers/api/vk/module/chat/chat.vk";
 import { checkTimeMarriage } from "@bot-sadvers/api/vk/module/marriage/marriage.utils.vk";
@@ -34,7 +35,7 @@ import {
   kick,
   mute,
   muteMinus,
-  probability,
+  probability, setAgeMe,
   setIcon,
   setIconMe,
   setNick,
@@ -64,6 +65,7 @@ export const commands: { command: CommandVkEnum, func: (req: RequestMessageVkMod
   { command: CommandVkEnum.setNick, func: setNick, argv: '(пользователь) (ник)' },
   { command: CommandVkEnum.setIconMe, func: setIconMe, argv: '' },
   { command: CommandVkEnum.setIcon, func: setIcon, argv: '(пользователь) (значок)' },
+  { command: CommandVkEnum.setAgeMe, func: setAgeMe, argv: '(возраст)' },
   { command: CommandVkEnum.setStatus, func: setStatus, argv: '(пользователь) (номер статуса)' },
   { command: CommandVkEnum.getStatuses, func: getStatuses, argv: '' },
   { command: CommandVkEnum.setNameStatus, func: setNameStatus, argv: '(номер статуса) (название)' },
@@ -104,7 +106,7 @@ export const commands: { command: CommandVkEnum, func: (req: RequestMessageVkMod
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {
   const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
-  const members = await vk.api.messages.getConversationMembers({ peer_id: message.peerId });
+  const members = await vk.api.messages.getConversationMembers({ peer_id: message.peerId, fields: ["bdate"] });
   const users: User[] = await UserModule.find({ chatId: message.peerId });
   const membersList: { id: number, item: MessagesConversationMember, profile: UsersUserFull, info: User }[] = [];
   for (const member of members.items) {

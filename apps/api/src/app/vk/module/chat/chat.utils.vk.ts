@@ -46,5 +46,7 @@ export async function checkMuteList(chat: Chat): Promise<void> {
 }
 
 export async function deleteAntispam(chat: Chat): Promise<void> {
-  await AntispamModule.deleteMany({ chatId: chat.chatId, date: { $lt: moment().startOf('day').toDate() } });
+  if (chat) {
+    await AntispamModule.deleteMany({ chatId: chat.chatId, date: { $lt: moment().startOf('day').toDate() } });
+  }
 }

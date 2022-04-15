@@ -62,6 +62,20 @@ export async function setIcon(req: RequestMessageVkModel) {
   }
 }
 
+export async function setAgeMe(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 1) {
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса мне возраст [возраст]');
+    }
+    if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 1 || Number(req.text[0]) > 100) {
+      return errorSend(req.msgObject, 'Первый аргумент не верный (1-100)');
+    }
+    req.user.info.age = Number(req.text[0]);
+    await req.user.info.save();
+    await yesSend(req.msgObject, `Установлен возраст для ${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}: "${Number(req.text[0])}"`);
+  }
+}
+
 export async function getUser(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length > 1) {

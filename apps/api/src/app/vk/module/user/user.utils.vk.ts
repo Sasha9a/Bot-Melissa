@@ -9,12 +9,8 @@ import * as moment from "moment-timezone";
 import { ContextDefaultState, IResolvedOwnerResource, IResolvedTargetResource, MessageContext, resolveResource } from "vk-io";
 import { MessagesConversationMember, UsersUserFull } from "vk-io/lib/api/schemas/objects";
 
-export async function createUser(peerId: number, req: RequestMessageVkModel): Promise<User> {
-  const user: User = new UserModule({
-    peerId: peerId,
-    chatId: req.msgObject.peerId,
-    status: 0
-  });
+export async function createUser(info: Partial<User>): Promise<User> {
+  const user: User = new UserModule(info);
   return await user.save();
 }
 
@@ -48,6 +44,7 @@ export async function templateGetUser(req: RequestMessageVkModel, userId: number
   } else {
     result = result.concat(`\nВ беседе c -`);
   }
+  result = result.concat(`\nВозраст: ${user?.info?.age || '-'}`);
   result = result.concat(`\nНик: ${user?.info?.nick || '-'}`);
   result = result.concat(`\nЗначок: ${user?.info?.icon || '-'}`);
   if (status?.name?.length) {
