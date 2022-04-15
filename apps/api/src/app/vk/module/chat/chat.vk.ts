@@ -172,7 +172,6 @@ export async function getChat(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     const chatInfo = await vk.api.messages.getConversationsById({ peer_ids: req.msgObject.peerId });
     const membersList = req.members.filter((m) => m.profile);
-    console.log(membersList);
     let textTypeMarriages;
     switch (req.chat.typeMarriages) {
       case TypeMarriagesEnum.traditional: {
