@@ -24,7 +24,7 @@ export async function setNickMe(req: RequestMessageVkModel) {
 export async function setNick(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 2) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nНик [пользователь] [ник]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса ник [пользователь] [ник]');
     }
     const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
@@ -50,7 +50,7 @@ export async function setIconMe(req: RequestMessageVkModel) {
 export async function setIcon(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 2) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЗначок [пользователь] [значок]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса значок [пользователь] [значок]');
     }
     const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
@@ -65,7 +65,7 @@ export async function setIcon(req: RequestMessageVkModel) {
 export async function getUser(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length > 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nУчастник [пользователь]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса участник [пользователь]');
     }
     if (req.text.length === 1) {
       const user: User = await getFullUserInfo(req.text[0], req.msgObject);
@@ -82,7 +82,7 @@ export async function getUser(req: RequestMessageVkModel) {
 export async function setStatus(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 2) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nСтатус [пользователь] [номер статуса]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса статус [пользователь] [номер статуса]');
     }
     const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
@@ -129,7 +129,7 @@ export async function getStatuses(req: RequestMessageVkModel) {
 export async function kick(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nКик [пользователь]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса кик [пользователь]');
     }
     const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
@@ -150,7 +150,7 @@ export async function kick(req: RequestMessageVkModel) {
 export async function autoKick(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nАвтокик [пользователь]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса автокик [пользователь]');
     }
     const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
@@ -178,7 +178,7 @@ export async function autoKick(req: RequestMessageVkModel) {
 export async function autoKickMinus(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nАвтокик- [пользователь]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса автокик- [пользователь]');
     }
     const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
@@ -200,7 +200,7 @@ export async function autoKickMinus(req: RequestMessageVkModel) {
 export async function ban(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 2) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nБан [пользователь] [кол-во дней]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса бан [пользователь] [кол-во дней]');
     }
     const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
@@ -235,7 +235,7 @@ export async function ban(req: RequestMessageVkModel) {
 export async function banMinus(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nБан- [пользователь]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса бан- [пользователь]');
     }
     const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
@@ -258,7 +258,7 @@ export async function banMinus(req: RequestMessageVkModel) {
 export async function warn(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 2) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nПред [пользователь] [кол-во]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса пред [пользователь] [кол-во]');
     }
     const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
@@ -290,7 +290,7 @@ export async function warn(req: RequestMessageVkModel) {
 export async function warnMinus(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 2) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nСнять пред [пользователь] [кол-во]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса снять пред [пользователь] [кол-во]');
     }
     const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
@@ -340,7 +340,7 @@ export async function clearWarnList(req: RequestMessageVkModel) {
 export async function mute(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 2) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nМут [пользователь] [кол-во часов]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса мут [пользователь] [кол-во часов]');
     }
     const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
@@ -374,7 +374,7 @@ export async function mute(req: RequestMessageVkModel) {
 export async function muteMinus(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nМут- [пользователь]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса мут- [пользователь]');
     }
     const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
@@ -397,7 +397,7 @@ export async function muteMinus(req: RequestMessageVkModel) {
 export async function convene(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nСозвать [параметр]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса созвать [параметр]');
     }
     let membersList = req.members.filter((m) => m.id !== req.msgObject.senderId && m.profile);
     let result = '';
@@ -448,7 +448,7 @@ export async function convene(req: RequestMessageVkModel) {
 export async function probability(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nВероятность [вопрос]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса вероятность [вопрос]');
     }
     const data: Antispam = await AntispamModule.findOne({
       chatId: req.chat.chatId,
@@ -477,7 +477,7 @@ export async function probability(req: RequestMessageVkModel) {
 export async function who(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nКто [вопрос]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса кто [вопрос]');
     }
     let result: string;
     if (req.text[0].toLowerCase() === 'я') {

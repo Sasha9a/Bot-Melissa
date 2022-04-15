@@ -63,7 +63,7 @@ export async function updateAll(req: RequestMessageVkModel) {
 export async function setRules(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nНовые правила [текст]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса новые правила [текст]');
     }
     req.chat.rules = req.fullText;
     await req.chat.save();
@@ -84,7 +84,7 @@ export async function getRules(req: RequestMessageVkModel) {
 export async function setGreetings(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nНовое приветствие [текст]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса новое приветствие [текст]');
     }
     req.chat.greetings = req.fullText;
     await req.chat.save();
@@ -230,7 +230,7 @@ export async function help(req: RequestMessageVkModel) {
 export async function settings(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 2) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nНастройки (номер параметра) (значение)\n' +
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса настройки (номер параметра) (значение)\n' +
         'Номера параметров:\n1. Установить преды\n2. Установить браки\n3. Установить автокик\n4. Приватность беседы');
     }
     if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 1 || Number(req.text[0]) > 4) {

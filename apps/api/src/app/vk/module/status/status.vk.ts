@@ -9,7 +9,7 @@ import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema"
 export async function setNameStatus(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 2) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nНазвание статуса [номер статуса] [название]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса название статуса [номер статуса] [название]');
     }
     if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 0 || Number(req.text[0]) > 10) {
       return errorSend(req.msgObject, 'Первый аргумент не верный');
@@ -27,7 +27,7 @@ export async function setNameStatus(req: RequestMessageVkModel) {
 export async function setCommandStatus(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 2) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nДоступ [номер статуса] [команда]');
+      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса доступ [номер статуса] [команда]');
     }
     if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 0 || Number(req.text[0]) > 10) {
       return errorSend(req.msgObject, 'Первый аргумент не верный');

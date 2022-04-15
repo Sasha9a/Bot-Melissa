@@ -127,7 +127,7 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
   if (message.text?.toLowerCase().startsWith(nameBot) && message.text[nameBot.length] === ' ') {
     message.text = message.text.substring(nameBot.length + 1);
     if (!chat && !(message.text?.toLowerCase().startsWith(CommandVkEnum.updateAll) && (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' '))) {
-      return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
+      return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Лиса обновить`);
     }
     const request: RequestMessageVkModel = new RequestMessageVkModel();
     request.chat = chat;
@@ -136,7 +136,7 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
       if (message.text?.toLowerCase().startsWith(command.command) && (!message.text[command.command.length] || message.text[command.command.length] === ' ')) {
         const currentUser = request.members.find((m) => m.id === message.senderId);
         if (!currentUser?.info && !(message.text?.toLowerCase().startsWith(CommandVkEnum.updateAll) && (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' '))) {
-          return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
+          return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Лиса обновить`);
         }
         if (await accessCheck(currentUser?.info, command.command, message.peerId)) {
           request.command = command.command;
@@ -156,11 +156,11 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
 
 export async function inviteUser(message: MessageContext<ContextDefaultState>) {
   if (message.eventMemberId === -environment.groupId) {
-    await message.send('Добрый день всем! Я бот администратор :)\nЧтобы я заработал, выдайте мне админку и Владелец беседы введи команду: "Обновить"').catch(console.error);
+    await message.send('Добрый день всем! Я бот администратор :)\nЧтобы я заработал, выдайте мне админку и Владелец беседы введи команду: "Лиса обновить"').catch(console.error);
   } else {
     const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
     if (!chat) {
-      return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Обновить`);
+      return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Лиса обновить`);
     }
     await checkBanList(chat);
     if (!chat.isInvite && !await isOwnerMember(message.senderId, message.peerId)) {
