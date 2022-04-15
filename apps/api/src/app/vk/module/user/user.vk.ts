@@ -76,6 +76,17 @@ export async function setAgeMe(req: RequestMessageVkModel) {
   }
 }
 
+export async function setAboutMe(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (!req.text.length) {
+      return errorSend(req.msgObject, 'Вы не ввели текст');
+    }
+    req.user.info.aboutMe = req.fullText;
+    await req.user.info.save();
+    await yesSend(req.msgObject, `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })} графа "О себе" сохранен`);
+  }
+}
+
 export async function getUser(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length > 1) {
