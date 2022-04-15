@@ -1,3 +1,4 @@
+import { Antispam, AntispamModule } from "@bot-sadvers/shared/schemas/antispam.schema";
 import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
 import * as moment from "moment-timezone";
 
@@ -7,6 +8,11 @@ export async function createChat(chatId: number): Promise<Chat> {
     maxWarn: 3
   });
   return await chat.save();
+}
+
+export async function createAntispam(info: Partial<Antispam>): Promise<Antispam> {
+  const antispam: Antispam = new AntispamModule(info);
+  return await antispam.save();
 }
 
 export async function checkBanList(chat: Chat): Promise<void> {
@@ -37,4 +43,8 @@ export async function checkMuteList(chat: Chat): Promise<void> {
       await chat.save();
     }
   }
+}
+
+export async function deleteAntispam(chat: Chat): Promise<void> {
+  await AntispamModule.deleteMany({ chatId: chat.chatId, date: { $lt: moment().startOf('day').toDate() } });
 }

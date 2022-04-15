@@ -1,11 +1,14 @@
 import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
 import { errorSend, yesSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
+import { createAntispam } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
 import { vk } from "@bot-sadvers/api/vk/vk";
+import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
+import { Antispam, AntispamModule } from "@bot-sadvers/shared/schemas/antispam.schema";
 import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
 import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
-import { getFullUserInfo, isOwnerMember, stringifyMention, templateGetUser } from "./user.utils.vk";
 import * as moment from "moment-timezone";
+import { getFullUserInfo, isOwnerMember, stringifyMention, templateGetUser } from "./user.utils.vk";
 
 export async function setNickMe(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
@@ -447,7 +450,27 @@ export async function probability(req: RequestMessageVkModel) {
     if (req.text.length < 1) {
       return errorSend(req.msgObject, 'Не все параметры введены\nВероятность [вопрос]');
     }
-    req.msgObject.send(`${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}, вероятность составляет ${Math.floor(Math.random() * (100 + 1))}%`, { disable_mentions: true }).catch(console.error);
+    const data: Antispam = await AntispamModule.findOne({
+      chatId: req.chat.chatId,
+      command: CommandVkEnum.probability,
+      date: moment().startOf('day').toDate(),
+      question: req.fullText.toLowerCase()
+    });
+    let result = `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}, вероятность составляет `;
+    if (data) {
+      result = result.concat(`${data.text}%`);
+    } else {
+      const rand = Math.floor(Math.random() * (100 + 1));
+      result = result.concat(`${rand}%`);
+      await createAntispam({
+        chatId: req.chat.chatId,
+        command: CommandVkEnum.probability,
+        date: moment().startOf('day').toDate(),
+        question: req.fullText.toLowerCase(),
+        text: String(rand)
+      });
+    }
+    req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
 }
 
@@ -482,13 +505,48 @@ export async function who(req: RequestMessageVkModel) {
         'актив', 'пассив', 'сварщик', 'окунь', 'тракторист',
         'уж', 'учитель', 'философ', 'фрукт', 'ягнёнок'
       ];
+      const data: Antispam = await AntispamModule.findOne({
+        chatId: req.chat.chatId,
+        command: CommandVkEnum.who,
+        date: moment().startOf('day').toDate(),
+        peerId: req.user.id
+      });
       result = `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}, вы - `;
-      result = result.concat(`${adjectives[Math.floor(Math.random() * adjectives.length)]} ${nouns[Math.floor(Math.random() * nouns.length)]}`);
+      if (data) {
+        result = result.concat(data.text);
+      } else {
+        const randText = `${adjectives[Math.floor(Math.random() * adjectives.length)]} ${nouns[Math.floor(Math.random() * nouns.length)]}`;
+        result = result.concat(randText);
+        await createAntispam({
+          chatId: req.chat.chatId,
+          command: CommandVkEnum.who,
+          date: moment().startOf('day').toDate(),
+          peerId: req.user.id,
+          text: randText
+        });
+      }
     } else {
       const membersList = req.members.filter((m) => m.profile);
-      const rand = Math.floor(Math.random() * membersList.length);
+      const data: Antispam = await AntispamModule.findOne({
+        chatId: req.chat.chatId,
+        command: CommandVkEnum.who,
+        date: moment().startOf('day').toDate(),
+        question: req.fullText.toLowerCase()
+      });
       result = `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}, это `;
-      result = result.concat(await stringifyMention({ userId: membersList[rand].id, userInfo: membersList[rand].profile }));
+      if (data) {
+        result = result.concat(data.text);
+      } else {
+        const rand = Math.floor(Math.random() * membersList.length);
+        result = result.concat(await stringifyMention({ userId: membersList[rand].id, userInfo: membersList[rand].profile }));
+        await createAntispam({
+          chatId: req.chat.chatId,
+          command: CommandVkEnum.who,
+          date: moment().startOf('day').toDate(),
+          question: req.fullText.toLowerCase(),
+          text: await stringifyMention({ userId: membersList[rand].id, userInfo: membersList[rand].profile })
+        });
+      }
     }
     req.msgObject.send(result).catch(console.error);
   }

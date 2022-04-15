@@ -1,6 +1,6 @@
 import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
 import { errorSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
-import { checkBanList, checkMuteList } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
+import { checkBanList, checkMuteList, deleteAntispam } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
 import {
   autoKickList,
   banList,
@@ -116,6 +116,7 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
     });
   }
   await checkMuteList(chat);
+  await deleteAntispam(chat);
   if (chat && chat.muteList?.findIndex((u) => u.id === message.senderId) !== -1) {
     await vk.api.messages.delete({ cmids: message.conversationMessageId, delete_for_all: true, peer_id: message.peerId }).catch(console.error);
     return;
