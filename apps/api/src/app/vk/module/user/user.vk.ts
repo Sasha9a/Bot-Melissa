@@ -132,7 +132,7 @@ export async function setStatus(req: RequestMessageVkModel) {
 export async function getStatuses(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     let result = 'Статус пользователей:';
-    const users: User[] = await UserModule.find({ status: { $ne: 0 }, chatId: req.msgObject.peerId }, { status: 1, peerId: 1 });
+    const users: User[] = await UserModule.find({ status: { $ne: 0 }, chatId: req.msgObject.peerId }, { status: 1, peerId: 1, icon: 1 });
     for (let i = 10; i != 0; i--) {
       const usersStatus = users.filter((u) => u.status === i);
       if (usersStatus.length) {
