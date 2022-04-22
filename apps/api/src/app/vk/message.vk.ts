@@ -140,6 +140,9 @@ export async function parseMessage(message: MessageContext<ContextDefaultState>)
     const request: RequestMessageVkModel = new RequestMessageVkModel();
     request.chat = chat;
     request.members = membersList;
+    if (message.replyMessage?.senderId) {
+      request.replyMsgSenderId = message.replyMessage.senderId;
+    }
     for (const command of commands) {
       if (message.text?.toLowerCase().startsWith(command.command) && (!message.text[command.command.length] || message.text[command.command.length] === ' ')) {
         const currentUser = request.members.find((m) => m.id === message.senderId);

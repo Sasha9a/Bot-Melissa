@@ -12,4 +12,5 @@ export class RequestMessageVkModel {
   public chat: Chat;
   public user: { id: number, item: MessagesConversationMember, profile: UsersUserFull, info: User };
   public members: { id: number, item: MessagesConversationMember, profile: UsersUserFull, info: User }[];
+  public replyMsgSenderId: number;
 }
