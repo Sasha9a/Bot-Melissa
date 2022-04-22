@@ -144,6 +144,9 @@ export async function getStatuses(req: RequestMessageVkModel) {
         }
         for (const u of usersStatus) {
           result = result.concat(`\n${await stringifyMention({ userId: u.peerId, userInfo: req.members.find((m) => m.id === u.peerId)?.profile })}`);
+          if (u.icon?.length) {
+            result = result.concat(` ${u.icon}`);
+          }
         }
       }
     }
@@ -481,12 +484,15 @@ export async function probability(req: RequestMessageVkModel) {
       date: moment().startOf('day').toDate(),
       question: req.fullText.toLowerCase()
     });
-    let result = `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}, вероятность составляет `;
+    let result = `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}`;
+    if (req.user.info?.icon?.length) {
+      result = result.concat(` ${req.user.info.icon}`);
+    }
     if (data) {
-      result = result.concat(`${data.text}%`);
+      result = result.concat(`, вероятность составляет ${data.text}%`);
     } else {
       const rand = Math.floor(Math.random() * (100 + 1));
-      result = result.concat(`${rand}%`);
+      result = result.concat(`, вероятность составляет ${rand}%`);
       await createAntispam({
         chatId: req.chat.chatId,
         command: CommandVkEnum.probability,
@@ -537,7 +543,7 @@ export async function who(req: RequestMessageVkModel) {
         peerId: req.user.id
       });
       result = `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}`;
-      if (req.user.info?.icon?.length > 0) {
+      if (req.user.info?.icon?.length) {
         result = result.concat(` ${req.user.info.icon}`);
       }
       if (data) {
@@ -562,7 +568,7 @@ export async function who(req: RequestMessageVkModel) {
         question: req.fullText.toLowerCase()
       });
       result = `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}`;
-      if (req.user.info?.icon?.length > 0) {
+      if (req.user.info?.icon?.length) {
         result = result.concat(` ${req.user.info.icon}`);
       }
       if (data) {
@@ -570,7 +576,7 @@ export async function who(req: RequestMessageVkModel) {
       } else {
         const rand = Math.floor(Math.random() * membersList.length);
         result = result.concat(`, это ${await stringifyMention({ userId: membersList[rand].id, userInfo: membersList[rand].profile })}`);
-        if (membersList[rand].info?.icon?.length > 0) {
+        if (membersList[rand].info?.icon?.length) {
           result = result.concat(` ${membersList[rand].info.icon}`);
         }
         await createAntispam({
@@ -606,7 +612,7 @@ export async function activity(req: RequestMessageVkModel) {
         const hours = moment().diff(moment(member.info?.lastActivityDate)) / 1000 / 60 / 60 % 24;
         const minutes = moment().diff(moment(member.info?.lastActivityDate)) / 1000 / 60 % 60;
         result = result.concat(`\n${await stringifyMention({ userId: member.id, userInfo: member.profile })} `);
-        if (member.info?.icon?.length > 0) {
+        if (member.info?.icon?.length) {
           result = result.concat(`${member.info?.icon} `);
         }
         if (days >= 1) {
@@ -631,7 +637,7 @@ export async function getAllNick(req: RequestMessageVkModel) {
     const membersList = req.members.filter((m) => m.profile);
     let result = 'Список ников пользователей:';
     for (const member of membersList) {
-      if (member.info?.nick?.length > 0) {
+      if (member.info?.nick?.length) {
         result = result.concat(`\n${await stringifyMention({ userId: member.id, userInfo: member.profile })} - ${member.info.nick}`);
       }
     }
@@ -644,7 +650,7 @@ export async function getAllIcon(req: RequestMessageVkModel) {
     const membersList = req.members.filter((m) => m.profile);
     let result = 'Список значков пользователей:';
     for (const member of membersList) {
-      if (member.info?.icon?.length > 0) {
+      if (member.info?.icon?.length) {
         result = result.concat(`\n${await stringifyMention({ userId: member.id, userInfo: member.profile })} - ${member.info.icon}`);
       }
     }
