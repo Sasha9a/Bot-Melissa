@@ -584,8 +584,8 @@ export async function who(req: RequestMessageVkModel) {
           command: CommandVkEnum.who,
           date: moment().startOf('day').toDate(),
           question: req.fullText.toLowerCase(),
-          text: await stringifyMention({ userId: membersList[rand].id, userInfo: membersList[rand].profile })
-            + membersList[rand].info?.icon?.length ? ` ${membersList[rand].info.icon}` : ''
+          text: (await stringifyMention({ userId: membersList[rand].id, userInfo: membersList[rand].profile }))
+            + (membersList[rand].info?.icon?.length ? ` ${membersList[rand].info.icon}` : '')
         });
       }
     }
