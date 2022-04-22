@@ -610,16 +610,16 @@ export async function activity(req: RequestMessageVkModel) {
           result = result.concat(`${member.info?.icon} `);
         }
         if (days >= 1) {
-          result = result.concat(`${days.toFixed()} дн. ${hours.toFixed()} час.`);
+          result = result.concat(`- ${days.toFixed()} дн. ${hours.toFixed()} час.`);
         } else if (hours >= 1) {
-          result = result.concat(`${hours.toFixed()} час. ${minutes.toFixed()} мин.`);
+          result = result.concat(`- ${hours.toFixed()} час. ${minutes.toFixed()} мин.`);
         } else if (minutes > 10) {
-          result = result.concat(`${minutes.toFixed()} мин.`);
+          result = result.concat(`- ${minutes.toFixed()} мин.`);
         } else {
-          result = result.concat(`актив`);
+          result = result.concat(`- актив`);
         }
       } else {
-        result = result.concat(`неактив`);
+        result = result.concat(`- неактив`);
       }
     }
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
