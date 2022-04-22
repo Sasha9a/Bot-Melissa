@@ -536,11 +536,14 @@ export async function who(req: RequestMessageVkModel) {
         date: moment().startOf('day').toDate(),
         peerId: req.user.id
       });
-      result = `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}, вы - `;
+      result = `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}`;
+      if (req.user.info?.icon?.length > 0) {
+        result = result.concat(` ${req.user.info.icon}`);
+      }
       if (data) {
-        result = result.concat(data.text);
+        result = result.concat(`, вы - ${data.text}`);
       } else {
-        const randText = `${adjectives[Math.floor(Math.random() * adjectives.length)]} ${nouns[Math.floor(Math.random() * nouns.length)]}`;
+        const randText = `, вы - ${adjectives[Math.floor(Math.random() * adjectives.length)]} ${nouns[Math.floor(Math.random() * nouns.length)]}`;
         result = result.concat(randText);
         await createAntispam({
           chatId: req.chat.chatId,
@@ -558,18 +561,25 @@ export async function who(req: RequestMessageVkModel) {
         date: moment().startOf('day').toDate(),
         question: req.fullText.toLowerCase()
       });
-      result = `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}, это `;
+      result = `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}`;
+      if (req.user.info?.icon?.length > 0) {
+        result = result.concat(` ${req.user.info.icon}`);
+      }
       if (data) {
-        result = result.concat(data.text);
+        result = result.concat(`, это ${data.text}`);
       } else {
         const rand = Math.floor(Math.random() * membersList.length);
-        result = result.concat(await stringifyMention({ userId: membersList[rand].id, userInfo: membersList[rand].profile }));
+        result = result.concat(`, это ${await stringifyMention({ userId: membersList[rand].id, userInfo: membersList[rand].profile })}`);
+        if (membersList[rand].info?.icon?.length > 0) {
+          result = result.concat(` ${membersList[rand].info.icon}`);
+        }
         await createAntispam({
           chatId: req.chat.chatId,
           command: CommandVkEnum.who,
           date: moment().startOf('day').toDate(),
           question: req.fullText.toLowerCase(),
           text: await stringifyMention({ userId: membersList[rand].id, userInfo: membersList[rand].profile })
+            + membersList[rand].info?.icon?.length ? ` ${membersList[rand].info.icon}` : ''
         });
       }
     }
@@ -595,17 +605,21 @@ export async function activity(req: RequestMessageVkModel) {
         const days = moment().diff(moment(member.info?.lastActivityDate)) / 1000 / 60 / 60 / 24;
         const hours = moment().diff(moment(member.info?.lastActivityDate)) / 1000 / 60 / 60 % 24;
         const minutes = moment().diff(moment(member.info?.lastActivityDate)) / 1000 / 60 % 60;
+        result = result.concat(`\n${await stringifyMention({ userId: member.id, userInfo: member.profile })} `);
+        if (member.info?.icon?.length > 0) {
+          result = result.concat(`${member.info?.icon} `);
+        }
         if (days >= 1) {
-          result = result.concat(`\n${await stringifyMention({ userId: member.id, userInfo: member.profile })} - ${days.toFixed()} дн. ${hours.toFixed()} час.`);
+          result = result.concat(`${days.toFixed()} дн. ${hours.toFixed()} час.`);
         } else if (hours >= 1) {
-          result = result.concat(`\n${await stringifyMention({ userId: member.id, userInfo: member.profile })} - ${hours.toFixed()} час. ${minutes.toFixed()} мин.`);
+          result = result.concat(`${hours.toFixed()} час. ${minutes.toFixed()} мин.`);
         } else if (minutes > 10) {
-          result = result.concat(`\n${await stringifyMention({ userId: member.id, userInfo: member.profile })} - ${minutes.toFixed()} мин.`);
+          result = result.concat(`${minutes.toFixed()} мин.`);
         } else {
-          result = result.concat(`\n${await stringifyMention({ userId: member.id, userInfo: member.profile })} - актив`);
+          result = result.concat(`актив`);
         }
       } else {
-        result = result.concat(`\n${await stringifyMention({ userId: member.id, userInfo: member.profile })} - неактив`);
+        result = result.concat(`неактив`);
       }
     }
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
