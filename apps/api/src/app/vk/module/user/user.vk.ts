@@ -611,3 +611,29 @@ export async function activity(req: RequestMessageVkModel) {
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
 }
+
+export async function getAllNick(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    const membersList = req.members.filter((m) => m.profile);
+    let result = 'Список ников пользователей:';
+    for (const member of membersList) {
+      if (member.info?.nick?.length > 0) {
+        result = result.concat(`\n${await stringifyMention({ userId: member.id, userInfo: member.profile })} - ${member.info.nick}`);
+      }
+    }
+    req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
+  }
+}
+
+export async function getAllIcon(req: RequestMessageVkModel) {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    const membersList = req.members.filter((m) => m.profile);
+    let result = 'Список значков пользователей:';
+    for (const member of membersList) {
+      if (member.info?.icon?.length > 0) {
+        result = result.concat(`\n${await stringifyMention({ userId: member.id, userInfo: member.profile })} - ${member.info.icon}`);
+      }
+    }
+    req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
+  }
+}
