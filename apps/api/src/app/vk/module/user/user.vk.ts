@@ -106,26 +106,27 @@ export async function getUser(req: RequestMessageVkModel) {
 
 export async function setStatus(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length !== 2) {
+    if (req.text.length !== 2 && (req.replyMsgSenderId && req.text.length !== 1)) {
       return errorSend(req.msgObject, 'Не все параметры введены\nЛиса статус [пользователь] [номер статуса]');
     }
-    const user: User = await getFullUserInfo(req.text[0], req.msgObject);
+    const user: User = await getFullUserInfo(req.text[0] ?? String(req.replyMsgSenderId), req.msgObject);
     if (!user) {
       return ;
     }
-    if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 0 || Number(req.text[1]) > 10) {
+    const numberStatus = Number(req.text[1] ?? req.text[0]);
+    if (isNaN(numberStatus) || numberStatus < 0 || numberStatus > 10) {
       return errorSend(req.msgObject, 'Второй аргумент не верный');
     }
     if (await isOwnerMember(user.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нельзя менять статус создателю беседы');
     }
-    if ((req.user.info.status <= Number(req.text[1]) && !await isOwnerMember(req.user.info.peerId, req.msgObject.peerId))
+    if ((req.user.info.status <= numberStatus && !await isOwnerMember(req.user.info.peerId, req.msgObject.peerId))
       || (req.user.info.status <= user.status && !await isOwnerMember(req.user.info.peerId, req.msgObject.peerId))) {
       return errorSend(req.msgObject, 'Нет прав для выдачи такого статуса');
     }
-    user.status = Number(req.text[1]);
+    user.status = numberStatus;
     await user.save();
-    await yesSend(req.msgObject, `Установлен статус ${req.text[1]} для ${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })}`);
+    await yesSend(req.msgObject, `Установлен статус ${numberStatus} для ${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })}`);
   }
 }
 
@@ -607,14 +608,14 @@ export async function activity(req: RequestMessageVkModel) {
     });
     let result = 'Последний актив:';
     for (const member of membersList) {
+      result = result.concat(`\n${await stringifyMention({ userId: member.id, userInfo: member.profile })} `);
+      if (member.info?.icon?.length) {
+        result = result.concat(`${member.info?.icon} `);
+      }
       if (member.info?.lastActivityDate) {
         const days = moment().diff(moment(member.info?.lastActivityDate)) / 1000 / 60 / 60 / 24;
         const hours = moment().diff(moment(member.info?.lastActivityDate)) / 1000 / 60 / 60 % 24;
         const minutes = moment().diff(moment(member.info?.lastActivityDate)) / 1000 / 60 % 60;
-        result = result.concat(`\n${await stringifyMention({ userId: member.id, userInfo: member.profile })} `);
-        if (member.info?.icon?.length) {
-          result = result.concat(`${member.info?.icon} `);
-        }
         if (days >= 1) {
           result = result.concat(`- ${days.toFixed()} дн. ${hours.toFixed()} час.`);
         } else if (hours >= 1) {
