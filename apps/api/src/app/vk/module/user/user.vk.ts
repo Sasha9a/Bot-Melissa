@@ -618,11 +618,11 @@ export async function activity(req: RequestMessageVkModel) {
         const hours = diff / 1000 / 60 / 60 % 24;
         const minutes = diff / 1000 / 60 % 60;
         if (days >= 1) {
-          result = result.concat(`- ${days.toFixed()} дн. ${hours.toFixed()} час.`);
+          result = result.concat(`- ${Math.floor(days)} дн. ${Math.floor(hours)} час.`);
         } else if (hours >= 1) {
-          result = result.concat(`- ${hours.toFixed()} час. ${minutes.toFixed()} мин.`);
+          result = result.concat(`- ${Math.floor(hours)} час. ${Math.floor(minutes)} мин.`);
         } else if (minutes > 10) {
-          result = result.concat(`- ${minutes.toFixed()} мин.`);
+          result = result.concat(`- ${Math.floor(minutes)} мин.`);
         } else {
           result = result.concat(`- актив`);
         }
