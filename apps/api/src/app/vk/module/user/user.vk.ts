@@ -109,7 +109,7 @@ export async function setStatus(req: RequestMessageVkModel) {
     if (req.text.length !== 2 && (req.replyMsgSenderId && req.text.length !== 1)) {
       return errorSend(req.msgObject, 'Не все параметры введены\nЛиса статус [пользователь] [номер статуса]');
     }
-    const user: User = await getFullUserInfo(req.text[0] ?? String(req.replyMsgSenderId), req.msgObject);
+    const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
     if (!user) {
       return ;
     }
@@ -613,9 +613,10 @@ export async function activity(req: RequestMessageVkModel) {
         result = result.concat(`${member.info?.icon} `);
       }
       if (member.info?.lastActivityDate) {
-        const days = moment().diff(moment(member.info?.lastActivityDate)) / 1000 / 60 / 60 / 24;
-        const hours = moment().diff(moment(member.info?.lastActivityDate)) / 1000 / 60 / 60 % 24;
-        const minutes = moment().diff(moment(member.info?.lastActivityDate)) / 1000 / 60 % 60;
+        const diff = moment().diff(moment(member.info?.lastActivityDate));
+        const days = diff / 1000 / 60 / 60 / 24;
+        const hours = diff / 1000 / 60 / 60 % 24;
+        const minutes = diff / 1000 / 60 % 60;
         if (days >= 1) {
           result = result.concat(`- ${days.toFixed()} дн. ${hours.toFixed()} час.`);
         } else if (hours >= 1) {
