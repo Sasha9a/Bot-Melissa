@@ -110,6 +110,7 @@ export const commands: { command: CommandVkEnum, func: (req: RequestMessageVkMod
 ];
 
 export async function parseMessage(message: MessageContext<ContextDefaultState>) {
+  await message.send(`Кай браки`).catch(console.error);
   const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
   const members = await vk.api.messages.getConversationMembers({ peer_id: message.peerId, fields: ["bdate", "sex"] });
   const users: User[] = await UserModule.find({ chatId: message.peerId });
