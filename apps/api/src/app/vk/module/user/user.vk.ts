@@ -23,14 +23,14 @@ export async function setNickMe(req: RequestMessageVkModel) {
 
 export async function setNick(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length < 2) {
+    if ((!req.replyMsgSenderId && req.text.length < 2) || (req.replyMsgSenderId && req.text.length < 1)) {
       return errorSend(req.msgObject, 'Не все параметры введены\nЛиса ник [пользователь] [ник]');
     }
-    const user: User = await getFullUserInfo(req.text[0], req.msgObject);
+    const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
     if (!user) {
       return ;
     }
-    user.nick = req.fullText.substring(req.fullText.indexOf(req.text[1]));
+    user.nick = req.replyMsgSenderId ? req.fullText : req.fullText.substring(req.fullText.indexOf(req.text[1]));
     await user.save();
     await yesSend(req.msgObject, `Установлен ник для ${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })}: "${user.nick}"`);
   }
@@ -49,14 +49,14 @@ export async function setIconMe(req: RequestMessageVkModel) {
 
 export async function setIcon(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length < 2) {
+    if (req.text.length !== 2 && (req.replyMsgSenderId && req.text.length !== 1)) {
       return errorSend(req.msgObject, 'Не все параметры введены\nЛиса значок [пользователь] [значок]');
     }
-    const user: User = await getFullUserInfo(req.text[0], req.msgObject);
+    const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
     if (!user) {
       return ;
     }
-    user.icon = req.fullText.substring(req.fullText.indexOf(req.text[1]));
+    user.icon = req.text[1] ?? req.text[0];
     await user.save();
     await yesSend(req.msgObject, `Установлен значок для ${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })}: "${user.icon}"`);
   }
@@ -92,8 +92,8 @@ export async function getUser(req: RequestMessageVkModel) {
     if (req.text.length > 1) {
       return errorSend(req.msgObject, 'Не все параметры введены\nЛиса участник [пользователь]');
     }
-    if (req.text.length === 1) {
-      const user: User = await getFullUserInfo(req.text[0], req.msgObject);
+    if (req.text.length === 1 || req.replyMsgSenderId) {
+      const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
       if (!user) {
         return ;
       }
