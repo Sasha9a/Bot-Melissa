@@ -11,10 +11,10 @@ import * as moment from "moment-timezone";
 
 export async function marriage(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length !== 1) {
+    if (req.text.length !== 1 && !req.replyMsgSenderId) {
       return errorSend(req.msgObject, 'Не все параметры введены\nЛиса брак [пользователь]');
     }
-    const user: User = await getFullUserInfo(req.text[0], req.msgObject);
+    const user: User = await getFullUserInfo(req.text[0] ?? String(req.replyMsgSenderId), req.msgObject);
     if (!user) {
       return ;
     }
@@ -91,10 +91,10 @@ export async function marriages(req: RequestMessageVkModel) {
 
 export async function divorce(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length !== 1) {
+    if (req.text.length !== 1 && !req.replyMsgSenderId) {
       return errorSend(req.msgObject, 'Не все параметры введены\nЛиса развод [пользователь]');
     }
-    const user: User = await getFullUserInfo(req.text[0], req.msgObject);
+    const user: User = await getFullUserInfo(req.text[0] ?? String(req.replyMsgSenderId), req.msgObject);
     if (!user) {
       return ;
     }
