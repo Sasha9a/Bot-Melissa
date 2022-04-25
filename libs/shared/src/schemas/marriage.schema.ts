@@ -23,6 +23,9 @@ export class Marriage extends Document {
   public status: number;
 
   @Prop()
+  public messageId: number;
+
+  @Prop()
   public checkDate: Date;
 
 }

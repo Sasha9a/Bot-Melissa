@@ -45,7 +45,7 @@ export async function marriage(req: RequestMessageVkModel) {
       chatId: req.msgObject.peerId,
       userFirstId: req.msgObject.senderId,
       userSecondId: user.peerId,
-      checkDate: moment().toDate()
+      checkDate: moment().add(1, 'hour').toDate()
     });
     await marriage.save();
     const builder = Keyboard.builder()
@@ -70,7 +70,9 @@ export async function marriage(req: RequestMessageVkModel) {
       });
     let result = `${await stringifyMention({ userId: req.msgObject.senderId, userInfo: req.members.find((m) => m.id === req.msgObject.senderId)?.profile })}`;
     result = result.concat(` решился сделать предложение ${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })}`);
-    req.msgObject.send(result, { keyboard: builder.inline() }).catch(console.error);
+    req.msgObject.send(result, { keyboard: builder.inline() }).then(async (msg) => {
+      await MarriageModule.updateOne({ chatId: req.msgObject.peerId, userFirstId: req.msgObject.senderId, userSecondId: user.peerId }, { messageId: msg.conversationMessageId });
+    }).catch(console.error);
   }
 }
 
