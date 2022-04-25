@@ -178,10 +178,10 @@ export async function kick(req: RequestMessageVkModel) {
 
 export async function autoKick(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length !== 1) {
+    if (req.text.length !== 1 && !req.replyMsgSenderId) {
       return errorSend(req.msgObject, 'Не все параметры введены\nЛиса автокик [пользователь]');
     }
-    const user: User = await getFullUserInfo(req.text[0], req.msgObject);
+    const user: User = await getFullUserInfo(req.text[0] ?? String(req.replyMsgSenderId), req.msgObject);
     if (!user) {
       return ;
     }
@@ -228,14 +228,15 @@ export async function autoKickMinus(req: RequestMessageVkModel) {
 
 export async function ban(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length !== 2) {
+    if (req.text.length !== 2 && (req.replyMsgSenderId && req.text.length !== 1)) {
       return errorSend(req.msgObject, 'Не все параметры введены\nЛиса бан [пользователь] [кол-во дней]');
     }
-    const user: User = await getFullUserInfo(req.text[0], req.msgObject);
+    const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
     if (!user) {
       return ;
     }
-    if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 1 || Number(req.text[1]) > 90) {
+    const days = Number(req.text[1] ?? req.text[0]);
+    if (isNaN(days) || days < 1 || days > 90) {
       return errorSend(req.msgObject, 'Второй аргумент не верный (1-90 дней)');
     }
     if (await isOwnerMember(user.peerId, req.msgObject.peerId)) {
@@ -253,11 +254,11 @@ export async function ban(req: RequestMessageVkModel) {
     }
     req.chat.banList.push({
       id: user.peerId,
-      endDate: moment().add(Number(req.text[1]), 'days').toDate()
+      endDate: moment().add(days, 'days').toDate()
     });
     req.chat.markModified('banList');
     await req.chat.save();
-    await yesSend(req.msgObject, `Пользователь ${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })} добавлен в банлист на ${Number(req.text[1])} дн.`);
+    await yesSend(req.msgObject, `Пользователь ${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })} добавлен в банлист на ${days} дн.`);
   }
 }
 
@@ -286,14 +287,15 @@ export async function banMinus(req: RequestMessageVkModel) {
 
 export async function warn(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length !== 2) {
+    if (req.text.length !== 2 && (req.replyMsgSenderId && req.text.length !== 1)) {
       return errorSend(req.msgObject, 'Не все параметры введены\nЛиса пред [пользователь] [кол-во]');
     }
-    const user: User = await getFullUserInfo(req.text[0], req.msgObject);
+    const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
     if (!user) {
       return ;
     }
-    if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 1) {
+    const count = Number(req.text[1] ?? req.text[0]);
+    if (isNaN(count) || count < 1) {
       return errorSend(req.msgObject, `Второй аргумент не верный`);
     }
     if (await isOwnerMember(user.peerId, req.msgObject.peerId)) {
@@ -302,30 +304,31 @@ export async function warn(req: RequestMessageVkModel) {
     if (req.user.info.status <= user.status && !await isOwnerMember(req.user.info.peerId, req.msgObject.peerId)) {
       return errorSend(req.msgObject, 'Нет прав для наказания');
     }
-    if (user.warn + Number(req.text[1]) >= req.chat.maxWarn) {
+    if (user.warn + count >= req.chat.maxWarn) {
       user.warn = 0;
       await user.save();
       await vk.api.messages.removeChatUser({ chat_id: req.msgObject.peerId - 2000000000, member_id: user.peerId, user_id: user.peerId }).then(async () => {
         await yesSend(req.msgObject, `Пользователь ${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })} был кикнут по достижению лимита кол-ва предупреждений`);
       }).catch(console.error);
     } else {
-      user.warn += Number(req.text[1]);
+      user.warn += count;
       await user.save();
-      await yesSend(req.msgObject, `Пользователь ${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })} получает предупреждение в количестве: ${Number(req.text[1])} шт.`);
+      await yesSend(req.msgObject, `Пользователь ${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })} получает предупреждение в количестве: ${count} шт.`);
     }
   }
 }
 
 export async function warnMinus(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length !== 2) {
+    if (req.text.length !== 2 && (req.replyMsgSenderId && req.text.length !== 1)) {
       return errorSend(req.msgObject, 'Не все параметры введены\nЛиса снять пред [пользователь] [кол-во]');
     }
-    const user: User = await getFullUserInfo(req.text[0], req.msgObject);
+    const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
     if (!user) {
       return ;
     }
-    if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 1) {
+    const count = Number(req.text[1] ?? req.text[0]);
+    if (isNaN(count) || count < 1) {
       return errorSend(req.msgObject, `Второй аргумент не верный`);
     }
     if (req.user.info.status <= user.status && !await isOwnerMember(req.user.info.peerId, req.msgObject.peerId)) {
@@ -334,13 +337,13 @@ export async function warnMinus(req: RequestMessageVkModel) {
     if (user.warn === 0) {
       return errorSend(req.msgObject, `У пользователя ${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })} нет предупреждений`);
     }
-    if (user.warn - Number(req.text[1]) < 0) {
+    if (user.warn - count < 0) {
       user.warn = 0;
     } else {
-      user.warn -= Number(req.text[1]);
+      user.warn -= count;
     }
     await user.save();
-    await yesSend(req.msgObject, `Пользователю ${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })} сняли предупреждение в количестве: ${Number(req.text[1])} шт.`);
+    await yesSend(req.msgObject, `Пользователю ${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })} сняли предупреждение в количестве: ${count} шт.`);
   }
 }
 
@@ -368,14 +371,15 @@ export async function clearWarnList(req: RequestMessageVkModel) {
 
 export async function mute(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length !== 2) {
+    if (req.text.length !== 2 && (req.replyMsgSenderId && req.text.length !== 1)) {
       return errorSend(req.msgObject, 'Не все параметры введены\nЛиса мут [пользователь] [кол-во часов]');
     }
-    const user: User = await getFullUserInfo(req.text[0], req.msgObject);
+    const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
     if (!user) {
       return ;
     }
-    if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 1 || Number(req.text[1]) > 96) {
+    const hours = Number(req.text[1] ?? req.text[0]);
+    if (isNaN(hours) || hours < 1 || hours > 96) {
       return errorSend(req.msgObject, 'Второй аргумент не верный (1-96 часов)');
     }
     if (await isOwnerMember(user.peerId, req.msgObject.peerId)) {
@@ -392,20 +396,20 @@ export async function mute(req: RequestMessageVkModel) {
     }
     req.chat.muteList.push({
       id: user.peerId,
-      endDate: moment().add(Number(req.text[1]), 'hours').toDate()
+      endDate: moment().add(hours, 'hours').toDate()
     });
     req.chat.markModified('muteList');
     await req.chat.save();
-    await yesSend(req.msgObject, `Пользователь ${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })} получает мут на ${Number(req.text[1])} ч.`);
+    await yesSend(req.msgObject, `Пользователь ${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })} получает мут на ${hours} ч.`);
   }
 }
 
 export async function muteMinus(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length !== 1) {
+    if (req.text.length !== 1 && !req.replyMsgSenderId) {
       return errorSend(req.msgObject, 'Не все параметры введены\nЛиса мут- [пользователь]');
     }
-    const user: User = await getFullUserInfo(req.text[0], req.msgObject);
+    const user: User = await getFullUserInfo(req.text[0] ?? String(req.replyMsgSenderId), req.msgObject);
     if (!user) {
       return ;
     }
