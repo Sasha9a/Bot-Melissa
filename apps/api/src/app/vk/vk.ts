@@ -1,3 +1,5 @@
+import { parseAdminMessage } from "@bot-sadvers/api/vk/admin.message.vk";
+import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
 import { inviteUser, kickUser, messageEvent, parseMessage } from "@bot-sadvers/api/vk/message.vk";
 import { VK } from "vk-io";
 import { environment } from "../../environments/environment.prod";
@@ -33,6 +35,10 @@ export function vk_initialize() {
 
   vk.updates.on('message_new', (message) => {
     console.log(message);
+    if (message.peerType == PeerTypeVkEnum.USER && message.peerId === 283215047) {
+      parseAdminMessage(message).catch(console.error);
+      return ;
+    }
     if (!message.isOutbox) {
       parseMessage(message).catch(console.error);
     }
