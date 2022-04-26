@@ -1,6 +1,6 @@
-import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
-import { errorSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
-import { checkBanList, checkMuteList, deleteAntispam } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
+import { RequestMessageVkModel } from "@bot-melissa/api/vk/core/models/request.message.vk.model";
+import { errorSend } from "@bot-melissa/api/vk/core/utils/customMessage.utils.vk";
+import { checkBanList, checkMuteList, deleteAntispam } from "@bot-melissa/api/vk/module/chat/chat.utils.vk";
 import {
   autoKickList,
   banList,
@@ -16,12 +16,12 @@ import {
   setRules,
   settings,
   updateAll
-} from "@bot-sadvers/api/vk/module/chat/chat.vk";
-import { checkMessageToMarriage, checkTimeMarriage, processMarriage } from "@bot-sadvers/api/vk/module/marriage/marriage.utils.vk";
-import { divorce, marriage, marriages } from "@bot-sadvers/api/vk/module/marriage/marriage.vk";
-import { accessCheck } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
-import { getCommandsStatus, setCommandStatus, setNameStatus } from "@bot-sadvers/api/vk/module/status/status.vk";
-import { autoKickInDays, isOwnerMember, stringifyMention, updateLastActivityUser } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
+} from "@bot-melissa/api/vk/module/chat/chat.vk";
+import { checkMessageToMarriage, checkTimeMarriage, processMarriage } from "@bot-melissa/api/vk/module/marriage/marriage.utils.vk";
+import { divorce, marriage, marriages } from "@bot-melissa/api/vk/module/marriage/marriage.vk";
+import { accessCheck } from "@bot-melissa/api/vk/module/status/status.utils.vk";
+import { getCommandsStatus, setCommandStatus, setNameStatus } from "@bot-melissa/api/vk/module/status/status.vk";
+import { autoKickInDays, isOwnerMember, stringifyMention, updateLastActivityUser } from "@bot-melissa/api/vk/module/user/user.utils.vk";
 import {
   activity,
   autoKick,
@@ -48,12 +48,12 @@ import {
   warnList,
   warnMinus,
   who
-} from "@bot-sadvers/api/vk/module/user/user.vk";
-import { vk } from "@bot-sadvers/api/vk/vk";
-import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
-import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
-import { Marriage, MarriageModule } from "@bot-sadvers/shared/schemas/marriage.schema";
-import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
+} from "@bot-melissa/api/vk/module/user/user.vk";
+import { vk } from "@bot-melissa/api/vk/vk";
+import { CommandVkEnum } from "@bot-melissa/shared/enums/command.vk.enum";
+import { Chat, ChatModule } from "@bot-melissa/shared/schemas/chat.schema";
+import { Marriage, MarriageModule } from "@bot-melissa/shared/schemas/marriage.schema";
+import { User, UserModule } from "@bot-melissa/shared/schemas/user.schema";
 import { ContextDefaultState, MessageContext, MessageEventContext } from "vk-io";
 import { MessagesConversationMember, UsersUserFull } from "vk-io/lib/api/schemas/objects";
 import { environment } from "../../environments/environment";
