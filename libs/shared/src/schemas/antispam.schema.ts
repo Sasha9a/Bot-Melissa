@@ -1,4 +1,4 @@
-import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
+import { CommandVkEnum } from "@bot-melissa/shared/enums/command.vk.enum";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, model } from "mongoose";
 

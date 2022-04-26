@@ -1,9 +1,9 @@
-import { stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
-import { vk } from "@bot-sadvers/api/vk/vk";
-import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
-import { Chat } from "@bot-sadvers/shared/schemas/chat.schema";
-import { Marriage, MarriageModule } from "@bot-sadvers/shared/schemas/marriage.schema";
-import { User } from "@bot-sadvers/shared/schemas/user.schema";
+import { stringifyMention } from "@bot-melissa/api/vk/module/user/user.utils.vk";
+import { vk } from "@bot-melissa/api/vk/vk";
+import { CommandVkEnum } from "@bot-melissa/shared/enums/command.vk.enum";
+import { Chat } from "@bot-melissa/shared/schemas/chat.schema";
+import { Marriage, MarriageModule } from "@bot-melissa/shared/schemas/marriage.schema";
+import { User } from "@bot-melissa/shared/schemas/user.schema";
 import * as moment from "moment-timezone";
 import { ContextDefaultState, Keyboard, MessageContext } from "vk-io";
 import { MessagesConversationMember, UsersUserFull } from "vk-io/lib/api/schemas/objects";

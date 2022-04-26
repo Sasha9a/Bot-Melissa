@@ -1,4 +1,4 @@
-import { AdminCommandVkEnum } from "@bot-sadvers/shared/enums/admin.command.vk.enum";
+import { AdminCommandVkEnum } from "@bot-melissa/shared/enums/admin.command.vk.enum";
 import { ContextDefaultState, MessageContext } from "vk-io";
 
 export class RequestAdminMessageVkModel {

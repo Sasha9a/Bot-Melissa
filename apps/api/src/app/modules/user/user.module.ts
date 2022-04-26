@@ -1,5 +1,5 @@
-import { UserService } from "@bot-sadvers/api/modules/user/user.service";
-import { User, UserSchema } from "@bot-sadvers/shared/schemas/user.schema";
+import { UserService } from "@bot-melissa/api/modules/user/user.service";
+import { User, UserSchema } from "@bot-melissa/shared/schemas/user.schema";
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 

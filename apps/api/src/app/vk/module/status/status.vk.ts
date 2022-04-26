@@ -1,10 +1,10 @@
-import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
-import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
-import { errorSend, yesSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
-import { createCommand, createStatus } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
-import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
-import { Command, CommandModule } from "@bot-sadvers/shared/schemas/command.schema";
-import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
+import { PeerTypeVkEnum } from "@bot-melissa/api/vk/core/enums/peer.type.vk.enum";
+import { RequestMessageVkModel } from "@bot-melissa/api/vk/core/models/request.message.vk.model";
+import { errorSend, yesSend } from "@bot-melissa/api/vk/core/utils/customMessage.utils.vk";
+import { createCommand, createStatus } from "@bot-melissa/api/vk/module/status/status.utils.vk";
+import { CommandVkEnum } from "@bot-melissa/shared/enums/command.vk.enum";
+import { Command, CommandModule } from "@bot-melissa/shared/schemas/command.schema";
+import { Status, StatusModule } from "@bot-melissa/shared/schemas/status.schema";
 
 export async function setNameStatus(req: RequestMessageVkModel) {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {

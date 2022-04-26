@@ -1,11 +1,11 @@
-import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
-import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
-import { errorSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
-import { getFullUserInfo, stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
-import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
-import { TypeMarriagesEnum } from "@bot-sadvers/shared/enums/type.marriages.enum";
-import { Marriage, MarriageModule } from "@bot-sadvers/shared/schemas/marriage.schema";
-import { User } from "@bot-sadvers/shared/schemas/user.schema";
+import { PeerTypeVkEnum } from "@bot-melissa/api/vk/core/enums/peer.type.vk.enum";
+import { RequestMessageVkModel } from "@bot-melissa/api/vk/core/models/request.message.vk.model";
+import { errorSend } from "@bot-melissa/api/vk/core/utils/customMessage.utils.vk";
+import { getFullUserInfo, stringifyMention } from "@bot-melissa/api/vk/module/user/user.utils.vk";
+import { CommandVkEnum } from "@bot-melissa/shared/enums/command.vk.enum";
+import { TypeMarriagesEnum } from "@bot-melissa/shared/enums/type.marriages.enum";
+import { Marriage, MarriageModule } from "@bot-melissa/shared/schemas/marriage.schema";
+import { User } from "@bot-melissa/shared/schemas/user.schema";
 import { Keyboard } from "vk-io";
 import * as moment from "moment-timezone";
 

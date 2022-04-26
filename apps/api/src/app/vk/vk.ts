@@ -1,6 +1,6 @@
-import { parseAdminMessage } from "@bot-sadvers/api/vk/admin.message.vk";
-import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
-import { inviteUser, kickUser, messageEvent, parseMessage } from "@bot-sadvers/api/vk/message.vk";
+import { parseAdminMessage } from "@bot-melissa/api/vk/admin.message.vk";
+import { PeerTypeVkEnum } from "@bot-melissa/api/vk/core/enums/peer.type.vk.enum";
+import { inviteUser, kickUser, messageEvent, parseMessage } from "@bot-melissa/api/vk/message.vk";
 import { VK } from "vk-io";
 import { environment } from "../../environments/environment.prod";
 import { connect } from "mongoose";

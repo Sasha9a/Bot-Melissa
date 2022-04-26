@@ -1,5 +1,5 @@
-import { Antispam, AntispamModule } from "@bot-sadvers/shared/schemas/antispam.schema";
-import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
+import { Antispam, AntispamModule } from "@bot-melissa/shared/schemas/antispam.schema";
+import { Chat, ChatModule } from "@bot-melissa/shared/schemas/chat.schema";
 import * as moment from "moment-timezone";
 
 export async function createChat(chatId: number): Promise<Chat> {

@@ -1,6 +1,6 @@
-import { RequestAdminMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.admin.message.vk.model";
-import { releaseUpdate } from "@bot-sadvers/api/vk/module/admin/admin.vk";
-import { AdminCommandVkEnum } from "@bot-sadvers/shared/enums/admin.command.vk.enum";
+import { RequestAdminMessageVkModel } from "@bot-melissa/api/vk/core/models/request.admin.message.vk.model";
+import { releaseUpdate } from "@bot-melissa/api/vk/module/admin/admin.vk";
+import { AdminCommandVkEnum } from "@bot-melissa/shared/enums/admin.command.vk.enum";
 import { ContextDefaultState, MessageContext } from "vk-io";
 
 export const commands: { command: AdminCommandVkEnum, func: (req: RequestAdminMessageVkModel) => Promise<any>, argv: string }[] = [

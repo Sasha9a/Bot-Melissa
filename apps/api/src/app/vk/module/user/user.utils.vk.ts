@@ -1,10 +1,10 @@
-import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
-import { errorSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
-import { vk } from "@bot-sadvers/api/vk/vk";
-import { Chat } from "@bot-sadvers/shared/schemas/chat.schema";
-import { Marriage, MarriageModule } from "@bot-sadvers/shared/schemas/marriage.schema";
-import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
-import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
+import { RequestMessageVkModel } from "@bot-melissa/api/vk/core/models/request.message.vk.model";
+import { errorSend } from "@bot-melissa/api/vk/core/utils/customMessage.utils.vk";
+import { vk } from "@bot-melissa/api/vk/vk";
+import { Chat } from "@bot-melissa/shared/schemas/chat.schema";
+import { Marriage, MarriageModule } from "@bot-melissa/shared/schemas/marriage.schema";
+import { Status, StatusModule } from "@bot-melissa/shared/schemas/status.schema";
+import { User, UserModule } from "@bot-melissa/shared/schemas/user.schema";
 import * as moment from "moment-timezone";
 import { ContextDefaultState, IResolvedOwnerResource, IResolvedTargetResource, MessageContext, resolveResource } from "vk-io";
 import { MessagesConversationMember, UsersUserFull } from "vk-io/lib/api/schemas/objects";

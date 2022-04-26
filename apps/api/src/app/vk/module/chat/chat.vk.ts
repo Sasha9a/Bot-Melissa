@@ -1,15 +1,15 @@
-import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
-import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
-import { errorSend, yesSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
-import { commands } from "@bot-sadvers/api/vk/message.vk";
-import { checkBanList, createChat } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
-import { createCommand } from "@bot-sadvers/api/vk/module/status/status.utils.vk";
-import { createUser, isOwnerMember, stringifyMention } from "@bot-sadvers/api/vk/module/user/user.utils.vk";
-import { vk } from "@bot-sadvers/api/vk/vk";
-import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
-import { TypeMarriagesEnum } from "@bot-sadvers/shared/enums/type.marriages.enum";
-import { Command, CommandModule } from "@bot-sadvers/shared/schemas/command.schema";
-import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
+import { PeerTypeVkEnum } from "@bot-melissa/api/vk/core/enums/peer.type.vk.enum";
+import { RequestMessageVkModel } from "@bot-melissa/api/vk/core/models/request.message.vk.model";
+import { errorSend, yesSend } from "@bot-melissa/api/vk/core/utils/customMessage.utils.vk";
+import { commands } from "@bot-melissa/api/vk/message.vk";
+import { checkBanList, createChat } from "@bot-melissa/api/vk/module/chat/chat.utils.vk";
+import { createCommand } from "@bot-melissa/api/vk/module/status/status.utils.vk";
+import { createUser, isOwnerMember, stringifyMention } from "@bot-melissa/api/vk/module/user/user.utils.vk";
+import { vk } from "@bot-melissa/api/vk/vk";
+import { CommandVkEnum } from "@bot-melissa/shared/enums/command.vk.enum";
+import { TypeMarriagesEnum } from "@bot-melissa/shared/enums/type.marriages.enum";
+import { Command, CommandModule } from "@bot-melissa/shared/schemas/command.schema";
+import { User, UserModule } from "@bot-melissa/shared/schemas/user.schema";
 import * as moment from "moment-timezone";
 
 export async function updateAll(req: RequestMessageVkModel) {

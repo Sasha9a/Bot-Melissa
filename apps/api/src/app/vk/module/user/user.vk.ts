@@ -1,12 +1,12 @@
-import { PeerTypeVkEnum } from "@bot-sadvers/api/vk/core/enums/peer.type.vk.enum";
-import { RequestMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.message.vk.model";
-import { errorSend, yesSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
-import { createAntispam } from "@bot-sadvers/api/vk/module/chat/chat.utils.vk";
-import { vk } from "@bot-sadvers/api/vk/vk";
-import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
-import { Antispam, AntispamModule } from "@bot-sadvers/shared/schemas/antispam.schema";
-import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
-import { User, UserModule } from "@bot-sadvers/shared/schemas/user.schema";
+import { PeerTypeVkEnum } from "@bot-melissa/api/vk/core/enums/peer.type.vk.enum";
+import { RequestMessageVkModel } from "@bot-melissa/api/vk/core/models/request.message.vk.model";
+import { errorSend, yesSend } from "@bot-melissa/api/vk/core/utils/customMessage.utils.vk";
+import { createAntispam } from "@bot-melissa/api/vk/module/chat/chat.utils.vk";
+import { vk } from "@bot-melissa/api/vk/vk";
+import { CommandVkEnum } from "@bot-melissa/shared/enums/command.vk.enum";
+import { Antispam, AntispamModule } from "@bot-melissa/shared/schemas/antispam.schema";
+import { Status, StatusModule } from "@bot-melissa/shared/schemas/status.schema";
+import { User, UserModule } from "@bot-melissa/shared/schemas/user.schema";
 import * as moment from "moment-timezone";
 import { getFullUserInfo, isOwnerMember, stringifyMention, templateGetUser } from "./user.utils.vk";
 
@@ -552,7 +552,7 @@ export async function who(req: RequestMessageVkModel) {
         result = result.concat(` ${req.user.info.icon}`);
       }
       if (data) {
-        result = result.concat(`, вы - ${data.text}`);
+        result = result.concat(data.text);
       } else {
         const randText = `, вы - ${adjectives[Math.floor(Math.random() * adjectives.length)]} ${nouns[Math.floor(Math.random() * nouns.length)]}`;
         result = result.concat(randText);

@@ -3,9 +3,10 @@
  * This is only a minimal backend to get started.
  */
 
-import { vk_initialize } from "@bot-sadvers/api/vk/vk";
-import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./app/app.module";
+import { NestFactory } from '@nestjs/core';
+
+import { AppModule } from './app/app.module';
+import { vk_initialize } from "./app/vk/vk";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

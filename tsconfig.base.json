@@ -17,14 +17,14 @@
     "noUnusedParameters": false,
     "target": "esnext",
     "module": "esnext",
-    "lib": ["es2015", "es2017", "dom"],
+    "lib": ["es2017", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@bot-sadvers/api/*": ["apps/api/src/app/*"],
-      "@bot-sadvers/shared/*": ["libs/shared/src/*"],
-      "@bot-sadvers/web/*": ["apps/web/src/app/*"]
+      "@bot-melissa/api/*": ["apps/api/src/app/*"],
+      "@bot-melissa/shared/*": ["libs/shared/src/*"],
+      "@bot-melissa/web/*": ["apps/web/src/app/*"]
     }
   },
   "exclude": ["node_modules", "tmp"],

@@ -1,7 +1,7 @@
-import { RequestAdminMessageVkModel } from "@bot-sadvers/api/vk/core/models/request.admin.message.vk.model";
-import { errorSend, yesSend } from "@bot-sadvers/api/vk/core/utils/customMessage.utils.vk";
-import { vk } from "@bot-sadvers/api/vk/vk";
-import { Chat, ChatModule } from "@bot-sadvers/shared/schemas/chat.schema";
+import { RequestAdminMessageVkModel } from "@bot-melissa/api/vk/core/models/request.admin.message.vk.model";
+import { errorSend, yesSend } from "@bot-melissa/api/vk/core/utils/customMessage.utils.vk";
+import { vk } from "@bot-melissa/api/vk/vk";
+import { Chat, ChatModule } from "@bot-melissa/shared/schemas/chat.schema";
 import * as moment from "moment-timezone";
 
 export async function releaseUpdate(req: RequestAdminMessageVkModel) {

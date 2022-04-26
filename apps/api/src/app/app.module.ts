@@ -1,4 +1,4 @@
-import { UserModule } from "@bot-sadvers/api/modules/user/user.module";
+import { UserModule } from "@bot-melissa/api/modules/user/user.module";
 import { Module } from '@nestjs/common';
 import { MongooseModule } from "@nestjs/mongoose";
 import { environment } from "../environments/environment";

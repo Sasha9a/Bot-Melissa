@@ -1,7 +1,7 @@
-import { CommandVkEnum } from "@bot-sadvers/shared/enums/command.vk.enum";
-import { Command, CommandModule } from "@bot-sadvers/shared/schemas/command.schema";
-import { Status, StatusModule } from "@bot-sadvers/shared/schemas/status.schema";
-import { User } from "@bot-sadvers/shared/schemas/user.schema";
+import { CommandVkEnum } from "@bot-melissa/shared/enums/command.vk.enum";
+import { Command, CommandModule } from "@bot-melissa/shared/schemas/command.schema";
+import { Status, StatusModule } from "@bot-melissa/shared/schemas/status.schema";
+import { User } from "@bot-melissa/shared/schemas/user.schema";
 
 export async function createStatus(statusNumber: number, chatId: number): Promise<Status> {
   const status: Status = new StatusModule({

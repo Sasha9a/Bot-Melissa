@@ -1,4 +1,4 @@
-import { TypeMarriagesEnum } from "@bot-sadvers/shared/enums/type.marriages.enum";
+import { TypeMarriagesEnum } from "@bot-melissa/shared/enums/type.marriages.enum";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, model } from "mongoose";
 import * as mongoose from 'mongoose';
