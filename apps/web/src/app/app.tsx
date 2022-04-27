@@ -1,10 +1,12 @@
-import NxWelcome from './nx-welcome';
+import { Button } from "primereact/button";
 
-export function App() {
+const App = () => {
+  const query = `https://oauth.vk.com/authorize?client_id=${8150888}&display=page&redirect_uri=http://localhost:4200&response_type=token&v=5.131`;
   return (
     <>
-      <NxWelcome title="web" />
-      <div />
+      <a href={query}>
+        <Button label="Вход в ВК" className="p-button-danger" />
+      </a>
     </>
   );
 }
