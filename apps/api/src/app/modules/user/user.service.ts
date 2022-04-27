@@ -11,4 +11,8 @@ export class UserService extends BaseService<User> {
     super(userModel);
   }
 
+  public async findByPeerId(peerId: number): Promise<User> {
+    return await this.userModel.findOne({ peerId: peerId }).exec();
+  }
+
 }
