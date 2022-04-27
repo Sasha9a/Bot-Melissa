@@ -13,6 +13,7 @@
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
     "axios": "^0.27.1",
+    "axios-observable": "^1.4.0",
     "class-validator": "^0.13.2",
     "class-transformer": "^0.5.1",
     "core-js": "^3.6.5",
