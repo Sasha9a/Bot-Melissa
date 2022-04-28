@@ -1,10 +1,13 @@
+import { loginAxios } from "@bot-melissa/web/core/services/user/user.service";
 import React from "react";
 import { useLocation } from "react-router-dom";
-import locationHashParser from 'parse-location-hash';
 
-const SignInComponent = () => {
-  const hash = locationHashParser(useLocation().hash);
+const SignInComponent: React.FC = () => {
 
+  const queryParams = new URLSearchParams(useLocation().search);
+  loginAxios(queryParams.get('code')).subscribe((res) => {
+    console.log(res);
+  });
 
   return (
     <p>

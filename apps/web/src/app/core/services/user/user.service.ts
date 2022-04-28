@@ -1,5 +1,5 @@
-import { BaseService } from "@bot-melissa/web/core/services/base.service";
+import httpClient from "@bot-melissa/web/core/services/api.service";
 
-export class UserService extends BaseService {
-  protected override baseUrl = '/user';
+export const loginAxios = (code) => {
+  return httpClient.post('/user/login', { code });
 }
