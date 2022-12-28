@@ -17,14 +17,13 @@
     "noUnusedParameters": false,
     "target": "esnext",
     "module": "esnext",
-    "lib": ["es2017", "dom"],
+    "lib": ["es2019", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@bot-melissa/api/*": ["apps/api/src/app/*"],
-      "@bot-melissa/shared/*": ["libs/shared/src/*"],
-      "@bot-melissa/web/*": ["apps/web/src/app/*"]
+      "@bot-melissa/app/*": ["apps/app/src/app/*"],
+      "@bot-melissa/shared/*": ["libs/shared/src/*"]
     }
   },
   "exclude": ["node_modules", "tmp"],
