@@ -1,48 +1,37 @@
-import { TypeMarriagesEnum } from "@bot-melissa/shared/enums/type.marriages.enum";
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, model } from "mongoose";
-import * as mongoose from 'mongoose';
+import { TypeMarriagesEnum } from '@bot-melissa/shared/enums/type.marriages.enum';
+import { Document, model, Schema } from 'mongoose';
 
-@Schema({ versionKey: false })
-export class Chat extends Document {
-
-  @Prop({ required: true })
-  public chatId: number;
-
-  @Prop()
-  public rules: string;
-
-  @Prop()
-  public greetings: string;
-
-  @Prop()
-  public autoKickList: number[];
-
-  @Prop({ type: [mongoose.Schema.Types.Mixed] })
-  public banList: { id: number, endDate: Date }[];
-
-  @Prop({ type: [mongoose.Schema.Types.Mixed] })
-  public muteList: { id: number, endDate: Date }[];
-
-  @Prop()
-  public maxWarn: number;
-
-  @Prop({ type: Number, default: 0 })
-  public typeMarriages: TypeMarriagesEnum;
-
-  @Prop({ default: 0 })
-  public autoKickInDays: number;
-
-  @Prop()
-  public autoKickInDaysDate: Date;
-
-  @Prop({ default: 9 })
-  public autoKickToStatus: number;
-
-  @Prop({ default: true })
-  public isInvite: boolean;
-
+export interface Chat extends Document {
+  chatId: number;
+  rules: string;
+  greetings: string;
+  autoKickList: number[];
+  banList: { id: number; endDate: Date }[];
+  muteList: { id: number; endDate: Date }[];
+  maxWarn: number;
+  typeMarriages: TypeMarriagesEnum;
+  autoKickInDays: number;
+  autoKickInDaysDate: Date;
+  autoKickToStatus: number;
+  isInvite: boolean;
 }
 
-export const ChatSchema = SchemaFactory.createForClass(Chat);
+const ChatSchema: Schema = new Schema<Chat>(
+  {
+    chatId: { type: Number, required: true },
+    rules: String,
+    greetings: String,
+    autoKickList: [Number],
+    banList: [{ id: Number, endDate: Date }],
+    muteList: [{ id: Number, endDate: Date }],
+    maxWarn: Number,
+    typeMarriages: { type: Number, default: TypeMarriagesEnum.traditional },
+    autoKickInDays: { type: Number, default: 0 },
+    autoKickInDaysDate: Date,
+    autoKickToStatus: { type: Number, default: 9 },
+    isInvite: { type: Boolean, default: true }
+  },
+  { versionKey: false }
+);
+
 export const ChatModule = model<Chat>('Chat', ChatSchema);

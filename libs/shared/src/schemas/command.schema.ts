@@ -1,20 +1,19 @@
-import { CommandVkEnum } from "@bot-melissa/shared/enums/command.vk.enum";
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, model } from "mongoose";
+import { CommandVkEnum } from '@bot-melissa/shared/enums/command.vk.enum';
+import { Document, model, Schema } from 'mongoose';
 
-@Schema({ versionKey: false })
-export class Command extends Document {
-
-  @Prop({ required: true })
-  public chatId: number;
-
-  @Prop({ required: true, type: String })
-  public command: CommandVkEnum;
-
-  @Prop()
-  public status: number;
-
+export interface Command extends Document {
+  chatId: number;
+  command: CommandVkEnum;
+  status: number;
 }
 
-export const CommandSchema = SchemaFactory.createForClass(Command);
+const CommandSchema: Schema = new Schema<Command>(
+  {
+    chatId: { type: Number, required: true },
+    command: { type: String, required: true, enum: Object.values(CommandVkEnum) },
+    status: Number
+  },
+  { versionKey: false }
+);
+
 export const CommandModule = model<Command>('Command', CommandSchema);

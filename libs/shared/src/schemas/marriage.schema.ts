@@ -1,34 +1,28 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, model } from "mongoose";
+import { Document, model, Schema } from 'mongoose';
 
-@Schema({ versionKey: false })
-export class Marriage extends Document {
-
-  @Prop({ required: true })
-  public chatId: number;
-
-  @Prop()
-  public marriageDate: Date;
-
-  @Prop({ required: true })
-  public userFirstId: number;
-
-  @Prop({ required: true })
-  public userSecondId: number;
-
-  @Prop({ default: false })
-  public isConfirmed: boolean;
-
-  @Prop({ default: 0 })
-  public status: number;
-
-  @Prop()
-  public messageId: number;
-
-  @Prop()
-  public checkDate: Date;
-
+export interface Marriage extends Document {
+  chatId: number;
+  marriageDate: Date;
+  userFirstId: number;
+  userSecondId: number;
+  isConfirmed: boolean;
+  status: number;
+  messageId: number;
+  checkDate: Date;
 }
 
-export const MarriageSchema = SchemaFactory.createForClass(Marriage);
+const MarriageSchema: Schema = new Schema<Marriage>(
+  {
+    chatId: { type: Number, required: true },
+    marriageDate: Date,
+    userFirstId: { type: Number, required: true },
+    userSecondId: { type: Number, required: true },
+    isConfirmed: { type: Boolean, default: false },
+    status: { type: Number, default: 0 },
+    messageId: Number,
+    checkDate: Date
+  },
+  { versionKey: false }
+);
+
 export const MarriageModule = model<Marriage>('Marriage', MarriageSchema);

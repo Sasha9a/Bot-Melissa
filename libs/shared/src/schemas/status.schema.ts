@@ -1,19 +1,18 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, model } from "mongoose";
+import { Document, model, Schema } from 'mongoose';
 
-@Schema({ versionKey: false })
-export class Status extends Document {
-
-  @Prop({ required: true })
-  public chatId: number;
-
-  @Prop({ required: true })
-  public status: number;
-
-  @Prop()
-  public name: string;
-
+export interface Status extends Document {
+  chatId: number;
+  status: number;
+  name: string;
 }
 
-export const StatusSchema = SchemaFactory.createForClass(Status);
+const StatusSchema: Schema = new Schema<Status>(
+  {
+    chatId: { type: Number, required: true },
+    status: { type: Number, required: true },
+    name: String
+  },
+  { versionKey: false }
+);
+
 export const StatusModule = model<Status>('Status', StatusSchema);

@@ -1,40 +1,32 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, model } from 'mongoose';
+import { Document, model, Schema } from 'mongoose';
 
-@Schema({ versionKey: false })
-export class User extends Document {
-
-  @Prop({ required: true })
-  public chatId: number;
-
-  @Prop({ required: true })
-  public peerId: number;
-
-  @Prop()
-  public joinDate: Date;
-
-  @Prop({ default: 0 })
-  public status: number;
-
-  @Prop()
-  public nick: string;
-
-  @Prop()
-  public icon: string;
-
-  @Prop()
-  public age: number;
-
-  @Prop()
-  public aboutMe: string;
-
-  @Prop({ default: 0 })
-  public warn: number;
-
-  @Prop()
-  public lastActivityDate: Date;
-
+export interface User extends Document {
+  chatId: number;
+  peerId: number;
+  joinDate: Date;
+  status: number;
+  nick: string;
+  icon: string;
+  age: number;
+  aboutMe: string;
+  warn: number;
+  lastActivityDate: Date;
 }
 
-export const UserSchema = SchemaFactory.createForClass(User);
+const UserSchema: Schema = new Schema<User>(
+  {
+    chatId: { type: Number, required: true },
+    peerId: { type: Number, required: true },
+    joinDate: Date,
+    status: { type: Number, default: 0 },
+    nick: String,
+    icon: String,
+    age: Number,
+    aboutMe: String,
+    warn: { type: Number, default: 0 },
+    lastActivityDate: Date
+  },
+  { versionKey: false }
+);
+
 export const UserModule = model<User>('User', UserSchema);

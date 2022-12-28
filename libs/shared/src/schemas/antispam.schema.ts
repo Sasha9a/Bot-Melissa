@@ -1,29 +1,25 @@
-import { CommandVkEnum } from "@bot-melissa/shared/enums/command.vk.enum";
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, model } from "mongoose";
+import { CommandVkEnum } from '@bot-melissa/shared/enums/command.vk.enum';
+import { Document, model, Schema } from 'mongoose';
 
-@Schema({ versionKey: false })
-export class Antispam extends Document {
-
-  @Prop({ required: true })
-  public chatId: number;
-
-  @Prop({ required: true, type: String })
-  public command: CommandVkEnum;
-
-  @Prop({ required: true })
-  public date: Date;
-
-  @Prop()
-  public peerId: number;
-
-  @Prop()
-  public question: string;
-
-  @Prop()
-  public text: string;
-
+export interface Antispam extends Document {
+  chatId: number;
+  command: CommandVkEnum;
+  date: Date;
+  peerId: number;
+  question: string;
+  text: string;
 }
 
-export const AntispamSchema = SchemaFactory.createForClass(Antispam);
+const AntispamSchema: Schema = new Schema<Antispam>(
+  {
+    chatId: { type: Number, required: true },
+    command: { type: String, required: true, enum: Object.values(CommandVkEnum) },
+    date: { type: Date, required: true },
+    peerId: Number,
+    question: String,
+    text: String
+  },
+  { versionKey: false }
+);
+
 export const AntispamModule = model<Antispam>('Antispam', AntispamSchema);
