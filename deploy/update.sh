@@ -15,7 +15,7 @@ echo 'Connect to Server...'
 # echo 'vm.vfs_cache_pressure=50' | sudo tee -a /etc/sysctl.conf
 
 umask 777
-ssh -tt -i ~/.ssh/id_rsa root@89.223.64.41 << EOF
+ssh -tt -i ~/.ssh/id_rsa root@188.225.42.148 << EOF
 cd Bot-Melissa
 sudo git pull
 sudo npm install
