@@ -21,11 +21,8 @@ sudo curl -sL https://deb.nodesource.com/setup_14.x | sudo bash -
 sudo apt -y install nodejs
 node -v
 npm -v
-sudo apt -y install nginx
 sudo apt -y install git
 sudo apt -y install mongodb-server
-sudo apt -y install certbot python3-certbot-nginx
-sudo apt-get -y install build-essential
 sudo npm install -g pm2
 sudo npm install -g nx
 sudo /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
