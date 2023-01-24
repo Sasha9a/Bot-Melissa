@@ -8,11 +8,12 @@ import { Marriage, MarriageModule } from '@bot-melissa/shared/schemas/marriage.s
 import { User } from '@bot-melissa/shared/schemas/user.schema';
 import * as moment from 'moment-timezone';
 import { Keyboard } from 'vk-io';
+import { environment } from '../../../environments/environment';
 
 export const marriage = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 1 && !req.replyMsgSenderId) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса брак [пользователь]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} брак [пользователь]`);
     }
     const user: User = await getFullUserInfo(req.text[0] ?? String(req.replyMsgSenderId), req.msgObject);
     if (!user) {
@@ -139,7 +140,7 @@ export const marriages = async (req: RequestMessageVkModel) => {
 export const divorce = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 1 && !req.replyMsgSenderId) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса развод [пользователь]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} развод [пользователь]`);
     }
     const user: User = await getFullUserInfo(req.text[0] ?? String(req.replyMsgSenderId), req.msgObject);
     if (!user) {

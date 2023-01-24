@@ -59,8 +59,6 @@ import { ContextDefaultState, MessageContext, MessageEventContext } from 'vk-io'
 import { MessagesConversationMember, UsersUserFull } from 'vk-io/lib/api/schemas/objects';
 import { environment } from '../environments/environment';
 
-const nameBot = 'лиса';
-
 export const commands: { command: CommandVkEnum; func: (req: RequestMessageVkModel) => Promise<any>; argv: string }[] = [
   { command: CommandVkEnum.updateAll, func: updateAll, argv: '' },
   { command: CommandVkEnum.getUser, func: getUser, argv: '[пользователь]' },
@@ -135,8 +133,8 @@ export const parseMessage = async (message: MessageContext<ContextDefaultState>)
   await autoKickInDays(chat, message, membersList);
   await checkTimeMarriage(chat, membersList, message);
   await checkMessageToMarriage(message);
-  if (message.text?.toLowerCase().startsWith(nameBot) && message.text[nameBot.length] === ' ') {
-    message.text = message.text.substring(nameBot.length + 1);
+  if (message.text?.toLowerCase().startsWith(environment.botName.toLowerCase()) && message.text[environment.botName.length] === ' ') {
+    message.text = message.text.substring(environment.botName.length + 1);
     if (
       !chat &&
       !(
@@ -144,7 +142,7 @@ export const parseMessage = async (message: MessageContext<ContextDefaultState>)
         (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' ')
       )
     ) {
-      return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Лиса обновить`);
+      return errorSend(message, `Произошла ошибка. Владелец беседы, введи: ${environment.botName} обновить`);
     }
     const request: RequestMessageVkModel = new RequestMessageVkModel();
     request.chat = chat;
@@ -165,7 +163,7 @@ export const parseMessage = async (message: MessageContext<ContextDefaultState>)
             (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' ')
           )
         ) {
-          return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Лиса обновить`);
+          return errorSend(message, `Произошла ошибка. Владелец беседы, введи: ${environment.botName} обновить`);
         }
         if (await accessCheck(currentUser?.info, command.command, message.peerId)) {
           request.command = command.command;
@@ -187,13 +185,13 @@ export const inviteUser = async (message: MessageContext<ContextDefaultState>) =
   if (message.eventMemberId === -environment.groupId) {
     await message
       .send(
-        'Добрый день всем! Я бот администратор :)\nЧтобы я заработал, выдайте мне админку и Владелец беседы введи команду: "Лиса обновить"'
+        `Добрый день всем! Я бот администратор :)\nЧтобы я заработал, выдайте мне админку и Владелец беседы введи команду: "${environment.botName} обновить"`
       )
       .catch(console.error);
   } else {
     const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
     if (!chat) {
-      return errorSend(message, `Произошла ошибка. Владелец беседы, введи: Лиса обновить`);
+      return errorSend(message, `Произошла ошибка. Владелец беседы, введи: ${environment.botName} обновить`);
     }
     await checkBanList(chat);
     if (!chat.isInvite && !(await isOwnerMember(message.senderId, message.peerId))) {

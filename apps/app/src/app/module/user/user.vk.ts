@@ -8,9 +8,10 @@ import { Antispam, AntispamModule } from '@bot-melissa/shared/schemas/antispam.s
 import { Status, StatusModule } from '@bot-melissa/shared/schemas/status.schema';
 import { User, UserModule } from '@bot-melissa/shared/schemas/user.schema';
 import * as moment from 'moment-timezone';
+import { environment } from '../../../environments/environment';
 import { getFullUserInfo, isOwnerMember, stringifyMention, templateGetUser } from './user.utils.vk';
 
-export async function setNickMe(req: RequestMessageVkModel) {
+export const setNickMe = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (!req.text.length) {
       return errorSend(req.msgObject, 'Вы не ввели ник');
@@ -22,12 +23,12 @@ export async function setNickMe(req: RequestMessageVkModel) {
       `Установлен ник для ${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}: "${req.fullText}"`
     );
   }
-}
+};
 
-export async function setNick(req: RequestMessageVkModel) {
+export const setNick = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if ((!req.replyMsgSenderId && req.text.length < 2) || (req.replyMsgSenderId && req.text.length < 1)) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса ник [пользователь] [ник]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} ник [пользователь] [ник]`);
     }
     const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
     if (!user) {
@@ -43,9 +44,9 @@ export async function setNick(req: RequestMessageVkModel) {
       })}: "${user.nick}"`
     );
   }
-}
+};
 
-export async function setIconMe(req: RequestMessageVkModel) {
+export const setIconMe = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (!req.text.length) {
       return errorSend(req.msgObject, 'Вы не ввели значок');
@@ -57,12 +58,12 @@ export async function setIconMe(req: RequestMessageVkModel) {
       `Установлен значок для ${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}: "${req.fullText}"`
     );
   }
-}
+};
 
-export async function setIcon(req: RequestMessageVkModel) {
+export const setIcon = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 2 && req.replyMsgSenderId && req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса значок [пользователь] [значок]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} значок [пользователь] [значок]`);
     }
     const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
     if (!user) {
@@ -78,12 +79,12 @@ export async function setIcon(req: RequestMessageVkModel) {
       })}: "${user.icon}"`
     );
   }
-}
+};
 
-export async function setAgeMe(req: RequestMessageVkModel) {
+export const setAgeMe = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса мне возраст [возраст]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} мне возраст [возраст]`);
     }
     if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 1 || Number(req.text[0]) > 100) {
       return errorSend(req.msgObject, 'Первый аргумент не верный (1-100)');
@@ -97,9 +98,9 @@ export async function setAgeMe(req: RequestMessageVkModel) {
       )}"`
     );
   }
-}
+};
 
-export async function setAboutMe(req: RequestMessageVkModel) {
+export const setAboutMe = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (!req.text.length) {
       return errorSend(req.msgObject, 'Вы не ввели текст');
@@ -111,12 +112,12 @@ export async function setAboutMe(req: RequestMessageVkModel) {
       `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })} графа "О себе" сохранен`
     );
   }
-}
+};
 
-export async function getUser(req: RequestMessageVkModel) {
+export const getUser = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length > 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса участник [пользователь]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} участник [пользователь]`);
     }
     if (req.text.length === 1 || req.replyMsgSenderId) {
       const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
@@ -128,12 +129,12 @@ export async function getUser(req: RequestMessageVkModel) {
       req.msgObject.send(await templateGetUser(req, req.user.id), { disable_mentions: true }).catch(console.error);
     }
   }
-}
+};
 
-export async function setStatus(req: RequestMessageVkModel) {
+export const setStatus = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 2 && req.replyMsgSenderId && req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса статус [пользователь] [номер статуса]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} статус [пользователь] [номер статуса]`);
     }
     const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
     if (!user) {
@@ -162,9 +163,9 @@ export async function setStatus(req: RequestMessageVkModel) {
       })}`
     );
   }
-}
+};
 
-export async function getStatuses(req: RequestMessageVkModel) {
+export const getStatuses = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     let result = 'Статус пользователей:';
     const users: User[] = await UserModule.find({ status: { $ne: 0 }, chatId: req.msgObject.peerId }, { status: 1, peerId: 1, icon: 1 });
@@ -189,12 +190,12 @@ export async function getStatuses(req: RequestMessageVkModel) {
     }
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
-}
+};
 
-export async function kick(req: RequestMessageVkModel) {
+export const kick = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 1 && !req.replyMsgSenderId) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса кик [пользователь]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} кик [пользователь]`);
     }
     const user: User = await getFullUserInfo(req.text[0] ?? String(req.replyMsgSenderId), req.msgObject);
     if (!user) {
@@ -219,12 +220,12 @@ export async function kick(req: RequestMessageVkModel) {
       })
       .catch(console.error);
   }
-}
+};
 
-export async function autoKick(req: RequestMessageVkModel) {
+export const autoKick = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 1 && !req.replyMsgSenderId) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса автокик [пользователь]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} автокик [пользователь]`);
     }
     const user: User = await getFullUserInfo(req.text[0] ?? String(req.replyMsgSenderId), req.msgObject);
     if (!user) {
@@ -261,12 +262,12 @@ export async function autoKick(req: RequestMessageVkModel) {
       })} добавлен в автокик`
     );
   }
-}
+};
 
-export async function autoKickMinus(req: RequestMessageVkModel) {
+export const autoKickMinus = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса автокик- [пользователь]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} автокик- [пользователь]`);
     }
     const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
@@ -295,12 +296,12 @@ export async function autoKickMinus(req: RequestMessageVkModel) {
       );
     }
   }
-}
+};
 
-export async function ban(req: RequestMessageVkModel) {
+export const ban = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 2 && req.replyMsgSenderId && req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса бан [пользователь] [кол-во дней]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} бан [пользователь] [кол-во дней]`);
     }
     const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
     if (!user) {
@@ -345,12 +346,12 @@ export async function ban(req: RequestMessageVkModel) {
       })} добавлен в банлист на ${days} дн.`
     );
   }
-}
+};
 
-export async function banMinus(req: RequestMessageVkModel) {
+export const banMinus = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса бан- [пользователь]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} бан- [пользователь]`);
     }
     const user: User = await getFullUserInfo(req.text[0], req.msgObject);
     if (!user) {
@@ -380,12 +381,12 @@ export async function banMinus(req: RequestMessageVkModel) {
       );
     }
   }
-}
+};
 
-export async function warn(req: RequestMessageVkModel) {
+export const warn = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 2 && req.replyMsgSenderId && req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса пред [пользователь] [кол-во]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} пред [пользователь] [кол-во]`);
     }
     const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
     if (!user) {
@@ -428,12 +429,12 @@ export async function warn(req: RequestMessageVkModel) {
       );
     }
   }
-}
+};
 
-export async function warnMinus(req: RequestMessageVkModel) {
+export const warnMinus = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 2 && req.replyMsgSenderId && req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса снять пред [пользователь] [кол-во]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} снять пред [пользователь] [кол-во]`);
     }
     const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
     if (!user) {
@@ -469,9 +470,9 @@ export async function warnMinus(req: RequestMessageVkModel) {
       })} сняли предупреждение в количестве: ${count} шт.`
     );
   }
-}
+};
 
-export async function warnList(req: RequestMessageVkModel) {
+export const warnList = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     let result = 'Список пользователей с предом:';
     const users: User[] = await UserModule.find({ warn: { $ne: 0 }, chatId: req.msgObject.peerId });
@@ -488,19 +489,19 @@ export async function warnList(req: RequestMessageVkModel) {
       req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
     }
   }
-}
+};
 
-export async function clearWarnList(req: RequestMessageVkModel) {
+export const clearWarnList = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     await UserModule.updateMany({ warn: { $ne: 0 }, chatId: req.msgObject.peerId }, { warn: 0 });
     req.msgObject.send(`Список пользователей с предом очищен`).catch(console.error);
   }
-}
+};
 
-export async function mute(req: RequestMessageVkModel) {
+export const mute = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 2 && req.replyMsgSenderId && req.text.length !== 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса мут [пользователь] [кол-во часов]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} мут [пользователь] [кол-во часов]`);
     }
     const user: User = await getFullUserInfo(req.replyMsgSenderId ? String(req.replyMsgSenderId) : req.text[0], req.msgObject);
     if (!user) {
@@ -542,12 +543,12 @@ export async function mute(req: RequestMessageVkModel) {
       })} получает мут на ${hours} ч.`
     );
   }
-}
+};
 
-export async function muteMinus(req: RequestMessageVkModel) {
+export const muteMinus = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length !== 1 && !req.replyMsgSenderId) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса мут- [пользователь]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} мут- [пользователь]`);
     }
     const user: User = await getFullUserInfo(req.text[0] ?? String(req.replyMsgSenderId), req.msgObject);
     if (!user) {
@@ -577,12 +578,12 @@ export async function muteMinus(req: RequestMessageVkModel) {
       );
     }
   }
-}
+};
 
-export async function convene(req: RequestMessageVkModel) {
+export const convene = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса созвать [параметр]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} созвать [параметр]`);
     }
     let membersList = req.members.filter((m) => m.id !== req.msgObject.senderId && m.profile);
     let result = '';
@@ -662,12 +663,12 @@ export async function convene(req: RequestMessageVkModel) {
     }
     req.msgObject.send(result).catch(console.error);
   }
-}
+};
 
-export async function probability(req: RequestMessageVkModel) {
+export const probability = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса вероятность [вопрос]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} вероятность [вопрос]`);
     }
     const data: Antispam = await AntispamModule.findOne({
       chatId: req.chat.chatId,
@@ -694,12 +695,12 @@ export async function probability(req: RequestMessageVkModel) {
     }
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
-}
+};
 
-export async function who(req: RequestMessageVkModel) {
+export const who = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса кто [вопрос]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} кто [вопрос]`);
     }
     let result: string;
     if (req.text[0].toLowerCase() === 'я') {
@@ -865,9 +866,9 @@ export async function who(req: RequestMessageVkModel) {
     }
     req.msgObject.send(result).catch(console.error);
   }
-}
+};
 
-export async function activity(req: RequestMessageVkModel) {
+export const activity = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     const membersList = req.members.filter((m) => m.profile);
     membersList.sort((a, b) => {
@@ -905,9 +906,9 @@ export async function activity(req: RequestMessageVkModel) {
     }
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
-}
+};
 
-export async function getAllNick(req: RequestMessageVkModel) {
+export const getAllNick = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     const membersList = req.members.filter((m) => m.profile);
     let result = 'Список ников пользователей:';
@@ -918,9 +919,9 @@ export async function getAllNick(req: RequestMessageVkModel) {
     }
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
-}
+};
 
-export async function getAllIcon(req: RequestMessageVkModel) {
+export const getAllIcon = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     const membersList = req.members.filter((m) => m.profile);
     let result = 'Список значков пользователей:';
@@ -931,4 +932,4 @@ export async function getAllIcon(req: RequestMessageVkModel) {
     }
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
-}
+};

@@ -5,11 +5,12 @@ import { createCommand, createStatus } from '@bot-melissa/app/module/status/stat
 import { CommandVkEnum } from '@bot-melissa/shared/enums/command.vk.enum';
 import { Command, CommandModule } from '@bot-melissa/shared/schemas/command.schema';
 import { Status, StatusModule } from '@bot-melissa/shared/schemas/status.schema';
+import { environment } from '../../../environments/environment';
 
 export const setNameStatus = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 2) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса название статуса [номер статуса] [название]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} название статуса [номер статуса] [название]`);
     }
     if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 0 || Number(req.text[0]) > 10) {
       return errorSend(req.msgObject, 'Первый аргумент не верный');
@@ -27,7 +28,7 @@ export const setNameStatus = async (req: RequestMessageVkModel) => {
 export const setCommandStatus = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 2) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса доступ [номер статуса] [команда]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} доступ [номер статуса] [команда]`);
     }
     if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 0 || Number(req.text[0]) > 10) {
       return errorSend(req.msgObject, 'Первый аргумент не верный');

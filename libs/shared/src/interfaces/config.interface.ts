@@ -4,4 +4,5 @@ export interface ConfigInterface {
   groupId: number;
   db: string;
   secret: string;
+  botName: string;
 }

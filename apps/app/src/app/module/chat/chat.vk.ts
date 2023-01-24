@@ -11,6 +11,7 @@ import { TypeMarriagesEnum } from '@bot-melissa/shared/enums/type.marriages.enum
 import { Command, CommandModule } from '@bot-melissa/shared/schemas/command.schema';
 import { User, UserModule } from '@bot-melissa/shared/schemas/user.schema';
 import * as moment from 'moment-timezone';
+import { environment } from '../../../environments/environment';
 
 export const updateAll = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
@@ -70,7 +71,7 @@ export const updateAll = async (req: RequestMessageVkModel) => {
 export const setRules = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса новые правила [текст]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} новые правила [текст]`);
     }
     req.chat.rules = req.fullText;
     await req.chat.save();
@@ -91,7 +92,7 @@ export const getRules = async (req: RequestMessageVkModel) => {
 export const setGreetings = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 1) {
-      return errorSend(req.msgObject, 'Не все параметры введены\nЛиса новое приветствие [текст]');
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} новое приветствие [текст]`);
     }
     req.chat.greetings = req.fullText;
     await req.chat.save();
@@ -263,7 +264,7 @@ export const settings = async (req: RequestMessageVkModel) => {
     if (req.text.length < 2) {
       return errorSend(
         req.msgObject,
-        'Не все параметры введены\nЛиса настройки (номер параметра) (значение)\n' +
+        `Не все параметры введены\n${environment.botName} настройки (номер параметра) (значение)\n` +
           'Номера параметров:\n1. Установить преды\n2. Установить браки\n3. Установить автокик\n4. Приватность беседы\n5. Автокик по статус'
       );
     }
