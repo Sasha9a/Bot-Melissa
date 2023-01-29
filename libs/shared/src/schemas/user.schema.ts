@@ -1,3 +1,4 @@
+import * as moment from 'moment-timezone';
 import { Document, model, Schema } from 'mongoose';
 
 export interface User extends Document {
@@ -17,7 +18,7 @@ const UserSchema: Schema = new Schema<User>(
   {
     chatId: { type: Number, required: true },
     peerId: { type: Number, required: true },
-    joinDate: Date,
+    joinDate: { type: Date, default: moment().toDate() },
     status: { type: Number, default: 0 },
     nick: String,
     icon: String,
