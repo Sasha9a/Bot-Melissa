@@ -17,7 +17,7 @@ import {
   settings,
   updateAll
 } from '@bot-melissa/app/module/chat/chat.vk';
-import { checkMessageToMarriage, checkTimeMarriage, processMarriage } from '@bot-melissa/app/module/marriage/marriage.utils.vk';
+import { checkMessageToMarriage, processMarriage } from '@bot-melissa/app/module/marriage/marriage.utils.vk';
 import { divorce, marriage, marriages } from '@bot-melissa/app/module/marriage/marriage.vk';
 import { accessCheck } from '@bot-melissa/app/module/status/status.utils.vk';
 import { getCommandsStatus, setCommandStatus, setNameStatus } from '@bot-melissa/app/module/status/status.vk';
@@ -131,7 +131,6 @@ export const parseMessage = async (message: MessageContext<ContextDefaultState>)
   }
   await updateLastActivityUser(message);
   await autoKickInDays(chat, message, membersList);
-  await checkTimeMarriage(chat, membersList, message);
   await checkMessageToMarriage(message);
   if (message.text?.toLowerCase().startsWith(environment.botName.toLowerCase()) && message.text[environment.botName.length] === ' ') {
     message.text = message.text.substring(environment.botName.length + 1);
@@ -271,4 +270,7 @@ export const messageEvent = async (message: MessageEventContext) => {
       );
     }
   }
+  await vk.api.messages
+    .sendMessageEventAnswer({ event_id: message.eventId, peer_id: message.peerId, user_id: message.userId })
+    .catch(console.error);
 };

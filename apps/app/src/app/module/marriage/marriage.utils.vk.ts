@@ -1,37 +1,21 @@
 import { stringifyMention } from '@bot-melissa/app/module/user/user.utils.vk';
 import { vk } from '@bot-melissa/app/vk';
 import { CommandVkEnum } from '@bot-melissa/shared/enums/command.vk.enum';
-import { Chat } from '@bot-melissa/shared/schemas/chat.schema';
 import { Marriage, MarriageModule } from '@bot-melissa/shared/schemas/marriage.schema';
-import { User } from '@bot-melissa/shared/schemas/user.schema';
 import * as moment from 'moment-timezone';
 import { ContextDefaultState, Keyboard, MessageContext } from 'vk-io';
-import { MessagesConversationMember, UsersUserFull } from 'vk-io/lib/api/schemas/objects';
 
-export const checkTimeMarriage = async (
-  chat: Chat,
-  members: { id: number; item: MessagesConversationMember; profile: UsersUserFull; info: User }[],
-  message: MessageContext<ContextDefaultState>
-) => {
-  if (chat) {
-    const marriages: Marriage[] = await MarriageModule.find({ chatId: chat.chatId, isConfirmed: false });
-    for (const marriage of marriages) {
-      if (!marriage.checkDate || moment().diff(moment(marriage.checkDate), 'minutes') > 0) {
-        await MarriageModule.deleteOne({ chatId: chat.chatId, userFirstId: marriage.userFirstId, userSecondId: marriage.userSecondId });
-        let result = `${await stringifyMention({
-          userId: marriage.userFirstId,
-          userInfo: members.find((m) => m.id === marriage.userFirstId)?.profile
-        })}`;
-        result = result.concat(
-          ` и ${await stringifyMention({
-            userId: marriage.userSecondId,
-            userInfo: members.find((m) => m.id === marriage.userSecondId)?.profile
-          })}`
-        );
-        result = result.concat(` не смогли вовремя расписаться`);
-        await message.send(result).catch(console.error);
-      }
-    }
+export const checkTimeMarriage = async () => {
+  const marriages: Marriage[] = await MarriageModule.find({
+    isConfirmed: false,
+    $or: [{ checkDate: { $lte: moment().toDate() } }, { checkDate: null }]
+  });
+  for (const marriage of marriages) {
+    await MarriageModule.deleteOne({ chatId: marriage.chatId, userFirstId: marriage.userFirstId, userSecondId: marriage.userSecondId });
+    let result = `${await stringifyMention({ userId: marriage.userFirstId })}`;
+    result = result.concat(` и ${await stringifyMention({ userId: marriage.userSecondId })}`);
+    result = result.concat(` не смогли вовремя расписаться`);
+    await vk.api.messages.send({ peer_id: marriage.chatId, random_id: moment().unix(), message: result }).catch(console.error);
   }
 };
 
