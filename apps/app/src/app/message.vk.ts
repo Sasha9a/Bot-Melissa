@@ -224,7 +224,7 @@ export const inviteUser = async (message: MessageContext<ContextDefaultState>) =
         chatId: message.peerId,
         status: 0
       });
-      return await user.save();
+      await user.save().catch(console.error);
     }
     if (chat.greetings) {
       let result = `${await stringifyMention({ userId: message.eventMemberId })}, ${chat.greetings}`;
