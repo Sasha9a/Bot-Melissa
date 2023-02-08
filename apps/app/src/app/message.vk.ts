@@ -55,6 +55,7 @@ import { CommandVkEnum } from '@bot-melissa/shared/enums/command.vk.enum';
 import { Chat, ChatModule } from '@bot-melissa/shared/schemas/chat.schema';
 import { Marriage, MarriageModule } from '@bot-melissa/shared/schemas/marriage.schema';
 import { User, UserModule } from '@bot-melissa/shared/schemas/user.schema';
+import * as moment from 'moment-timezone';
 import { ContextDefaultState, MessageContext, MessageEventContext } from 'vk-io';
 import { MessagesConversationMember, UsersUserFull } from 'vk-io/lib/api/schemas/objects';
 import { environment } from '../environments/environment';
@@ -219,10 +220,11 @@ export const inviteUser = async (message: MessageContext<ContextDefaultState>) =
     }
     let user: User = await UserModule.findOne({ peerId: message.eventMemberId, chatId: message.peerId });
     if (!user) {
+      const member = await vk.api.users.get({ user_ids: [message.eventMemberId], fields: ['bdate'] });
       user = new UserModule({
         peerId: message.eventMemberId,
         chatId: message.peerId,
-        status: 0
+        age: member?.[0]?.bdate ? moment().diff(moment(member?.[0]?.bdate, 'D.M.YYYY'), 'years') : null
       });
       await user.save().catch(console.error);
     }
