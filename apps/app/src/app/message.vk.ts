@@ -21,7 +21,7 @@ import { checkMessageToMarriage, processMarriage } from '@bot-melissa/app/module
 import { divorce, marriage, marriages } from '@bot-melissa/app/module/marriage/marriage.vk';
 import { accessCheck } from '@bot-melissa/app/module/status/status.utils.vk';
 import { getCommandsStatus, setCommandStatus, setNameStatus } from '@bot-melissa/app/module/status/status.vk';
-import { autoKickInDays, isOwnerMember, stringifyMention, updateLastActivityUser } from '@bot-melissa/app/module/user/user.utils.vk';
+import { isOwnerMember, stringifyMention, updateLastActivityUser } from '@bot-melissa/app/module/user/user.utils.vk';
 import {
   activity,
   autoKick,
@@ -131,7 +131,6 @@ export const parseMessage = async (message: MessageContext<ContextDefaultState>)
     return;
   }
   await updateLastActivityUser(message);
-  await autoKickInDays(chat, message, membersList);
   await checkMessageToMarriage(message);
   if (message.text?.toLowerCase().startsWith(environment.botName.toLowerCase()) && message.text[environment.botName.length] === ' ') {
     message.text = message.text.substring(environment.botName.length + 1);

@@ -1,13 +1,13 @@
 import { RequestMessageVkModel } from '@bot-melissa/app/core/models/request.message.vk.model';
 import { errorSend } from '@bot-melissa/app/core/utils/customMessage.utils.vk';
 import { vk } from '@bot-melissa/app/vk';
-import { Chat } from '@bot-melissa/shared/schemas/chat.schema';
+import { Chat, ChatModule } from '@bot-melissa/shared/schemas/chat.schema';
 import { Marriage, MarriageModule } from '@bot-melissa/shared/schemas/marriage.schema';
 import { Status, StatusModule } from '@bot-melissa/shared/schemas/status.schema';
 import { User, UserModule } from '@bot-melissa/shared/schemas/user.schema';
 import * as moment from 'moment-timezone';
 import { ContextDefaultState, IResolvedOwnerResource, IResolvedTargetResource, MessageContext, resolveResource } from 'vk-io';
-import { MessagesConversationMember, UsersUserFull } from 'vk-io/lib/api/schemas/objects';
+import { UsersUserFull } from 'vk-io/lib/api/schemas/objects';
 
 export const createUser = async (info: Partial<User>): Promise<User> => {
   const user: User = new UserModule(info);
@@ -99,35 +99,29 @@ export const updateLastActivityUser = async (message: MessageContext<ContextDefa
   await UserModule.updateOne({ peerId: message.senderId, chatId: message.peerId }, { lastActivityDate: moment().toDate() });
 };
 
-export const autoKickInDays = async (
-  chat: Chat,
-  message: MessageContext<ContextDefaultState>,
-  members: { id: number; item: MessagesConversationMember; profile: UsersUserFull; info: User }[]
-) => {
-  if (
-    chat &&
-    chat.autoKickInDays > 0 &&
-    (!chat.autoKickInDaysDate || moment().diff(moment(chat.autoKickInDaysDate)) / 1000 / 60 / 60 > 12)
-  ) {
-    chat.autoKickInDaysDate = moment().toDate();
-    await chat.save();
+export const autoKickInDays = async () => {
+  const chats: Chat[] = await ChatModule.find({ autoKickInDays: { $gt: 0 } });
+  for (const chat of chats) {
+    if (!chat.autoKickInDaysDate || moment().diff(moment(chat.autoKickInDaysDate)) / 1000 / 60 / 60 > 12) {
+      chat.autoKickInDaysDate = moment().toDate();
+      await chat.save();
 
-    let membersList = members;
-    membersList = membersList.filter((m) => m.profile);
-    for (const member of membersList) {
-      if (member.info?.lastActivityDate) {
-        const days = moment().diff(moment(member.info.lastActivityDate)) / 1000 / 60 / 60 / 24;
-        if (Math.floor(days) >= chat.autoKickInDays && chat.autoKickToStatus >= member.info?.status) {
-          await vk.api.messages
-            .removeChatUser({ chat_id: message.peerId - 2000000000, member_id: member.id, user_id: member.id })
-            .catch(console.error);
-        }
-      } else if (member.info?.joinDate) {
-        const days = moment().diff(moment(member.info.joinDate)) / 1000 / 60 / 60 / 24;
-        if (Math.floor(days) >= chat.autoKickInDays && chat.autoKickToStatus >= member.info?.status) {
-          await vk.api.messages
-            .removeChatUser({ chat_id: message.peerId - 2000000000, member_id: member.id, user_id: member.id })
-            .catch(console.error);
+      const users: User[] = await UserModule.find({ chatId: chat.chatId });
+      for (const member of users) {
+        if (member.lastActivityDate) {
+          const days = moment().diff(moment(member.lastActivityDate)) / 1000 / 60 / 60 / 24;
+          if (Math.floor(days) >= chat.autoKickInDays && chat.autoKickToStatus >= member.status) {
+            await vk.api.messages
+              .removeChatUser({ chat_id: chat.chatId - 2000000000, member_id: member.peerId, user_id: member.peerId })
+              .catch(console.error);
+          }
+        } else if (member.joinDate) {
+          const days = moment().diff(moment(member.joinDate)) / 1000 / 60 / 60 / 24;
+          if (Math.floor(days) >= chat.autoKickInDays && chat.autoKickToStatus >= member.status) {
+            await vk.api.messages
+              .removeChatUser({ chat_id: chat.chatId - 2000000000, member_id: member.peerId, user_id: member.peerId })
+              .catch(console.error);
+          }
         }
       }
     }

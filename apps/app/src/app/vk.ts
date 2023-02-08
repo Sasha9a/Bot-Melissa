@@ -2,6 +2,7 @@ import { parseAdminMessage } from '@bot-melissa/app/admin.message.vk';
 import { PeerTypeVkEnum } from '@bot-melissa/app/core/enums/peer.type.vk.enum';
 import { inviteUser, kickUser, messageEvent, parseMessage } from '@bot-melissa/app/message.vk';
 import { checkTimeMarriage } from '@bot-melissa/app/module/marriage/marriage.utils.vk';
+import { autoKickInDays } from '@bot-melissa/app/module/user/user.utils.vk';
 import { connect } from 'mongoose';
 import * as schedule from 'node-schedule';
 import { VK } from 'vk-io';
@@ -64,5 +65,10 @@ export const botInit = () => {
   schedule.scheduleJob('* * * * *', () => {
     console.log('Запущен ежеминутный крон');
     checkTimeMarriage();
+  });
+
+  schedule.scheduleJob('* 4 * * *', () => {
+    console.log('Запущен ежесуточный крон');
+    autoKickInDays();
   });
 };
