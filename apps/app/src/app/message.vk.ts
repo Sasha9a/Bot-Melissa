@@ -181,7 +181,8 @@ export const parseMessage = async (message: MessageContext<ContextDefaultState>)
 };
 
 export const inviteUser = async (message: MessageContext<ContextDefaultState>) => {
-  if (message.eventMemberId === -environment.groupId) {
+  const peerId = message.eventMemberId || message.senderId;
+  if (peerId === -environment.groupId) {
     await message
       .send(
         `Добрый день всем! Я бот администратор :)\nЧтобы я заработал, выдайте мне админку и Владелец беседы введи команду: "${environment.botName} обновить"`
@@ -195,44 +196,40 @@ export const inviteUser = async (message: MessageContext<ContextDefaultState>) =
     await checkBanList(chat);
     if (!chat.isInvite && !(await isOwnerMember(message.senderId, message.peerId))) {
       await vk.api.messages
-        .removeChatUser({ chat_id: message.peerId - 2000000000, member_id: message.eventMemberId, user_id: message.eventMemberId })
+        .removeChatUser({ chat_id: message.peerId - 2000000000, member_id: peerId, user_id: peerId })
         .catch(console.error);
       return;
     }
-    if (chat.autoKickList && chat.autoKickList.findIndex((id) => id === message.eventMemberId) !== -1) {
+    if (chat.autoKickList && chat.autoKickList.findIndex((id) => id === peerId) !== -1) {
       await vk.api.messages
-        .removeChatUser({ chat_id: message.peerId - 2000000000, member_id: message.eventMemberId, user_id: message.eventMemberId })
+        .removeChatUser({ chat_id: message.peerId - 2000000000, member_id: peerId, user_id: peerId })
         .catch(console.error);
-      await message
-        .send(`Пользователь ${await stringifyMention({ userId: message.eventMemberId })} находится в списке автокика`)
-        .catch(console.error);
+      await message.send(`Пользователь ${await stringifyMention({ userId: peerId })} находится в списке автокика`).catch(console.error);
       return;
     }
-    if (chat.banList && chat.banList.findIndex((u) => u.id === message.eventMemberId) !== -1) {
+    if (chat.banList && chat.banList.findIndex((u) => u.id === peerId) !== -1) {
       await vk.api.messages
-        .removeChatUser({ chat_id: message.peerId - 2000000000, member_id: message.eventMemberId, user_id: message.eventMemberId })
+        .removeChatUser({ chat_id: message.peerId - 2000000000, member_id: peerId, user_id: peerId })
         .catch(console.error);
-      await message
-        .send(`Пользователь ${await stringifyMention({ userId: message.eventMemberId })} находится в списке банлиста`)
-        .catch(console.error);
+      await message.send(`Пользователь ${await stringifyMention({ userId: peerId })} находится в списке банлиста`).catch(console.error);
       return;
     }
-    let user: User = await UserModule.findOne({ peerId: message.eventMemberId, chatId: message.peerId });
+    let user: User = await UserModule.findOne({ peerId: peerId, chatId: message.peerId });
     if (!user) {
-      const member = await vk.api.users.get({ user_ids: [message.eventMemberId], fields: ['bdate'] });
+      const member = await vk.api.users.get({ user_ids: [peerId], fields: ['bdate'] });
       user = new UserModule({
-        peerId: message.eventMemberId,
+        peerId: peerId,
         chatId: message.peerId,
         age: member?.[0]?.bdate ? moment().diff(moment(member?.[0]?.bdate, 'D.M.YYYY'), 'years') : null
       });
       await user.save().catch(console.error);
     }
     if (chat.greetings) {
-      let result = `${await stringifyMention({ userId: message.eventMemberId })}, ${chat.greetings}`;
+      let result = `${await stringifyMention({ userId: peerId })}, ${chat.greetings}`;
       if (chat.rules) {
         result = result.concat(`\n\n${chat.rules}`);
       }
-      await message.send(result).catch(console.error);
+      await message.send(result, { disable_mentions: true }).catch(console.error);
     }
   }
 };
