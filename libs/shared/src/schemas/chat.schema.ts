@@ -14,6 +14,7 @@ export interface Chat extends Document {
   autoKickInDaysDate: Date;
   autoKickToStatus: number;
   isInvite: boolean;
+  firstMessageAboutMe: boolean;
 }
 
 const ChatSchema: Schema = new Schema<Chat>(
@@ -29,7 +30,8 @@ const ChatSchema: Schema = new Schema<Chat>(
     autoKickInDays: { type: Number, default: 0 },
     autoKickInDaysDate: Date,
     autoKickToStatus: { type: Number, default: 9 },
-    isInvite: { type: Boolean, default: true }
+    isInvite: { type: Boolean, default: true },
+    firstMessageAboutMe: { type: Boolean, default: false }
   },
   { versionKey: false }
 );

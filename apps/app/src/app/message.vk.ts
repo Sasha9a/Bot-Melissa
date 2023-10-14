@@ -132,50 +132,72 @@ export const parseMessage = async (message: MessageContext<ContextDefaultState>)
   }
   await updateLastActivityUser(message);
   await checkMessageToMarriage(message);
+
+  let isCommand = false;
+  const request: RequestMessageVkModel = new RequestMessageVkModel();
+  request.chat = chat;
+  request.members = membersList;
+  request.msgObject = message;
+  request.user = membersList.find((m) => m.id === message.senderId);
+  if (message.replyMessage?.senderId) {
+    request.replyMsgSenderId = message.replyMessage.senderId;
+  }
+
   if (message.text?.toLowerCase().startsWith(environment.botName.toLowerCase()) && message.text[environment.botName.length] === ' ') {
+    isCommand = true;
     message.text = message.text.substring(environment.botName.length + 1);
     if (
       !chat &&
       !(
         message.text?.toLowerCase().startsWith(CommandVkEnum.updateAll) &&
-        (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' ')
+        (!message.text[CommandVkEnum.updateAll.length] ||
+          message.text[CommandVkEnum.updateAll.length] === ' ' ||
+          message.text[CommandVkEnum.updateAll.length] === '\n')
       )
     ) {
       return errorSend(message, `Произошла ошибка. Владелец беседы, введи: ${environment.botName} обновить`);
     }
-    const request: RequestMessageVkModel = new RequestMessageVkModel();
-    request.chat = chat;
-    request.members = membersList;
-    if (message.replyMessage?.senderId) {
-      request.replyMsgSenderId = message.replyMessage.senderId;
-    }
     for (const command of commands) {
       if (
         message.text?.toLowerCase().startsWith(command.command) &&
-        (!message.text[command.command.length] || message.text[command.command.length] === ' ')
+        (!message.text[command.command.length] ||
+          message.text[command.command.length] === ' ' ||
+          message.text[command.command.length] === '\n')
       ) {
-        const currentUser = request.members.find((m) => m.id === message.senderId);
         if (
-          !currentUser?.info &&
+          !request.user?.info &&
           !(
             message.text?.toLowerCase().startsWith(CommandVkEnum.updateAll) &&
-            (!message.text[CommandVkEnum.updateAll.length] || message.text[CommandVkEnum.updateAll.length] === ' ')
+            (!message.text[CommandVkEnum.updateAll.length] ||
+              message.text[CommandVkEnum.updateAll.length] === ' ' ||
+              message.text[CommandVkEnum.updateAll.length] === '\n')
           )
         ) {
           return errorSend(message, `Произошла ошибка. Владелец беседы, введи: ${environment.botName} обновить`);
         }
-        if (await accessCheck(currentUser?.info, command.command, message.peerId)) {
+        if (await accessCheck(request.user?.info, command.command, message.peerId)) {
           request.command = command.command;
           request.fullText = message.text.substring(message.text.indexOf(command.command) + command.command.length + 1);
-          request.text = request.fullText.length ? request.fullText.split(' ') : [];
-          request.msgObject = message;
-          request.user = currentUser;
+          request.text = request.fullText?.length ? request.fullText.split(' ') : [];
           command.func(request).catch(console.error);
         } else {
           await errorSend(message, 'Нет доступа');
         }
         break;
       }
+    }
+  }
+
+  if (!isCommand) {
+    request.fullText = message.text;
+    request.text = request.fullText?.length ? request.fullText.split(' ') : [];
+
+    if (chat.firstMessageAboutMe && request.user?.info && !request.user?.info?.isMessages) {
+      await setAboutMe(request).catch(console.error);
+    }
+    if (request.user?.info && !request.user?.info?.isMessages) {
+      request.user.info.isMessages = true;
+      await request.user.info.save();
     }
   }
 };

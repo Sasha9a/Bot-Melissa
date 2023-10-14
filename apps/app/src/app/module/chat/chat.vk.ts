@@ -223,6 +223,7 @@ export const getChat = async (req: RequestMessageVkModel) => {
     result = result.concat(`\n9. Автокик за неактив: ${req.chat.autoKickInDays > 0 ? req.chat.autoKickInDays + ' дн.' : 'Выключен'}`);
     result = result.concat(`\n10. Автокик по какой статус: ${req.chat.autoKickToStatus ?? '-'}`);
     result = result.concat(`\n11. Статус беседы: ${req.chat.isInvite ? 'Открытая' : 'Закрытая'}`);
+    result = result.concat(`\n12. Первое сообщение "О себе": ${req.chat.firstMessageAboutMe ? 'Да' : 'Нет'}`);
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
 };
@@ -265,10 +266,11 @@ export const settings = async (req: RequestMessageVkModel) => {
       return errorSend(
         req.msgObject,
         `Не все параметры введены\n${environment.botName} настройки (номер параметра) (значение)\n` +
-          'Номера параметров:\n1. Установить преды\n2. Установить браки\n3. Установить автокик\n4. Приватность беседы\n5. Автокик по статус'
+          'Номера параметров:\n1. Установить преды\n2. Установить браки\n3. Установить автокик\n' +
+          '4. Приватность беседы\n5. Автокик по статус\n6. Первое сообщение "О себе"'
       );
     }
-    if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 1 || Number(req.text[0]) > 5) {
+    if (isNaN(Number(req.text[0])) || Number(req.text[0]) < 1 || Number(req.text[0]) > 6) {
       return errorSend(req.msgObject, 'Первый аргумент не верный');
     }
     switch (Number(req.text[0])) {
@@ -329,9 +331,9 @@ export const settings = async (req: RequestMessageVkModel) => {
         if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 0 || Number(req.text[1]) > 1) {
           return errorSend(req.msgObject, 'Второй аргумент не верный (0-1)');
         }
-        req.chat.isInvite = req.text[1] === '1';
+        req.chat.isInvite = Number(req.text[1]) === 1;
         await req.chat.save();
-        if (Number(req.text[1]) === 0) {
+        if (!Number(req.text[1])) {
           await yesSend(req.msgObject, `Статус беседы изменен на Закрытую`);
         } else {
           await yesSend(req.msgObject, `Статус беседы изменен на Открытую`);
@@ -345,6 +347,19 @@ export const settings = async (req: RequestMessageVkModel) => {
         req.chat.autoKickToStatus = Number(req.text[1]);
         await req.chat.save();
         await yesSend(req.msgObject, `Автокик установлен по статус ${Number(req.text[1])} включительно`);
+        break;
+      }
+      case 6: {
+        if (isNaN(Number(req.text[1])) || Number(req.text[1]) < 0 || Number(req.text[1]) > 1) {
+          return errorSend(req.msgObject, 'Второй аргумент не верный (0-1)');
+        }
+        req.chat.firstMessageAboutMe = Number(req.text[1]) === 1;
+        await req.chat.save();
+        if (!Number(req.text[1])) {
+          await yesSend(req.msgObject, `Система первого сообщения "О себе" - Отключена`);
+        } else {
+          await yesSend(req.msgObject, `Система первого сообщения "О себе" - Включена`);
+        }
         break;
       }
     }

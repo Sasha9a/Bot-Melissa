@@ -12,6 +12,7 @@ export interface User extends Document {
   aboutMe: string;
   warn: number;
   lastActivityDate: Date;
+  isMessages: boolean;
 }
 
 const UserSchema: Schema = new Schema<User>(
@@ -25,7 +26,8 @@ const UserSchema: Schema = new Schema<User>(
     age: Number,
     aboutMe: String,
     warn: { type: Number, default: 0 },
-    lastActivityDate: Date
+    lastActivityDate: Date,
+    isMessages: { type: Boolean, default: false }
   },
   { versionKey: false }
 );
