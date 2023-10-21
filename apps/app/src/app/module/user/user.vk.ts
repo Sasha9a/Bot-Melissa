@@ -114,6 +114,102 @@ export const setAboutMe = async (req: RequestMessageVkModel) => {
   }
 };
 
+export const setFamilyStatus = async (req: RequestMessageVkModel) => {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 1) {
+      return errorSend(
+        req.msgObject,
+        `Не все параметры введены\n${environment.botName} семейное положение [0 - Свобод${
+          req.user?.profile?.sex === 1 ? 'на' : 'ен'
+        }, 1 - Занят${req.user?.profile?.sex === 1 ? 'а' : ''}]`
+      );
+    }
+    if (isNaN(Number(req.text[0])) || (Number(req.text[0]) !== 0 && Number(req.text[0]) !== 1)) {
+      return errorSend(req.msgObject, 'Первый аргумент не верный (0-1)');
+    }
+    req.user.info.isBusy = Number(req.text[0]) === 1;
+    await req.user.info.save();
+    await yesSend(
+      req.msgObject,
+      `Установлено семейное положение для ${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}: "${
+        req.user?.info?.isBusy ? `Занят${req.user?.profile?.sex === 1 ? 'а' : ''}` : `Свобод${req.user?.profile?.sex === 1 ? 'на' : 'ен'}`
+      }"`
+    );
+  }
+};
+
+export const getBusy = async (req: RequestMessageVkModel) => {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    const sexInfoArray = [
+      { sex: 1, label: 'Девушки' },
+      { sex: 2, label: 'Парни' }
+    ];
+
+    if (req.text[0]?.length && !sexInfoArray.some((sexInfo) => sexInfo.label.toLowerCase() === req.text[0]?.toLowerCase())) {
+      return errorSend(req.msgObject, 'Первый аргумент не верный (девушки/парни)');
+    }
+
+    let result = 'Занятые пользователи:';
+    let users: User[] = await UserModule.find({ isBusy: true, chatId: req.msgObject.peerId }, { isBusy: 1, peerId: 1, icon: 1 });
+    users = users.filter((user) => user.peerId >= 0);
+
+    for (const sexInfo of sexInfoArray) {
+      if (
+        users.some((user) => req.members.find((m) => m.id === user.peerId)?.profile?.sex === sexInfo.sex) &&
+        (!req.text[0]?.length || req.text[0]?.toLowerCase() === sexInfo.label.toLowerCase())
+      ) {
+        result = result.concat(`\n\n- ${sexInfo.label}:`);
+        const sexUsers = users.filter((user) => req.members.find((m) => m.id === user.peerId)?.profile?.sex === sexInfo.sex);
+        for (const user of sexUsers) {
+          result = result.concat(
+            `\n${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })}`
+          );
+          if (user.icon?.length) {
+            result = result.concat(` ${user.icon}`);
+          }
+        }
+      }
+    }
+    req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
+  }
+};
+
+export const getNotBusy = async (req: RequestMessageVkModel) => {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    const sexInfoArray = [
+      { sex: 1, label: 'Девушки' },
+      { sex: 2, label: 'Парни' }
+    ];
+
+    if (req.text[0]?.length && !sexInfoArray.some((sexInfo) => sexInfo.label.toLowerCase() === req.text[0]?.toLowerCase())) {
+      return errorSend(req.msgObject, 'Первый аргумент не верный (девушки/парни)');
+    }
+
+    let result = 'Свободные пользователи:';
+    let users: User[] = await UserModule.find({ isBusy: { $ne: true }, chatId: req.msgObject.peerId }, { isBusy: 1, peerId: 1, icon: 1 });
+    users = users.filter((user) => user.peerId >= 0);
+
+    for (const sexInfo of sexInfoArray) {
+      if (
+        users.some((user) => req.members.find((m) => m.id === user.peerId)?.profile?.sex === sexInfo.sex) &&
+        (!req.text[0]?.length || req.text[0]?.toLowerCase() === sexInfo.label.toLowerCase())
+      ) {
+        result = result.concat(`\n\n- ${sexInfo.label}:`);
+        const sexUsers = users.filter((user) => req.members.find((m) => m.id === user.peerId)?.profile?.sex === sexInfo.sex);
+        for (const user of sexUsers) {
+          result = result.concat(
+            `\n${await stringifyMention({ userId: user.peerId, userInfo: req.members.find((m) => m.id === user.peerId)?.profile })}`
+          );
+          if (user.icon?.length) {
+            result = result.concat(` ${user.icon}`);
+          }
+        }
+      }
+    }
+    req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
+  }
+};
+
 export const getUser = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length > 1) {
@@ -624,6 +720,24 @@ export const convene = async (req: RequestMessageVkModel) => {
       }
     } else if (req.fullText === 'м') {
       membersList = membersList.filter((m) => m.profile.sex === 2);
+      for (let i = 0; i != membersList.length; i++) {
+        result = result.concat(
+          `${await stringifyMention({ userId: membersList[i].item.member_id, userInfo: membersList[i].profile })}${
+            i !== membersList.length - 1 ? ', ' : ''
+          }`
+        );
+      }
+    } else if (req.fullText === 'занятых') {
+      membersList = membersList.filter((m) => m.info?.isBusy);
+      for (let i = 0; i != membersList.length; i++) {
+        result = result.concat(
+          `${await stringifyMention({ userId: membersList[i].item.member_id, userInfo: membersList[i].profile })}${
+            i !== membersList.length - 1 ? ', ' : ''
+          }`
+        );
+      }
+    } else if (req.fullText === 'свободных') {
+      membersList = membersList.filter((m) => !m.info?.isBusy);
       for (let i = 0; i != membersList.length; i++) {
         result = result.concat(
           `${await stringifyMention({ userId: membersList[i].item.member_id, userInfo: membersList[i].profile })}${

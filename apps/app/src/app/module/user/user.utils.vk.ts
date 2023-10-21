@@ -70,6 +70,11 @@ export const templateGetUser = async (req: RequestMessageVkModel, userId: number
       );
     }
   }
+  result = result.concat(
+    `\nСемейное положение: ${
+      user?.info?.isBusy ? `Занят${user.profile?.sex === 1 ? 'а' : ''}` : `Свобод${user.profile?.sex === 1 ? 'на' : 'ен'}`
+    }`
+  );
   result = result.concat(`\nО себе: ${user?.info?.aboutMe || '-'}`);
   return result;
 };

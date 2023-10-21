@@ -35,6 +35,9 @@ export const updateAll = async (req: RequestMessageVkModel) => {
         if (!user.joinDate) {
           user.joinDate = new Date(member.item.join_date * 1000);
         }
+        if ([3, 4, 5, 8].includes(member.profile?.relation)) {
+          user.isBusy = true;
+        }
         await user.save();
       }
       const commandArray = [
@@ -218,12 +221,14 @@ export const getChat = async (req: RequestMessageVkModel) => {
     result = result.concat(
       `\n6. Кол-во мужчин в беседе: ${membersList.reduce((count, m) => (m.profile?.sex === 2 ? count + 1 : count), 0)}`
     );
-    result = result.concat(`\n7. Макс. кол-во предов: ${req.chat.maxWarn || 0}`);
-    result = result.concat(`\n8. Идеология браков: ${textTypeMarriages}`);
-    result = result.concat(`\n9. Автокик за неактив: ${req.chat.autoKickInDays > 0 ? req.chat.autoKickInDays + ' дн.' : 'Выключен'}`);
-    result = result.concat(`\n10. Автокик по какой статус: ${req.chat.autoKickToStatus ?? '-'}`);
-    result = result.concat(`\n11. Статус беседы: ${req.chat.isInvite ? 'Открытая' : 'Закрытая'}`);
-    result = result.concat(`\n12. Первое сообщение "О себе": ${req.chat.firstMessageAboutMe ? 'Да' : 'Нет'}`);
+    result = result.concat(`\n7. Кол-во занятых в беседе: ${membersList.reduce((count, m) => (m.info?.isBusy ? count + 1 : count), 0)}`);
+    result = result.concat(`\n8. Кол-во свободных в беседе: ${membersList.reduce((count, m) => (!m.info?.isBusy ? count + 1 : count), 0)}`);
+    result = result.concat(`\n9. Макс. кол-во предов: ${req.chat.maxWarn || 0}`);
+    result = result.concat(`\n10. Идеология браков: ${textTypeMarriages}`);
+    result = result.concat(`\n11. Автокик за неактив: ${req.chat.autoKickInDays > 0 ? req.chat.autoKickInDays + ' дн.' : 'Выключен'}`);
+    result = result.concat(`\n12. Автокик по какой статус: ${req.chat.autoKickToStatus ?? '-'}`);
+    result = result.concat(`\n13. Статус беседы: ${req.chat.isInvite ? 'Открытая' : 'Закрытая'}`);
+    result = result.concat(`\n14. Первое сообщение "О себе": ${req.chat.firstMessageAboutMe ? 'Да' : 'Нет'}`);
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
 };

@@ -32,6 +32,8 @@ import {
   convene,
   getAllIcon,
   getAllNick,
+  getBusy,
+  getNotBusy,
   getStatuses,
   getUser,
   kick,
@@ -40,6 +42,7 @@ import {
   probability,
   setAboutMe,
   setAgeMe,
+  setFamilyStatus,
   setIcon,
   setIconMe,
   setNick,
@@ -71,6 +74,9 @@ export const commands: { command: CommandVkEnum; func: (req: RequestMessageVkMod
   { command: CommandVkEnum.getAllIcon, func: getAllIcon, argv: '' },
   { command: CommandVkEnum.setAgeMe, func: setAgeMe, argv: '(возраст)' },
   { command: CommandVkEnum.setAboutMe, func: setAboutMe, argv: '(текст)' },
+  { command: CommandVkEnum.setFamilyStatus, func: setFamilyStatus, argv: '(номер статуса)' },
+  { command: CommandVkEnum.getBusy, func: getBusy, argv: '[девушки/парни]' },
+  { command: CommandVkEnum.getNotBusy, func: getNotBusy, argv: '[девушки/парни]' },
   { command: CommandVkEnum.setStatus, func: setStatus, argv: '(пользователь) (номер статуса)' },
   { command: CommandVkEnum.getStatuses, func: getStatuses, argv: '' },
   { command: CommandVkEnum.setNameStatus, func: setNameStatus, argv: '(номер статуса) (название)' },
@@ -111,7 +117,7 @@ export const commands: { command: CommandVkEnum; func: (req: RequestMessageVkMod
 
 export const parseMessage = async (message: MessageContext<ContextDefaultState>) => {
   const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
-  const members = await vk.api.messages.getConversationMembers({ peer_id: message.peerId, fields: ['bdate', 'sex'] });
+  const members = await vk.api.messages.getConversationMembers({ peer_id: message.peerId, fields: ['bdate', 'sex', 'relation'] });
   const users: User[] = await UserModule.find({ chatId: message.peerId });
   const membersList: { id: number; item: MessagesConversationMember; profile: UsersUserFull; info: User }[] = [];
   for (const member of members.items) {
