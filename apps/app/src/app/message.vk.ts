@@ -244,11 +244,12 @@ export const inviteUser = async (message: MessageContext<ContextDefaultState>) =
     }
     let user: User = await UserModule.findOne({ peerId: peerId, chatId: message.peerId });
     if (!user) {
-      const member = await vk.api.users.get({ user_ids: [peerId], fields: ['bdate'] });
+      const member = await vk.api.users.get({ user_ids: [peerId], fields: ['bdate', 'relation'] });
       user = new UserModule({
         peerId: peerId,
         chatId: message.peerId,
-        age: member?.[0]?.bdate ? moment().diff(moment(member?.[0]?.bdate, 'D.M.YYYY'), 'years') : null
+        age: member?.[0]?.bdate ? moment().diff(moment(member?.[0]?.bdate, 'D.M.YYYY'), 'years') : null,
+        isBusy: [3, 4, 5, 8].includes(member?.[0]?.relation)
       });
       await user.save().catch(console.error);
     }
