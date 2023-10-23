@@ -4,9 +4,9 @@ import { vk } from '@bot-melissa/app/vk';
 import { Chat, ChatModule } from '@bot-melissa/shared/schemas/chat.schema';
 import * as moment from 'moment-timezone';
 
-export const releaseUpdate = async (req: RequestAdminMessageVkModel) => {
+export const newsletter = async (req: RequestAdminMessageVkModel) => {
   if (req.text.length < 1) {
-    return errorSend(req.msgObject, 'Не все параметры введены\nВыпустить обновление [текст]');
+    return errorSend(req.msgObject, 'Не все параметры введены\nСоздать рассылку [текст]');
   }
   await req.msgObject.send('Пошел процесс отправки всем сообщения...').catch(console.error);
   const chats: Chat[] = await ChatModule.find({}, { chatId: 1 });

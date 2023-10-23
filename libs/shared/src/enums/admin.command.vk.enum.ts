@@ -1,3 +1,3 @@
 export enum AdminCommandVkEnum {
-  releaseUpdate = 'выпустить обновление'
+  newsletter = 'создать рассылку'
 }

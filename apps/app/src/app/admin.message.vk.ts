@@ -1,10 +1,10 @@
 import { RequestAdminMessageVkModel } from '@bot-melissa/app/core/models/request.admin.message.vk.model';
-import { releaseUpdate } from '@bot-melissa/app/module/admin/admin.vk';
+import { newsletter } from '@bot-melissa/app/module/admin/admin.vk';
 import { AdminCommandVkEnum } from '@bot-melissa/shared/enums/admin.command.vk.enum';
 import { ContextDefaultState, MessageContext } from 'vk-io';
 
 export const commands: { command: AdminCommandVkEnum; func: (req: RequestAdminMessageVkModel) => Promise<any>; argv: string }[] = [
-  { command: AdminCommandVkEnum.releaseUpdate, func: releaseUpdate, argv: '(текст)' }
+  { command: AdminCommandVkEnum.newsletter, func: newsletter, argv: '(текст)' }
 ];
 
 export const parseAdminMessage = async (message: MessageContext<ContextDefaultState>) => {
