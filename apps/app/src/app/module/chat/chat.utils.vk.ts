@@ -1,5 +1,6 @@
 import { Antispam, AntispamModule } from '@bot-melissa/shared/schemas/antispam.schema';
 import { Chat, ChatModule } from '@bot-melissa/shared/schemas/chat.schema';
+import { EventModule } from '@bot-melissa/shared/schemas/event.schema';
 import * as moment from 'moment-timezone';
 
 export const createChat = async (chatId: number): Promise<Chat> => {
@@ -48,5 +49,13 @@ export const checkMuteList = async (chat: Chat): Promise<void> => {
 export const deleteAntispam = async (chat: Chat): Promise<void> => {
   if (chat) {
     await AntispamModule.deleteMany({ chatId: chat.chatId, date: { $lt: moment().startOf('day').toDate() } });
+  }
+};
+
+export const deleteExpiredEvents = async (chat?: Chat): Promise<void> => {
+  if (chat) {
+    await EventModule.deleteMany({ chatId: chat.chatId, eventDate: { $lt: moment().startOf('day').toDate() } });
+  } else {
+    await EventModule.deleteMany({ eventDate: { $lt: moment().startOf('day').toDate() } });
   }
 };

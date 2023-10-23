@@ -47,5 +47,8 @@ export enum CommandVkEnum {
   getChat = 'чат',
   onlineList = 'онлайн',
   help = 'помощь',
-  settings = 'настройки'
+  settings = 'настройки',
+  getEvents = 'события',
+  addEvent = 'создать событие',
+  deleteEvent = 'удалить событие'
 }

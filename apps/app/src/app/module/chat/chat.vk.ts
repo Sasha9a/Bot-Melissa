@@ -2,7 +2,7 @@ import { PeerTypeVkEnum } from '@bot-melissa/app/core/enums/peer.type.vk.enum';
 import { RequestMessageVkModel } from '@bot-melissa/app/core/models/request.message.vk.model';
 import { errorSend, yesSend } from '@bot-melissa/app/core/utils/customMessage.utils.vk';
 import { commands } from '@bot-melissa/app/message.vk';
-import { checkBanList, createChat } from '@bot-melissa/app/module/chat/chat.utils.vk';
+import { checkBanList, createChat, deleteExpiredEvents } from '@bot-melissa/app/module/chat/chat.utils.vk';
 import { createCommand } from '@bot-melissa/app/module/status/status.utils.vk';
 import { createUser, isOwnerMember, stringifyMention } from '@bot-melissa/app/module/user/user.utils.vk';
 import { vk } from '@bot-melissa/app/vk';
@@ -55,7 +55,9 @@ export const updateAll = async (req: RequestMessageVkModel) => {
         CommandVkEnum.mute,
         CommandVkEnum.muteMinus,
         CommandVkEnum.clearMuteList,
-        CommandVkEnum.settings
+        CommandVkEnum.settings,
+        CommandVkEnum.addEvent,
+        CommandVkEnum.deleteEvent
       ];
       for (const comm of commandArray) {
         const command: Command = await CommandModule.findOne({ chatId: req.msgObject.peerId, command: comm });
@@ -64,8 +66,9 @@ export const updateAll = async (req: RequestMessageVkModel) => {
         }
       }
       if (!req.chat) {
-        await createChat(req.msgObject.peerId);
+        req.chat = await createChat(req.msgObject.peerId);
       }
+      await deleteExpiredEvents(req.chat);
       await yesSend(req.msgObject, `Данные беседы обновлены`);
     }
   }

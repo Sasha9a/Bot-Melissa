@@ -17,6 +17,7 @@ import {
   settings,
   updateAll
 } from '@bot-melissa/app/module/chat/chat.vk';
+import { addEvent, deleteEvent, getEvents } from '@bot-melissa/app/module/event/event.vk';
 import { checkMessageToMarriage, processMarriage } from '@bot-melissa/app/module/marriage/marriage.utils.vk';
 import { divorce, marriage, marriages } from '@bot-melissa/app/module/marriage/marriage.vk';
 import { accessCheck } from '@bot-melissa/app/module/status/status.utils.vk';
@@ -112,7 +113,10 @@ export const commands: { command: CommandVkEnum; func: (req: RequestMessageVkMod
   { command: CommandVkEnum.getChat, func: getChat, argv: '' },
   { command: CommandVkEnum.onlineList, func: onlineList, argv: '' },
   { command: CommandVkEnum.help, func: help, argv: '' },
-  { command: CommandVkEnum.settings, func: settings, argv: '(номер параметра) (значение)' }
+  { command: CommandVkEnum.settings, func: settings, argv: '(номер параметра) (значение)' },
+  { command: CommandVkEnum.getEvents, func: getEvents, argv: '' },
+  { command: CommandVkEnum.addEvent, func: addEvent, argv: '(дата) (название)' },
+  { command: CommandVkEnum.deleteEvent, func: deleteEvent, argv: '(номер события)' }
 ];
 
 export const parseMessage = async (message: MessageContext<ContextDefaultState>) => {
