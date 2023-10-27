@@ -121,7 +121,7 @@ export const commands: { command: CommandVkEnum; func: (req: RequestMessageVkMod
 
 export const parseMessage = async (message: MessageContext<ContextDefaultState>) => {
   const chat: Chat = await ChatModule.findOne({ chatId: message.peerId });
-  const members = await vk.api.messages.getConversationMembers({ peer_id: message.peerId, fields: ['bdate', 'sex', 'relation'] });
+  const members = await vk.api.messages.getConversationMembers({ peer_id: message.peerId, fields: ['bdate', 'sex', 'relation', 'online'] });
   const users: User[] = await UserModule.find({ chatId: message.peerId });
   const membersList: { id: number; item: MessagesConversationMember; profile: UsersUserFull; info: User }[] = [];
   for (const member of members.items) {
