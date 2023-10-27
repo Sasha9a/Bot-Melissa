@@ -239,7 +239,6 @@ export const getChat = async (req: RequestMessageVkModel) => {
 export const onlineList = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     const membersList = req.members.filter((m) => m.profile && m.profile.online);
-    console.log(membersList);
     let result = 'Список пользователей онлайн:';
     for (let i = 0; i != membersList.length; i++) {
       result = result.concat(
