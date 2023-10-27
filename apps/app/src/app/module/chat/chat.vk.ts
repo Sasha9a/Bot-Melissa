@@ -238,7 +238,7 @@ export const getChat = async (req: RequestMessageVkModel) => {
 
 export const onlineList = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    const membersList = req.members.filter((m) => m.profile && m.profile.online_info?.is_online);
+    const membersList = req.members.filter((m) => m.profile && m.profile.online?.online);
     let result = 'Список пользователей онлайн:';
     for (let i = 0; i != membersList.length; i++) {
       result = result.concat(
@@ -246,7 +246,7 @@ export const onlineList = async (req: RequestMessageVkModel) => {
           membersList[i].info?.icon ? ' ' + membersList[i].info?.icon : ''
         }`
       );
-      result = result.concat(` - (${membersList[i].profile.online_info?.is_mobile ? '📱' : '🖥'})`);
+      result = result.concat(` - (${membersList[i].profile.online?.is_mobile ? '📱' : '🖥'})`);
     }
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
