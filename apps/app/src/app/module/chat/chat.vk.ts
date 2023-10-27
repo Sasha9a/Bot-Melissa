@@ -247,7 +247,7 @@ export const onlineList = async (req: RequestMessageVkModel) => {
           membersList[i].info?.icon ? ' ' + membersList[i].info?.icon : ''
         }`
       );
-      result = result.concat(`- (${membersList[i].profile.online?.is_mobile ? '📱' : '🖥'})`);
+      result = result.concat(` - (${membersList[i].profile.online?.is_mobile ? '📱' : '🖥'})`);
     }
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
