@@ -22,7 +22,7 @@ import { checkMessageToMarriage, processMarriage } from '@bot-melissa/app/module
 import { divorce, marriage, marriages } from '@bot-melissa/app/module/marriage/marriage.vk';
 import { accessCheck } from '@bot-melissa/app/module/status/status.utils.vk';
 import { getCommandsStatus, setCommandStatus, setNameStatus } from '@bot-melissa/app/module/status/status.vk';
-import { isOwnerMember, stringifyMention, updateLastActivityUser } from '@bot-melissa/app/module/user/user.utils.vk';
+import { createUser, isOwnerMember, stringifyMention, updateLastActivityUser } from '@bot-melissa/app/module/user/user.utils.vk';
 import {
   activity,
   autoKick,
@@ -246,16 +246,15 @@ export const inviteUser = async (message: MessageContext<ContextDefaultState>) =
       await message.send(`Пользователь ${await stringifyMention({ userId: peerId })} находится в списке банлиста`).catch(console.error);
       return;
     }
-    let user: User = await UserModule.findOne({ peerId: peerId, chatId: message.peerId });
+    const user: User = await UserModule.findOne({ peerId: peerId, chatId: message.peerId });
     if (!user) {
       const member = await vk.api.users.get({ user_ids: [peerId], fields: ['bdate', 'relation'] });
-      user = new UserModule({
+      await createUser({
         peerId: peerId,
         chatId: message.peerId,
         age: member?.[0]?.bdate ? moment().diff(moment(member?.[0]?.bdate, 'D.M.YYYY'), 'years') : null,
         isBusy: [3, 4, 5, 8].includes(member?.[0]?.relation)
       });
-      await user.save().catch(console.error);
     }
     if (chat.greetings) {
       let result = `${await stringifyMention({ userId: peerId })}, ${chat.greetings}`;

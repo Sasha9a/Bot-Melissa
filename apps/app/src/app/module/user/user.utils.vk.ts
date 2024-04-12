@@ -8,8 +8,10 @@ import { User, UserModule } from '@bot-melissa/shared/schemas/user.schema';
 import * as moment from 'moment-timezone';
 import { ContextDefaultState, IResolvedOwnerResource, IResolvedTargetResource, MessageContext, resolveResource } from 'vk-io';
 import { UsersUserFull } from 'vk-io/lib/api/schemas/objects';
+import { environment } from '../../../environments/environment';
 
 export const createUser = async (info: Partial<User>): Promise<User> => {
+  info.joinDate = moment().toDate();
   const user: User = new UserModule(info);
   return await user.save();
 };
@@ -23,7 +25,9 @@ export const stringifyMention = async (info: { userId?: number; userInfo?: Users
     dataUser = dataUser[0];
   }
   if (dataUser) {
-    return `[id${dataUser.id}|${dataUser.first_name + ' ' + dataUser.last_name}]`;
+    return `[id${dataUser.id}|${dataUser.first_name + ' ' + dataUser.last_name}] ${
+      !environment.production && ' (ID: ' + info.userId + ')'
+    }`;
   } else {
     return '';
   }
