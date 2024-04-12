@@ -26,7 +26,7 @@ export const stringifyMention = async (info: { userId?: number; userInfo?: Users
   }
   if (dataUser) {
     return `[id${dataUser.id}|${dataUser.first_name + ' ' + dataUser.last_name}] ${
-      !environment.production && ' (ID: ' + info.userId + ')'
+      !environment.production ? ' (ID: ' + info.userId + ')' : ''
     }`;
   } else {
     return '';
