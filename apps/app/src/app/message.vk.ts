@@ -261,7 +261,7 @@ export const inviteUser = async (message: MessageContext<ContextDefaultState>) =
       if (chat.rules) {
         result = result.concat(`\n\n${chat.rules}`);
       }
-      await message.send(result, { disable_mentions: true }).catch(console.error);
+      await message.send(result, { disable_mentions: true, attachment: chat.greetingsAttachments }).catch(console.error);
     }
   }
 };

@@ -118,10 +118,15 @@ export const getRules = async (req: RequestMessageVkModel) => {
 
 export const setGreetings = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.text.length < 1) {
-      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} новое приветствие [текст]`);
+    if (req.text.length < 1 && !req.msgObject.attachments?.length) {
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} новое приветствие (текст)`);
     }
     req.chat.greetings = req.fullText;
+    if (req.msgObject.attachments?.length) {
+      req.chat.greetingsAttachments = req.msgObject.attachments.map((attachment) => attachment.toString());
+    } else {
+      req.chat.greetingsAttachments = null;
+    }
     await req.chat.save();
     await yesSend(req.msgObject, `Новое приветствие установлено`);
   }
@@ -130,7 +135,9 @@ export const setGreetings = async (req: RequestMessageVkModel) => {
 export const getGreetings = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.chat.greetings) {
-      req.msgObject.send(`Текст приветствия: ${req.chat.greetings}`, { disable_mentions: true }).catch(console.error);
+      req.msgObject
+        .send(`Текст приветствия: ${req.chat.greetings}`, { disable_mentions: true, attachment: req.chat.greetingsAttachments })
+        .catch(console.error);
     } else {
       await errorSend(req.msgObject, `Нет приветствия`);
     }

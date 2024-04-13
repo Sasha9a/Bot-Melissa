@@ -5,6 +5,7 @@ export interface Chat extends Document {
   chatId: number;
   rules: string;
   greetings: string;
+  greetingsAttachments: string[];
   autoKickList: number[];
   banList: { id: number; endDate: Date }[];
   muteList: { id: number; endDate: Date }[];
@@ -22,6 +23,7 @@ const ChatSchema: Schema = new Schema<Chat>(
     chatId: { type: Number, required: true },
     rules: String,
     greetings: String,
+    greetingsAttachments: [String],
     autoKickList: [Number],
     banList: [{ id: Number, endDate: Date }],
     muteList: [{ id: Number, endDate: Date }],
