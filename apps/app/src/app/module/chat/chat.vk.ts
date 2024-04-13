@@ -9,6 +9,7 @@ import { vk } from '@bot-melissa/app/vk';
 import { CommandVkEnum } from '@bot-melissa/shared/enums/command.vk.enum';
 import { TypeMarriagesEnum } from '@bot-melissa/shared/enums/type.marriages.enum';
 import { Command, CommandModule } from '@bot-melissa/shared/schemas/command.schema';
+import { Marriage, MarriageModule } from '@bot-melissa/shared/schemas/marriage.schema';
 import { User, UserModule } from '@bot-melissa/shared/schemas/user.schema';
 import * as moment from 'moment-timezone';
 import { environment } from '../../../environments/environment';
@@ -68,6 +69,26 @@ export const updateAll = async (req: RequestMessageVkModel) => {
       if (!req.chat) {
         req.chat = await createChat(req.msgObject.peerId);
       }
+
+      const marriages: Marriage[] = await MarriageModule.find(
+        {
+          chatId: req.msgObject.peerId
+        },
+        { userFirstId: 1, userSecondId: 1 }
+      );
+      if (marriages?.length) {
+        for (const marriage of marriages) {
+          if (
+            req.members.findIndex((member) => member.id === marriage.userFirstId) === -1 ||
+            req.members.findIndex((member) => member.id === marriage.userSecondId) === -1
+          ) {
+            await MarriageModule.deleteOne({
+              _id: marriage?.id
+            });
+          }
+        }
+      }
+
       await deleteExpiredEvents(req.chat);
       await yesSend(req.msgObject, `Данные беседы обновлены`);
     }
