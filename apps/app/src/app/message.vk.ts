@@ -256,7 +256,7 @@ export const inviteUser = async (message: MessageContext<ContextDefaultState>) =
         isBusy: [3, 4, 5, 8].includes(member?.[0]?.relation)
       });
     }
-    if (chat.greetings) {
+    if (chat.greetings || chat.greetingsAttachments?.length) {
       let result = `${await stringifyMention({ userId: peerId })}, ${chat.greetings}`;
       if (chat.rules) {
         result = result.concat(`\n\n${chat.rules}`);
