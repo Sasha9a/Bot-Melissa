@@ -267,3 +267,38 @@ export const processMarriage = async (info: { userId: number; peerId: number; ev
       .catch(console.error);
   }
 };
+
+export const checkMarriageOnKick = async (chatId: number, peerId: number) => {
+  const marriages: Marriage[] = await MarriageModule.find(
+    {
+      chatId: chatId,
+      $or: [{ userFirstId: peerId }, { userSecondId: peerId }]
+    },
+    { isConfirmed: 1, userFirstId: 1, userSecondId: 1 }
+  );
+  if (marriages?.length) {
+    const marriageNames: string[] = [];
+    for (const marriage of marriages) {
+      if (marriage.isConfirmed) {
+        if (marriage.userFirstId === peerId) {
+          marriageNames.push(await stringifyMention({ userId: marriage.userSecondId }));
+        } else {
+          marriageNames.push(await stringifyMention({ userId: marriage.userFirstId }));
+        }
+      }
+    }
+    if (marriageNames?.length) {
+      await vk.api.messages
+        .send({
+          peer_id: chatId,
+          random_id: moment().unix(),
+          message: `${marriageNames.join(', ')} ваш брак разорван с ${await stringifyMention({ userId: peerId })}`
+        })
+        .catch(console.error);
+    }
+    await MarriageModule.deleteMany({
+      chatId: chatId,
+      $or: [{ userFirstId: peerId }, { userSecondId: peerId }]
+    });
+  }
+};

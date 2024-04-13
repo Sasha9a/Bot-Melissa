@@ -2,6 +2,7 @@ import { PeerTypeVkEnum } from '@bot-melissa/app/core/enums/peer.type.vk.enum';
 import { RequestMessageVkModel } from '@bot-melissa/app/core/models/request.message.vk.model';
 import { errorSend, yesSend } from '@bot-melissa/app/core/utils/customMessage.utils.vk';
 import { createAntispam } from '@bot-melissa/app/module/chat/chat.utils.vk';
+import { checkMarriageOnKick } from '@bot-melissa/app/module/marriage/marriage.utils.vk';
 import { vk } from '@bot-melissa/app/vk';
 import { CommandVkEnum } from '@bot-melissa/shared/enums/command.vk.enum';
 import { Antispam, AntispamModule } from '@bot-melissa/shared/schemas/antispam.schema';
@@ -313,6 +314,7 @@ export const kick = async (req: RequestMessageVkModel) => {
             userInfo: req.members.find((m) => m.id === user.peerId)?.profile
           })} исключен из беседы`
         );
+        checkMarriageOnKick(req.msgObject.peerId, user.peerId);
       })
       .catch(console.error);
   }
@@ -335,6 +337,9 @@ export const autoKick = async (req: RequestMessageVkModel) => {
     }
     await vk.api.messages
       .removeChatUser({ chat_id: req.msgObject.peerId - 2000000000, member_id: user.peerId, user_id: user.peerId })
+      .then(() => {
+        checkMarriageOnKick(req.msgObject.peerId, user.peerId);
+      })
       .catch(console.error);
     if (!req.chat.autoKickList) {
       req.chat.autoKickList = [];
@@ -415,6 +420,9 @@ export const ban = async (req: RequestMessageVkModel) => {
     }
     await vk.api.messages
       .removeChatUser({ chat_id: req.msgObject.peerId - 2000000000, member_id: user.peerId, user_id: user.peerId })
+      .then(() => {
+        checkMarriageOnKick(req.msgObject.peerId, user.peerId);
+      })
       .catch(console.error);
     if (!req.chat.banList) {
       req.chat.banList = [];
@@ -511,6 +519,7 @@ export const warn = async (req: RequestMessageVkModel) => {
               userInfo: req.members.find((m) => m.id === user.peerId)?.profile
             })} был кикнут по достижению лимита кол-ва предупреждений`
           );
+          checkMarriageOnKick(req.msgObject.peerId, user.peerId);
         })
         .catch(console.error);
     } else {

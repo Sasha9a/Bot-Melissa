@@ -18,7 +18,7 @@ import {
   updateAll
 } from '@bot-melissa/app/module/chat/chat.vk';
 import { addEvent, deleteEvent, getEvents } from '@bot-melissa/app/module/event/event.vk';
-import { checkMessageToMarriage, processMarriage } from '@bot-melissa/app/module/marriage/marriage.utils.vk';
+import { checkMarriageOnKick, checkMessageToMarriage, processMarriage } from '@bot-melissa/app/module/marriage/marriage.utils.vk';
 import { divorce, marriage, marriages } from '@bot-melissa/app/module/marriage/marriage.vk';
 import { accessCheck } from '@bot-melissa/app/module/status/status.utils.vk';
 import { getCommandsStatus, setCommandStatus, setNameStatus } from '@bot-melissa/app/module/status/status.vk';
@@ -272,6 +272,7 @@ export const kickUser = async (message: MessageContext<ContextDefaultState>) => 
       .removeChatUser({ chat_id: message.peerId - 2000000000, member_id: message.eventMemberId, user_id: message.eventMemberId })
       .catch(console.error);
   }
+  checkMarriageOnKick(message.peerId, message.eventMemberId);
 };
 
 export const messageEvent = async (message: MessageEventContext) => {

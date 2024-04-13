@@ -1,5 +1,6 @@
 import { RequestMessageVkModel } from '@bot-melissa/app/core/models/request.message.vk.model';
 import { errorSend } from '@bot-melissa/app/core/utils/customMessage.utils.vk';
+import { checkMarriageOnKick } from '@bot-melissa/app/module/marriage/marriage.utils.vk';
 import { vk } from '@bot-melissa/app/vk';
 import { Chat, ChatModule } from '@bot-melissa/shared/schemas/chat.schema';
 import { Marriage, MarriageModule } from '@bot-melissa/shared/schemas/marriage.schema';
@@ -122,6 +123,9 @@ export const autoKickInDays = async () => {
           if (Math.floor(days) >= chat.autoKickInDays && chat.autoKickToStatus >= member.status) {
             await vk.api.messages
               .removeChatUser({ chat_id: chat.chatId - 2000000000, member_id: member.peerId, user_id: member.peerId })
+              .then(() => {
+                checkMarriageOnKick(chat.chatId, member.peerId);
+              })
               .catch(console.error);
           }
         } else if (member.joinDate) {
@@ -129,6 +133,9 @@ export const autoKickInDays = async () => {
           if (Math.floor(days) >= chat.autoKickInDays && chat.autoKickToStatus >= member.status) {
             await vk.api.messages
               .removeChatUser({ chat_id: chat.chatId - 2000000000, member_id: member.peerId, user_id: member.peerId })
+              .then(() => {
+                checkMarriageOnKick(chat.chatId, member.peerId);
+              })
               .catch(console.error);
           }
         }
