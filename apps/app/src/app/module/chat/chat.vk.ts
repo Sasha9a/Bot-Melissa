@@ -134,7 +134,7 @@ export const setGreetings = async (req: RequestMessageVkModel) => {
 
 export const getGreetings = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
-    if (req.chat.greetings) {
+    if (req.chat.greetings || req.chat.greetingsAttachments?.length) {
       req.msgObject
         .send(`Текст приветствия: ${req.chat.greetings}`, { disable_mentions: true, attachment: req.chat.greetingsAttachments })
         .catch(console.error);
