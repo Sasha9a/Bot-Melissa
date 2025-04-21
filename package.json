@@ -10,7 +10,10 @@
   },
   "private": true,
   "dependencies": {
+    "axios": "1.8.4",
     "dotenv": "^16.0.3",
+    "horoscope": "2.0.1",
+    "node-html-parser": "7.0.1",
     "moment-timezone": "^0.5.40",
     "mongoose": "^6.8.1",
     "mongoose-autopopulate": "^0.16.1",
@@ -25,6 +28,7 @@
     "@nrwl/linter": "15.4.2",
     "@nrwl/node": "15.4.2",
     "@nrwl/workspace": "15.4.2",
+    "@types/axios": "0.14.4",
     "@types/jest": "28.1.1",
     "@types/node": "18.7.1",
     "@types/node-schedule": "^2.1.0",

@@ -2,7 +2,7 @@ import { PeerTypeVkEnum } from '@bot-melissa/app/core/enums/peer.type.vk.enum';
 import { RequestMessageVkModel } from '@bot-melissa/app/core/models/request.message.vk.model';
 import { errorSend, yesSend } from '@bot-melissa/app/core/utils/customMessage.utils.vk';
 import { commands } from '@bot-melissa/app/message.vk';
-import { checkBanList, createChat, deleteExpiredEvents } from '@bot-melissa/app/module/chat/chat.utils.vk';
+import { checkBanList, createChat, deleteExpiredEvents, getZodiacSignsToday } from '@bot-melissa/app/module/chat/chat.utils.vk';
 import { createCommand } from '@bot-melissa/app/module/status/status.utils.vk';
 import { createUser, isOwnerMember, stringifyMention } from '@bot-melissa/app/module/user/user.utils.vk';
 import { vk } from '@bot-melissa/app/vk';
@@ -13,6 +13,7 @@ import { Marriage, MarriageModule } from '@bot-melissa/shared/schemas/marriage.s
 import { User, UserModule } from '@bot-melissa/shared/schemas/user.schema';
 import * as moment from 'moment-timezone';
 import { environment } from '../../../environments/environment';
+import { Horoscope, HoroscopeModule } from '@bot-melissa/shared/schemas/horoscope.schema';
 
 export const updateAll = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
@@ -89,6 +90,7 @@ export const updateAll = async (req: RequestMessageVkModel) => {
         }
       }
 
+      await getZodiacSignsToday();
       await deleteExpiredEvents(req.chat);
       await yesSend(req.msgObject, `Данные беседы обновлены`);
     }
@@ -399,5 +401,30 @@ export const settings = async (req: RequestMessageVkModel) => {
         break;
       }
     }
+  }
+};
+
+export const horoscope = async (req: RequestMessageVkModel) => {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (req.text.length !== 1) {
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} гороскоп (знак зодиака)`);
+    }
+    if (
+      !['овен', 'телец', 'близнецы', 'рак', 'лев', 'дева', 'весы', 'скорпион', 'стрелец', 'козерог', 'водолей', 'рыбы'].includes(
+        req.text[0].toLowerCase()
+      )
+    ) {
+      return errorSend(req.msgObject, 'Первый аргумент не верный');
+    }
+
+    const sign: Horoscope = await HoroscopeModule.findOne({
+      date: moment().startOf('day').toDate(),
+      zodiacSign: req.text[0].toLowerCase()
+    });
+    if (!sign) {
+      return errorSend(req.msgObject, 'Произошла ошибка');
+    }
+    const result = `Прогноз для знака ${req.text[0]} на ${moment().startOf('day').format('DD.MM.YYYY')}:\n\n${sign.text}`;
+    req.msgObject.send(result).catch(console.error);
   }
 };

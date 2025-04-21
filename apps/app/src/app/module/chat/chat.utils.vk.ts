@@ -1,7 +1,10 @@
 import { Antispam, AntispamModule } from '@bot-melissa/shared/schemas/antispam.schema';
 import { Chat, ChatModule } from '@bot-melissa/shared/schemas/chat.schema';
 import { EventModule } from '@bot-melissa/shared/schemas/event.schema';
+import axios from 'axios';
 import * as moment from 'moment-timezone';
+import { parse } from 'node-html-parser';
+import { Horoscope, HoroscopeModule } from '@bot-melissa/shared/schemas/horoscope.schema';
 
 export const createChat = async (chatId: number): Promise<Chat> => {
   const chat: Chat = new ChatModule(<Partial<Chat>>{
@@ -58,4 +61,33 @@ export const deleteExpiredEvents = async (chat?: Chat): Promise<void> => {
   } else {
     await EventModule.deleteMany({ eventDate: { $lt: moment().startOf('day').toDate() } });
   }
+};
+
+export const getZodiacSignsToday = async (): Promise<void> => {
+  const horoscopes: Horoscope[] = await HoroscopeModule.find({ date: moment().startOf('day').toDate() });
+  if (horoscopes?.length) {
+    return;
+  }
+
+  const res = await axios.get('https://74.ru/horoscope/daily/');
+  const data = parse(res.data);
+  const signs = data.querySelector('.central-column-container')?.querySelector('section')?.querySelectorAll('article');
+
+  if (!signs) {
+    console.error('Не работает сервис знаков зодиака');
+    return;
+  }
+
+  for (const sign of signs) {
+    const signDivs = sign.querySelectorAll('div');
+
+    const horoscope = new HoroscopeModule(<Partial<Horoscope>>{
+      date: moment().startOf('day').toDate(),
+      zodiacSign: sign.querySelector('h3')?.text?.toLowerCase(),
+      text: signDivs[signDivs.length - 1]?.text
+    });
+    await horoscope.save();
+  }
+
+  await HoroscopeModule.deleteMany({ date: { $lt: moment().subtract(1, 'day').endOf('day').toDate() } });
 };
