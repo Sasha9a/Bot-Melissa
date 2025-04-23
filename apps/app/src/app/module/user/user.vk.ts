@@ -820,6 +820,37 @@ export const probability = async (req: RequestMessageVkModel) => {
   }
 };
 
+export const choose = async (req: RequestMessageVkModel) => {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    if (!req.text.length || !req.text.some((text) => text === 'или')) {
+      return errorSend(req.msgObject, `Не все параметры введены\n${environment.botName} выбери (действие или действие или ...)`);
+    }
+    const actions: string[] = [];
+    let textAction = '';
+    for (let i = 0; i != req.text.length; i++) {
+      if (req.text[i] === 'или') {
+        actions.push(textAction);
+        textAction = '';
+        continue;
+      }
+
+      textAction = textAction.concat(`${textAction.length ? ' ' : ''}${req.text[i]}`);
+    }
+
+    if (textAction.length) {
+      actions.push(textAction);
+    }
+
+    let result = `${await stringifyMention({ userId: req.user.info.peerId, userInfo: req.user.profile })}`;
+    if (req.user.info?.icon?.length) {
+      result = result.concat(` ${req.user.info.icon}`);
+    }
+    const rand = Math.floor(Math.random() * actions.length);
+    result = result.concat(`, я выбираю: ${actions[rand]}!`);
+    req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
+  }
+};
+
 export const who = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
     if (req.text.length < 1) {
@@ -827,6 +858,8 @@ export const who = async (req: RequestMessageVkModel) => {
     }
     let result: string;
     if (req.text[0].toLowerCase() === 'я') {
+      const randTimer = Math.floor(Math.random() * 100) + 10;
+
       const adjectives = [
         'Азартный',
         'Безбожный',
@@ -834,17 +867,24 @@ export const who = async (req: RequestMessageVkModel) => {
         'Безжалостный',
         'Бездушный',
         'Безумный',
+        'Булькающий',
         'Великий',
+        'Взрывчатый',
         'Всепоглощающий',
         'Глухой',
+        'Говорящий',
         'Головокружительный',
+        'Горячий',
         'Грубый',
         'Добрый',
         'Дикий',
         'Дотошный',
+        'Дремлющий',
+        'Жаркий',
         'Живой',
         'Жгучий',
         'Жуткий',
+        'Забавный',
         'Загадочный',
         'Зевающий',
         'Загробный',
@@ -855,30 +895,49 @@ export const who = async (req: RequestMessageVkModel) => {
         'Крабовый',
         'Красивый',
         'Кровавый',
+        'Кукарекающий',
+        'Ласковый',
         'Леденящий',
+        'Лежащий',
+        'Летающий',
         'Лютый',
         'Мертвый',
         'Мерцающий',
         'Могучий',
         'Наглый',
         'Напыщенный',
+        'Нежный',
         'Незрелый',
+        'Неправильный',
         'Олимпийский',
         'Образцовый',
         'Огромный',
+        'Пахнущий',
         'Потрясающий',
         'Пламенный',
+        'Праздничный',
+        'Прыгающий',
+        'Пухлый',
         'Пьянящий',
         'Радикальный',
         'Ревностный',
+        'Ревущий',
         'Седой',
+        'Секретный',
+        'Сексуальный',
         'Сказочный',
+        'Смеющийся',
+        'Солнечный',
         'Страстный',
+        'Стреляющий',
         'Твёрдый',
+        'Убегающий',
         'Ужасающий',
         'Фантастический',
         'Чёрный',
         'Чёрствый',
+        'Шепелявый',
+        'Шумный',
         'Экстремальный',
         'Яркий',
         'Яростный',
@@ -887,48 +946,77 @@ export const who = async (req: RequestMessageVkModel) => {
       const nouns = [
         'абрикос',
         'аквариум',
+        'аксолотль',
+        'актив',
+        'арбуз',
+        'банан',
         'барсук',
         'бизнесмен',
+        'бублик',
+        'бульон',
+        'бутерброд',
         'веган',
+        'веник',
+        'ветер',
         'водитель',
         'гриб',
         'грузчик',
         'десантник',
         'дятел',
         'доктор',
-        'ёж',
         'егерь',
-        'лебедь',
+        'ёж',
         'жонглёр',
         'заяц',
+        'зебра',
         'знахарь',
         'игроман',
         'искатель',
-        'аксолотль',
+        'кактус',
         'клоун',
+        'кирпич',
+        'лебедь',
         'лизун',
         'логопед',
         'манго',
         'майко',
+        'мазохист',
+        'мандарин',
+        'мармелад',
+        'молоток',
+        'носок',
+        'носорог',
+        'огурец',
         'окулист',
+        'окунь',
         'олух',
+        'пассив',
         'пацифист',
+        'перец',
+        'пингвин',
+        'пирог',
+        'пирожок',
         'пекарь',
-        'пацифист',
-        'веник',
+        'попугай',
+        'пушистик',
         'реалист',
         'ректор',
         'садист',
-        'мазохист',
-        'актив',
-        'пассив',
         'сварщик',
-        'окунь',
+        'скейтборд',
+        'снеговик',
+        'сырок',
         'тракторист',
         'уж',
+        'утёнок',
         'учитель',
+        'фартук',
         'философ',
         'фрукт',
+        'холодильник',
+        'чайник',
+        'шампунь',
+        'шоколад',
         'ягнёнок'
       ];
       const data: Antispam = await AntispamModule.findOne({
@@ -944,9 +1032,9 @@ export const who = async (req: RequestMessageVkModel) => {
       if (data) {
         result = result.concat(data.text);
       } else {
-        const randText = `, вы - ${adjectives[Math.floor(Math.random() * adjectives.length)]} ${
-          nouns[Math.floor(Math.random() * nouns.length)]
-        }`;
+        const adjectivesIndex = Math.floor(Math.random() * adjectives.length);
+        await new Promise((resolve) => setTimeout(resolve, randTimer));
+        const randText = `, вы - ${adjectives[adjectivesIndex]} ${nouns[Math.floor(Math.random() * nouns.length)]}`;
         result = result.concat(randText);
         await createAntispam({
           chatId: req.chat.chatId,

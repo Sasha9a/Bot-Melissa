@@ -43,6 +43,7 @@ export enum CommandVkEnum {
   divorce = 'развод',
   probability = 'вероятность',
   who = 'кто',
+  choose = 'выбери',
   activity = 'актив',
   getChat = 'чат',
   onlineList = 'онлайн',
