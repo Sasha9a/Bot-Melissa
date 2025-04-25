@@ -436,19 +436,19 @@ export const birthdays = async (req: RequestMessageVkModel) => {
 
     const parseDayString = (day: number) => {
       if (day === 1) return 'день';
-      if ([2, 3, 4].includes(day % 10) && day % 100 !== 11) return 'дня';
+      if ([2, 3, 4].includes(day)) return 'дня';
       return 'дней';
     };
 
     const parseMonthString = (month: number) => {
       if (month === 1) return 'месяц';
-      if ([2, 3, 4].includes(month % 10) && month % 100 !== 11) return 'месяца';
+      if ([2, 3, 4].includes(month)) return 'месяца';
       return 'месяцев';
     };
 
     const parseYearsString = (years: number) => {
       if (years === 1) return 'год';
-      if ([2, 3, 4].includes(years % 10) && years % 100 !== 11) return 'года';
+      if ([2, 3, 4].includes(years)) return 'года';
       return 'лет';
     };
 
