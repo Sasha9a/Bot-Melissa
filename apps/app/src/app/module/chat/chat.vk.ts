@@ -477,7 +477,7 @@ export const birthdays = async (req: RequestMessageVkModel) => {
 
       result = result.concat(`\n${i + 1}. ${await stringifyMention({ userId: member.id, userInfo: member.profile })}: `);
       result = result.concat(`через ${stringDate} `);
-      result = result.concat(`(${birthMoment.locale('ru').format('DD MMMM')})`);
+      result = result.concat(`(${birthMoment.locale('ru').format('D MMMM')})`);
     }
     req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
