@@ -435,8 +435,8 @@ export const birthdays = async (req: RequestMessageVkModel) => {
     const limitDate = moment().add(3, 'months');
 
     const parseDayString = (day: number) => {
-      if (day === 1) return 'день';
-      if ([2, 3, 4].includes(day)) return 'дня';
+      if (day % 10 === 1 && day !== 11) return 'день';
+      if ([2, 3, 4].includes(day % 10) && day !== 12 && day !== 13 && day !== 14) return 'дня';
       return 'дней';
     };
 
@@ -458,7 +458,7 @@ export const birthdays = async (req: RequestMessageVkModel) => {
         (member) =>
           member.profile?.bdate && moment(member.profile.bdate, 'D.M.YYYY').year(today.year()).isBetween(today, limitDate, null, '[]')
       )
-      .sort((a, b) => moment(a.profile.bdate, 'D.M.YYYY').diff(moment(b.profile.bdate, 'D.M.YYYY')));
+      .sort((a, b) => moment(a.profile.bdate, 'D.M.YYYY').year(today.year()).diff(moment(b.profile.bdate, 'D.M.YYYY').year(today.year())));
     for (let i = 0; i < membersWithBirthday.length; i++) {
       const member = membersWithBirthday[i];
       const birthMoment = moment(member.profile.bdate, 'D.M.YYYY');
