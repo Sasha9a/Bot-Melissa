@@ -52,5 +52,6 @@ export enum CommandVkEnum {
   getEvents = 'события',
   addEvent = 'создать событие',
   deleteEvent = 'удалить событие',
-  horoscope = 'гороскоп'
+  horoscope = 'гороскоп',
+  birthdays = 'дни рождения'
 }

@@ -4,6 +4,7 @@ import { checkBanList, checkMuteList, deleteAntispam } from '@bot-melissa/app/mo
 import {
   autoKickList,
   banList,
+  birthdays,
   clearBanList,
   clearMuteList,
   getChat,
@@ -120,7 +121,8 @@ export const commands: { command: CommandVkEnum; func: (req: RequestMessageVkMod
   { command: CommandVkEnum.settings, func: settings, argv: '(номер параметра) (значение)' },
   { command: CommandVkEnum.getEvents, func: getEvents, argv: '' },
   { command: CommandVkEnum.addEvent, func: addEvent, argv: '(дата) (название)' },
-  { command: CommandVkEnum.deleteEvent, func: deleteEvent, argv: '(номер события)' }
+  { command: CommandVkEnum.deleteEvent, func: deleteEvent, argv: '(номер события)' },
+  { command: CommandVkEnum.birthdays, func: birthdays, argv: '' }
 ];
 
 export const parseMessage = async (message: MessageContext<ContextDefaultState>) => {

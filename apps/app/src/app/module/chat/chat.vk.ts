@@ -9,11 +9,11 @@ import { vk } from '@bot-melissa/app/vk';
 import { CommandVkEnum } from '@bot-melissa/shared/enums/command.vk.enum';
 import { TypeMarriagesEnum } from '@bot-melissa/shared/enums/type.marriages.enum';
 import { Command, CommandModule } from '@bot-melissa/shared/schemas/command.schema';
+import { Horoscope, HoroscopeModule } from '@bot-melissa/shared/schemas/horoscope.schema';
 import { Marriage, MarriageModule } from '@bot-melissa/shared/schemas/marriage.schema';
 import { User, UserModule } from '@bot-melissa/shared/schemas/user.schema';
 import * as moment from 'moment-timezone';
 import { environment } from '../../../environments/environment';
-import { Horoscope, HoroscopeModule } from '@bot-melissa/shared/schemas/horoscope.schema';
 
 export const updateAll = async (req: RequestMessageVkModel) => {
   if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
@@ -426,5 +426,59 @@ export const horoscope = async (req: RequestMessageVkModel) => {
     }
     const result = `Прогноз для знака ${req.text[0]} на ${moment().startOf('day').format('DD.MM.YYYY')}:\n\n${sign.text}`;
     req.msgObject.send(result).catch(console.error);
+  }
+};
+
+export const birthdays = async (req: RequestMessageVkModel) => {
+  if (req.msgObject.peerType == PeerTypeVkEnum.CHAT) {
+    const today = moment();
+    const limitDate = moment().add(3, 'months');
+
+    const parseDayString = (day: number) => {
+      if (day === 1) return 'день';
+      if ([2, 3, 4].includes(day % 10) && day % 100 !== 11) return 'дня';
+      return 'дней';
+    };
+
+    const parseMonthString = (month: number) => {
+      if (month === 1) return 'месяц';
+      if ([2, 3, 4].includes(month % 10) && month % 100 !== 11) return 'месяца';
+      return 'месяцев';
+    };
+
+    const parseYearsString = (years: number) => {
+      if (years === 1) return 'год';
+      if ([2, 3, 4].includes(years % 10) && years % 100 !== 11) return 'года';
+      return 'лет';
+    };
+
+    let result = 'Ближайшие дни рождения участников чата:';
+    const membersWithBirthday = req.members
+      .filter(
+        (member) =>
+          member.profile?.bdate && moment(member.profile.bdate, 'D.M.YYYY').year(today.year()).isBetween(today, limitDate, null, '[]')
+      )
+      .sort((a, b) => moment(a.profile.bdate, 'D.M.YYYY').diff(moment(b.profile.bdate, 'D.M.YYYY')));
+    for (let i = 0; i < membersWithBirthday.length; i++) {
+      const member = membersWithBirthday[i];
+      const birthMoment = moment(member.profile.bdate, 'D.M.YYYY');
+      const diff = birthMoment.clone().year(today.year()).diff(today, 'days');
+      let stringDate = '';
+      if (diff >= 30) {
+        stringDate = stringDate.concat(`${Math.floor(diff / 30)} ${parseMonthString(Math.floor(diff / 30))}${diff % 30 ? ' ' : ''}`);
+      }
+      if (diff % 30) {
+        stringDate = stringDate.concat(`${diff % 30} ${parseDayString(diff % 30)}`);
+      }
+      if (moment().diff(moment(member.profile.bdate, 'D.M.YYYY'), 'years') >= 1) {
+        const years = moment().diff(moment(member.profile.bdate, 'D.M.YYYY'), 'years');
+        stringDate = stringDate.concat(` исполнится ${years + 1} ${parseYearsString(years + 1)}`);
+      }
+
+      result = result.concat(`\n${i + 1}. ${await stringifyMention({ userId: member.id, userInfo: member.profile })}: `);
+      result = result.concat(`через ${stringDate} `);
+      result = result.concat(`(${birthMoment.locale('ru').format('DD MMMM')})`);
+    }
+    req.msgObject.send(result, { disable_mentions: true }).catch(console.error);
   }
 };

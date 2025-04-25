@@ -1,10 +1,12 @@
+import { stringifyMention } from '@bot-melissa/app/module/user/user.utils.vk';
+import { vk } from '@bot-melissa/app/vk';
 import { Antispam, AntispamModule } from '@bot-melissa/shared/schemas/antispam.schema';
 import { Chat, ChatModule } from '@bot-melissa/shared/schemas/chat.schema';
 import { EventModule } from '@bot-melissa/shared/schemas/event.schema';
+import { Horoscope, HoroscopeModule } from '@bot-melissa/shared/schemas/horoscope.schema';
 import axios from 'axios';
 import * as moment from 'moment-timezone';
 import { parse } from 'node-html-parser';
-import { Horoscope, HoroscopeModule } from '@bot-melissa/shared/schemas/horoscope.schema';
 
 export const createChat = async (chatId: number): Promise<Chat> => {
   const chat: Chat = new ChatModule(<Partial<Chat>>{
@@ -90,4 +92,34 @@ export const getZodiacSignsToday = async (): Promise<void> => {
   }
 
   await HoroscopeModule.deleteMany({ date: { $lt: moment().subtract(1, 'day').endOf('day').toDate() } });
+};
+
+export const checkBirthdays = async (): Promise<void> => {
+  const chats: Chat[] = await ChatModule.find({}, { chatId: 1 });
+  const today = moment();
+  for (const chat of chats) {
+    const members = await vk.api.messages.getConversationMembers({ peer_id: chat.chatId, fields: ['bdate'] });
+    const birthdays = members.profiles.filter((profile) => {
+      const birth = moment(profile.bdate, 'D.M.YYYY');
+      return today.day() === birth.day() && today.month() === birth.month();
+    });
+    if (birthdays?.length) {
+      let result = `Дорогие друзья, у нас сегодня есть ${birthdays?.length > 1 ? 'именинники' : 'именинник'}: `;
+      for (let i = 0; i < birthdays?.length; i++) {
+        result = result.concat(
+          `${await stringifyMention({ userId: birthdays[i].id, userInfo: birthdays[i] })}${i + 1 != birthdays.length ? ', ' : '.'}`
+        );
+      }
+      result = result.concat(' Поздравляю с днем рождения! Желаю здоровья, удачи и реализации всех планов!');
+      await vk.api.messages
+        .send({
+          peer_id: chat.chatId,
+          random_id: moment().unix(),
+          message: result
+        })
+        .catch(console.error);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
 };
