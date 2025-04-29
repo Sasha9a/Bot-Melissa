@@ -68,13 +68,13 @@ export const botInit = () => {
     checkTimeMarriage();
   });
 
-  schedule.scheduleJob('* 4 * * *', () => {
+  schedule.scheduleJob('0 4 * * *', () => {
     console.log('Запущен ежесуточный крон (4 утра по МСК)');
     autoKickInDays();
     deleteExpiredEvents();
   });
 
-  schedule.scheduleJob('* 0 * * *', () => {
+  schedule.scheduleJob('1 0 * * *', () => {
     console.log('Запущен ежесуточный крон (00:00 по МСК)');
     getZodiacSignsToday();
     checkBirthdays();

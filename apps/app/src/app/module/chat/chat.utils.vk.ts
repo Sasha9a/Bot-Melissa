@@ -101,7 +101,7 @@ export const checkBirthdays = async (): Promise<void> => {
     const members = await vk.api.messages.getConversationMembers({ peer_id: chat.chatId, fields: ['bdate'] });
     const birthdays = members.profiles.filter((profile) => {
       const birth = moment(profile.bdate, 'D.M.YYYY');
-      return today.day() === birth.day() && today.month() === birth.month();
+      return today.date() === birth.date() && today.month() === birth.month();
     });
     if (birthdays?.length) {
       let result = `Дорогие друзья, у нас сегодня есть ${birthdays?.length > 1 ? 'именинники' : 'именинник'}: `;
