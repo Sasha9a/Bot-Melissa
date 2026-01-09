@@ -73,20 +73,56 @@ export const getZodiacSignsToday = async (): Promise<void> => {
 
   const res = await axios.get('https://74.ru/horoscope/daily/');
   const data = parse(res.data);
-  const signs = data.querySelector('.central-column-container')?.querySelector('section')?.querySelectorAll('article');
+  const signs = data.querySelector('.content_09p3C')?.querySelectorAll('.forecastBlock_on0yT');
 
   if (!signs) {
     console.error('Не работает сервис знаков зодиака');
     return;
   }
 
+  const zodiacSignNameList = [
+    'овнов',
+    'тельцов',
+    'близнецов',
+    'раков',
+    'львов',
+    'дев',
+    'весов',
+    'скорпионов',
+    'стрельцов',
+    'козерогов',
+    'водолеев',
+    'рыб'
+  ];
+  const parseZodiacSignNameList = [
+    'овен',
+    'телец',
+    'близнецы',
+    'рак',
+    'лев',
+    'дева',
+    'весы',
+    'скорпион',
+    'стрелец',
+    'козерог',
+    'водолей',
+    'рыбы'
+  ];
+
   for (const sign of signs) {
-    const signDivs = sign.querySelectorAll('div');
+    const splittedSignName = sign.querySelector('h2')?.text?.toLowerCase()?.split(' ');
+    const indexSign = zodiacSignNameList.indexOf(splittedSignName[splittedSignName.length - 1]);
+    if (indexSign === -1) {
+      console.error('Не работает сервис знаков зодиака');
+      return;
+    }
+
+    const zodiacSign = parseZodiacSignNameList[indexSign];
 
     const horoscope = new HoroscopeModule(<Partial<Horoscope>>{
       date: moment().startOf('day').toDate(),
-      zodiacSign: sign.querySelector('h3')?.text?.toLowerCase(),
-      text: signDivs[signDivs.length - 1]?.text
+      zodiacSign: zodiacSign,
+      text: sign.querySelector('p')?.text
     });
     await horoscope.save();
   }
